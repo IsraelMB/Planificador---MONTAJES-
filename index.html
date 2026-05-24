@@ -1,0 +1,3144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STANDECOR - Planificador de Montajes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --azul:#14A4E3;
+  --azul-oscuro:#0B5F86;
+  --azul-claro:#dff1fb;
+  --rojo:#d32f2f;
+  --rojo-claro:#ffe1e1;
+  --verde:#2e7d32;
+  --verde-claro:#dff5df;
+  --gris:#f4f6f8;
+  --borde:#d9e2ec;
+  --texto:#1f2937;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f9fc;color:var(--texto)}
+header{background:linear-gradient(135deg,var(--azul),var(--azul-oscuro));color:white;padding:12px 22px;position:sticky;top:0;z-index:10;box-shadow:0 4px 16px rgba(0,0,0,.18)}
+h1{margin:0;font-family:'Plus Jakarta Sans',Arial,Helvetica,sans-serif;font-size:16px;letter-spacing:1px;font-weight:800;line-height:1;text-transform:uppercase}.subtitle{display:none}
+.brand-area{display:flex;align-items:center;gap:18px}
+.brand-logo{width:70px;height:70px;object-fit:contain;border-radius:18px;box-shadow:none;background:transparent;padding:0;filter:brightness(1.08) contrast(1.05)}
+.topbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+.brand-title{display:flex;align-items:center;height:70px}.brand-badge{display:flex;flex-direction:column;justify-content:center;gap:2px;background:transparent;border:0;padding:0 0 0 6px;box-shadow:none;color:white;min-width:auto;text-align:left;position:relative}.brand-badge::after{content:'';width:180px;height:2px;background:rgba(255,255,255,.45);border-radius:999px;margin-top:4px}.brand-by{font-family:'Plus Jakarta Sans',Arial,Helvetica,sans-serif;font-size:8.5px;font-weight:800;letter-spacing:1.5px;color:rgba(255,255,255,.82);opacity:.92;text-transform:none;padding-left:2px;margin-top:1px}
+button{border:0;border-radius:14px;padding:10px 16px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,var(--azul),var(--azul-oscuro));color:white;display:inline-flex;align-items:center;gap:8px;transition:all .18s ease;box-shadow:0 4px 12px rgba(20,164,227,.22)}
+.ico{width:18px;height:18px;display:inline-block;vertical-align:middle;stroke:currentColor;stroke-width:2.1;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:transform .18s ease}
+button:hover .ico{transform:scale(1.12) rotate(-3deg)}
+button.small .ico{width:16px;height:16px}
+button:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 8px 18px rgba(20,164,227,.30)}
+button:active{transform:scale(.97)}
+button.light{background:white;color:var(--azul-oscuro)}button.secondary{background:linear-gradient(135deg,#64748b,#475569)}button.success{background:linear-gradient(135deg,#2e7d32,#1b5e20)}button.danger{background:linear-gradient(135deg,#e53935,#b71c1c)}button.small{padding:7px 11px;font-size:12px;border-radius:12px}
+.action-btn{width:34px;height:34px;padding:0;border-radius:50%;justify-content:center;background:#eef8fc;color:var(--azul-oscuro);border:1px solid #b8e4f4;box-shadow:0 2px 7px rgba(15,23,42,.10)}
+.action-btn:hover{background:#dff1fb;color:var(--azul-oscuro);box-shadow:0 6px 14px rgba(20,164,227,.24)}
+.action-btn.delete{background:#f8fafc;color:#b42323;border-color:#e2e8f0}
+.action-btn.delete:hover{background:#fff1f1;color:#8f1515;box-shadow:0 6px 14px rgba(180,35,35,.18)}
+.top-icon-btn{width:42px;height:42px;padding:0;border-radius:14px;justify-content:center;background:rgba(255,255,255,.15);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.22);box-shadow:none}
+.top-icon-btn .ico{width:19px;height:19px}
+.top-icon-btn:hover{background:rgba(255,255,255,.24);transform:translateY(-1px) scale(1.03)}
+nav{display:flex;gap:8px;padding:12px 20px;flex-wrap:wrap;position:sticky;top:94px;z-index:9;background:#f5f9fc;border-bottom:1px solid #dbe7ef;box-shadow:0 6px 16px rgba(15,23,42,.06)}.tab-btn{background:white;color:var(--azul-oscuro);border:1px solid var(--borde);position:relative;overflow:hidden}
+.tab-btn::after{content:'';position:absolute;left:-120%;top:0;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transition:.45s}
+.tab-btn:hover::after{left:120%}
+.tab-btn.active{background:linear-gradient(135deg,var(--azul),var(--azul-oscuro));color:white}
+main{padding:20px;max-width:1500px;margin:auto}.tab{display:none}.tab.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.span-4{grid-column:span 4}.span-8{grid-column:span 8}.span-12{grid-column:span 12}@media(max-width:1000px){.span-4,.span-8{grid-column:span 12}}
+.card{background:white;border:1px solid var(--borde);border-radius:18px;padding:16px;box-shadow:0 8px 24px rgba(15,23,42,.08)}
+h2{margin:0 0 12px;color:var(--azul-oscuro)}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.section-head h2{margin:0}h3{margin:14px 0 8px;color:var(--azul-oscuro)}
+label{display:block;font-size:12px;font-weight:800;margin:8px 0 4px;color:#334155}input,select,textarea{width:100%;border:1px solid var(--borde);border-radius:10px;padding:9px;font-size:14px}textarea{min-height:70px;resize:vertical}.form-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}@media(max-width:750px){.form-row{grid-template-columns:1fr}}
+.actions,.filters{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.filters>div{min-width:180px}
+table{width:100%;border-collapse:collapse;background:white;table-layout:fixed}th,td{border:1px solid #d8e6ef;padding:10px 8px;text-align:left;vertical-align:top;font-size:11px;word-break:normal;overflow-wrap:anywhere}th{background:#f3f8fc;color:#0B5F86;font-size:12px;font-weight:800;border-bottom:1px solid #dbe7ef;border-top:1px solid #dbe7ef}.table-wrap{overflow-x:hidden;overflow-y:visible;border:1px solid var(--borde);border-radius:12px}
+#tablaEventos th:nth-child(1),#tablaEventos td:nth-child(1){width:12%}
+#tablaEventos th:nth-child(2),#tablaEventos td:nth-child(2){width:12%}
+#tablaEventos th:nth-child(3),#tablaEventos td:nth-child(3){width:15%}
+#tablaEventos th:nth-child(4),#tablaEventos td:nth-child(4){width:16%}
+#tablaEventos th:nth-child(5),#tablaEventos td:nth-child(5){width:18%}
+#tablaEventos th:nth-child(6),#tablaEventos td:nth-child(6){width:13%}
+#tablaEventos th:nth-child(7),#tablaEventos td:nth-child(7){width:11%}
+#tablaEventos th:nth-child(8),#tablaEventos td:nth-child(8){width:3%;text-align:center}
+#tablaEventos td:nth-child(8){white-space:normal}.row-actions{display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:center}.row-actions .action-btn{margin:0;width:34px;height:34px;border-radius:12px;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(15,23,42,.06);transition:.18s ease}.row-actions .action-btn:hover{transform:translateY(-1px)}.row-actions .ico{width:15px;height:15px}
+.badge{display:flex;align-items:center;width:100%;min-height:34px;padding:8px 10px;border-radius:10px;font-size:11px;font-weight:800;margin:0 0 4px;border:1px solid #dde7f0;box-shadow:none;text-transform:uppercase;line-height:1.15;letter-spacing:.2px;word-break:normal;overflow-wrap:anywhere}
+.blue{background:#eef7ff;color:#0B5F86;border-left:4px solid #14A4E3}
+.green{background:#eefaf0;color:#207a35;border-left:4px solid #34a853}
+.gray{background:#f8fafc;color:#334155;border-left:4px solid #94a3b8}
+.red{background:#fff4f4;color:#b42318;border-left:4px solid #e53935}
+.industrial-list{display:flex;flex-direction:column;gap:5px}
+td .badge:last-child{margin-bottom:0}
+#tablaEventos td{background:#ffffff}
+.feria-tag{display:flex;align-items:center;justify-content:center;background:#f5f9fc;color:#0B5F86;font-weight:800;text-align:center;border-radius:10px;padding:6px 8px;letter-spacing:.2px;text-transform:uppercase;border-left:3px solid #14A4E3;min-height:38px;line-height:1.05;font-size:11px;box-shadow:none;overflow-wrap:anywhere}
+#tablaEventos tr:hover td{background:#f8fcff}
+#tablaEventos td:nth-child(4) .badge,
+#tablaEventos td:nth-child(5) .badge,
+#tablaEventos td:nth-child(6) .badge,
+#tablaEventos td:nth-child(7) .badge{min-width:0;width:100%;min-height:34px;display:flex;align-items:center;justify-content:flex-start}
+.alerta{background:var(--rojo-claro);border-left:5px solid var(--rojo);padding:10px;border-radius:10px;color:#7f1d1d;font-weight:800;margin:8px 0}
+.toast-alert{position:fixed;top:118px;left:50%;transform:translateX(-50%) translateY(-18px);background:#fff1f1;color:#8f1515;border:2px solid #f3b4b4;border-left:8px solid var(--rojo);border-radius:18px;padding:16px 22px;font-weight:900;box-shadow:0 14px 35px rgba(127,29,29,.22);z-index:9999;max-width:760px;width:calc(100% - 40px);text-align:center;opacity:0;pointer-events:none;transition:all .25s ease;font-size:16px;line-height:1.35}
+.toast-alert.show{opacity:1;transform:translateX(-50%) translateY(0)}.ok{background:var(--verde-claro);border-left:5px solid var(--verde);padding:10px;border-radius:10px;color:#14532d;font-weight:800}.muted{color:#64748b;font-size:13px}
+.worker-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:7px;max-height:270px;overflow:auto;border:1px solid var(--borde);padding:10px;border-radius:12px;background:#f8fafc}.selected-preview{margin-top:10px;border:1px solid var(--borde);border-radius:14px;background:#f8fcff;padding:10px}.selected-preview-title{font-size:11px;font-weight:900;color:#0B5F86;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}.selected-list{display:flex;flex-wrap:wrap;gap:6px}.selected-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #dbe7ef;background:white;color:#334155;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:800}.selected-chip.head{background:#eefaf0;color:#207a35;border-color:#cdebd2}.selected-chip button{width:18px;height:18px;min-width:18px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#eef2f7;color:#475569;box-shadow:none;font-size:12px}.main-head-box{margin-top:10px}.main-head-box label{margin-top:0}.worker-option{background:white;border:1px solid var(--borde);border-radius:10px;padding:7px;display:flex;gap:7px;font-size:12px}.worker-option input{width:auto}.worker-option.blocked{opacity:.45}.worker-name{font-weight:900;display:block}.worker-meta{color:#64748b;display:block}
+#calendario{display:block;width:100%}.calendar-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:4px;padding:0 2px;width:100%}.weekday-head{background:transparent;color:#64748b;font-weight:900;text-align:left;padding:0 4px 2px;font-size:12px;text-transform:uppercase;letter-spacing:.8px}.weekday-head.weekend-head{color:#475569}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}.day-box{min-height:120px;background:white;border:1px solid var(--borde);border-radius:12px;padding:8px;position:relative}.day-box.weekend{background:#f1f5f9;border-color:#cbd5e1}.day-box.overlap-day{background:#fff7df;border:2px solid #f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.12) inset}.day-box.weekend.overlap-day{background:linear-gradient(135deg,#f1f5f9 0%,#fff7df 100%)}.day-num{font-weight:900;color:var(--azul-oscuro);font-size:18px}.day-tag{position:absolute;top:7px;right:7px;font-size:10px;font-weight:900;border-radius:999px;padding:3px 6px;background:#f59e0b;color:white}.event-mini{padding:6px;margin:5px 0;border-radius:7px;font-size:11px;font-weight:900}.montaje-mini{background:var(--azul-claro);border-left:5px solid var(--azul);color:var(--azul-oscuro)}.desmontaje-mini{background:var(--rojo-claro);border-left:5px solid var(--rojo);color:#a61b1b}
+.print-board{display:none}
+.print-excel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0;width:100%;border-top:3px solid #14A4E3;border-left:3px solid #14A4E3}
+.print-excel-card{border-right:3px solid #14A4E3;border-bottom:3px solid #14A4E3;background:white;break-inside:avoid;page-break-inside:avoid;min-height:305px;display:flex;flex-direction:column}
+.print-excel-card.des{border-color:#14A4E3}
+.print-excel-type{background:#14A4E3;color:white;text-align:center;font-size:34px;font-weight:900;padding:12px 8px;text-transform:uppercase;letter-spacing:1px;border-bottom:3px solid #14A4E3}
+.print-excel-card.des .print-excel-type{background:#14A4E3;border-bottom-color:#14A4E3;color:white}
+.print-excel-top{display:grid;grid-template-columns:1fr 1fr;border-bottom:3px solid #14A4E3}
+.print-excel-card.des .print-excel-top{border-bottom-color:#14A4E3}
+.print-excel-cell{padding:12px 14px;min-height:58px;border-right:3px solid #14A4E3;display:flex;align-items:center;gap:10px}
+.print-excel-cell:last-child{border-right:0}
+.print-excel-card.des .print-excel-cell{border-right-color:#14A4E3}
+.print-excel-label{font-size:20px;font-weight:900;color:#14A4E3;text-transform:uppercase;white-space:nowrap}
+.print-excel-card.des .print-excel-label{color:#14A4E3}
+.print-excel-value{font-size:24px;font-weight:900;color:#111827;text-transform:uppercase;line-height:1.1;word-break:break-word}
+.print-excel-date{background:#eefaff;color:#14A4E3;text-align:center;font-size:30px;font-weight:900;padding:12px 8px;text-transform:uppercase;border-bottom:3px solid #14A4E3}
+.print-excel-card.des .print-excel-date{background:#eefaff;border-bottom-color:#14A4E3;color:#14A4E3}
+.print-excel-stand{background:#f7fdff;color:#14A4E3;text-align:center;font-size:32px;font-weight:900;padding:14px 8px;text-transform:uppercase;border-bottom:3px solid #14A4E3;line-height:1.15;min-height:76px;display:flex;align-items:center;justify-content:center}
+.print-excel-card.des .print-excel-stand{background:#f7fdff;color:#14A4E3;border-bottom-color:#14A4E3}
+.print-excel-body{display:grid;grid-template-columns:1fr 1fr;flex:1;background:white}
+.print-excel-col{border-right:3px solid #14A4E3;display:flex;flex-direction:column}
+.print-excel-col:last-child{border-right:0}
+.print-excel-card.des .print-excel-col{border-right-color:#14A4E3}
+.print-excel-col-title{background:#eefaff;color:#14A4E3;text-align:center;font-size:22px;font-weight:900;padding:10px;text-transform:uppercase;border-bottom:3px solid #14A4E3}
+.print-excel-card.des .print-excel-col-title{background:#eefaff;color:#14A4E3;border-bottom-color:#14A4E3}
+.print-excel-lines{padding:10px 14px;flex:1}
+.print-excel-line{font-size:24px;font-weight:750;color:#111827;line-height:1.3;text-transform:uppercase;border-bottom:2px solid #14A4E3;min-height:38px;padding:5px 0}
+.print-excel-line.head{color:#111827;font-weight:900}
+.print-excel-line.colla{font-weight:900;color:#111827}
+.print-excel-card.dense .print-excel-type{font-size:28px;padding:7px 6px}
+.print-excel-card.dense .print-excel-cell{min-height:42px;padding:7px 10px}
+.print-excel-card.dense .print-excel-label{font-size:15px}
+.print-excel-card.dense .print-excel-value{font-size:18px}
+.print-excel-card.dense .print-excel-date{font-size:22px;padding:7px 6px}
+.print-excel-card.dense .print-excel-stand{font-size:24px;min-height:52px;padding:7px 6px}
+.print-excel-card.dense .print-excel-col-title{font-size:16px;padding:5px}
+.print-excel-card.dense .print-excel-lines{padding:5px 10px}
+.print-excel-card.dense .print-excel-line{font-size:16px;min-height:22px;padding:2px 0;line-height:1.15}
+.print-excel-card.ultra .print-excel-type{font-size:24px;padding:5px}
+.print-excel-card.ultra .print-excel-cell{min-height:36px;padding:5px 8px}
+.print-excel-card.ultra .print-excel-label{font-size:13px}
+.print-excel-card.ultra .print-excel-value{font-size:16px}
+.print-excel-card.ultra .print-excel-date{font-size:18px;padding:5px}
+.print-excel-card.ultra .print-excel-stand{font-size:20px;min-height:42px;padding:5px}
+.print-excel-card.ultra .print-excel-col-title{font-size:14px;padding:4px}
+.print-excel-card.ultra .print-excel-lines{padding:4px 8px}
+.print-excel-card.ultra .print-excel-line{font-size:13px;min-height:17px;padding:1px 0;line-height:1.1}
+.print-empty{font-size:18px;font-weight:900;color:#64748b;padding:16px;border:2px dashed #cbd5e1;background:white;text-align:center}
+@media print{
+  body.print-simple-mode *{visibility:hidden!important}
+  body.print-simple-mode #printPlanificacion,
+  body.print-simple-mode #printPlanificacion *{visibility:visible!important}
+  body.print-simple-mode #printPlanificacion{
+    position:absolute!important;
+    left:0!important;
+    top:0!important;
+    width:100%!important;
+    background:white!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  body.print-simple-mode .plan-folder,
+  body.print-simple-mode .plan-accordion,
+  body.print-simple-mode .pantalla-planificacion,
+  body.print-simple-mode .folder-actions,
+  body.print-simple-mode .topbar,
+  body.print-simple-mode header,
+  body.print-simple-mode nav,
+  body.print-simple-mode aside,
+  body.print-simple-mode main > *:not(#printPlanificacion){display:none!important}header,nav,.no-print,.pantalla-planificacion,.table-wrap,.filters,.actions{display:none!important}body{background:white!important}main{padding:0!important;margin:0!important;max-width:none!important}.tab{display:block!important}.tab:not(#tab-planificacion){display:none!important}#tab-planificacion .grid{display:block!important}#tab-planificacion .span-4{display:none!important}#tab-planificacion .span-8{display:block!important;width:100%!important}#tab-planificacion h2{display:none!important}.card{box-shadow:none!important;border:0!important;padding:0!important;margin:0!important}.print-board{display:block!important}body.print-calendar .tab{display:none!important}body.print-calendar #tab-calendario{display:block!important}body.print-calendar #tab-calendario .card{display:block!important}body.print-calendar #tab-calendario h2{display:block!important;font-size:22px;margin:0 0 8px;color:#0B5F86}body.print-calendar #calendario{display:block!important}body.print-calendar .calendar-weekdays{display:grid!important}body.print-calendar .calendar-grid{display:grid!important;gap:5px}body.print-calendar .day-box{min-height:82px;padding:5px;border-radius:6px;break-inside:avoid}body.print-calendar .day-num{font-size:14px}body.print-calendar .event-mini{font-size:8px;line-height:1.15;padding:4px;margin:3px 0}body.print-calendar .day-tag{font-size:7px;padding:2px 4px}body.print-calendar .weekday-head{font-size:10px}body.print-calendar .print-board{display:none!important}body.print-calendar .calendar-print-month{display:block!important;text-align:center;font-size:34px;font-weight:900;letter-spacing:3px;color:#fff;background:#14A4E3;padding:10px 22px;border-radius:12px;width:max-content;min-width:320px;margin:18px auto 0 auto;text-transform:uppercase;box-shadow:0 4px 14px rgba(20,164,227,.28)}@page{size:A4 landscape;margin:4mm}.print-excel-grid{grid-template-columns:1fr;width:100%;gap:0;margin:0;border-top:3px solid #14A4E3;border-left:3px solid #14A4E3;page-break-after:avoid}.print-excel-card{min-height:auto;height:198mm;max-height:198mm;overflow:hidden}.print-excel-type{font-size:34px;padding:10px 8px;background:#14A4E3!important;color:white!important}.print-excel-cell{padding:10px 12px;min-height:50px}.print-excel-label{font-size:17px}.print-excel-value{font-size:22px}.print-excel-date{font-size:27px;padding:9px 8px}.print-excel-stand{font-size:30px;min-height:64px;padding:10px 8px}.print-excel-col-title{font-size:20px;padding:8px}.print-excel-line{font-size:22px;min-height:34px}.print-excel-lines{padding:8px 12px}.print-excel-card.dense .print-excel-line{font-size:16px;min-height:21px;padding:1px 0}.print-excel-card.ultra .print-excel-line{font-size:13px;min-height:16px;padding:0}.print-excel-card.dense .print-excel-type{font-size:26px;padding:6px}.print-excel-card.ultra .print-excel-type{font-size:22px;padding:4px}.print-excel-card.dense .print-excel-stand{font-size:22px;min-height:45px}.print-excel-card.ultra .print-excel-stand{font-size:18px;min-height:36px}.print-excel-card.dense .print-excel-date{font-size:20px;padding:5px}.print-excel-card.ultra .print-excel-date{font-size:16px;padding:4px}.print-excel-card.dense .print-excel-col-title{font-size:15px;padding:4px}.print-excel-card.ultra .print-excel-col-title{font-size:13px;padding:3px}.print-excel-card.dense .print-excel-cell{min-height:38px;padding:5px 8px}.print-excel-card.ultra .print-excel-cell{min-height:32px;padding:4px 6px}.print-excel-card.dense .print-excel-label{font-size:13px}.print-excel-card.ultra .print-excel-label{font-size:11px}.print-excel-card.dense .print-excel-value{font-size:16px}.print-excel-card.ultra .print-excel-value{font-size:14px} }
+
+
+/* ===== PLANIFICACIÓN LIMPIA Y COMPACTA ===== */
+#tablaEventos{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+#tablaEventos thead th{background:#f3f8fc;color:#0B5F86;font-size:12px;font-weight:800;padding:10px 8px;border-top:1px solid #dbe7ef;border-bottom:1px solid #dbe7ef}
+#tablaEventos td{padding:10px 8px;vertical-align:top;border-bottom:1px solid #e7eef5;background:#fff}
+#tablaEventos th:nth-child(1),#tablaEventos td:nth-child(1){width:12%}
+#tablaEventos th:nth-child(2),#tablaEventos td:nth-child(2){width:12%}
+#tablaEventos th:nth-child(3),#tablaEventos td:nth-child(3){width:15%}
+#tablaEventos th:nth-child(4),#tablaEventos td:nth-child(4){width:17%}
+#tablaEventos th:nth-child(5),#tablaEventos td:nth-child(5){width:20%}
+#tablaEventos th:nth-child(6),#tablaEventos td:nth-child(6){width:13%}
+#tablaEventos th:nth-child(7),#tablaEventos td:nth-child(7){width:9%}
+#tablaEventos th:nth-child(8),#tablaEventos td:nth-child(8){width:2%;padding:4px 2px;text-align:center}
+.feria-tag{display:flex;align-items:center;justify-content:center;background:#f5f9fc;color:#0B5F86;font-weight:800;text-align:center;border-radius:10px;padding:6px 8px;letter-spacing:.2px;text-transform:uppercase;border-left:3px solid #14A4E3;min-height:38px;line-height:1.05;font-size:11px;box-shadow:none;overflow-wrap:anywhere}
+.industrial-list{display:flex;flex-direction:column;gap:5px}
+.badge{display:flex;align-items:center;width:100%;min-height:34px;padding:8px 10px;border-radius:10px;font-size:11px;font-weight:800;margin:0 0 4px;border:1px solid #dde7f0;box-shadow:none;text-transform:uppercase;line-height:1.15;letter-spacing:.2px;word-break:normal;overflow-wrap:anywhere}
+.blue{background:#eef7ff;color:#0B5F86;border-left:4px solid #14A4E3}.green{background:#eefaf0;color:#207a35;border-left:4px solid #34a853}.gray{background:#f8fafc;color:#334155;border-left:4px solid #94a3b8}.red{background:#fff4f4;color:#b42318;border-left:4px solid #e53935}
+.row-actions{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:28px;margin:0 auto}
+.row-actions .action-btn{width:26px;height:26px;min-width:26px;margin:0;padding:0;border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:none;transition:.18s ease}
+.row-actions .action-btn:hover{transform:translateY(-1px)}.row-actions .ico,.row-actions .action-btn .ico{width:11px;height:11px}
+
+/* ===== REFINAMIENTO VISUAL GENERAL ===== */
+body{
+  font-family:Inter, "Plus Jakarta Sans", Arial, Helvetica, sans-serif;
+  font-size:14px;
+}
+
+/* Tablas de trabajadores, collas y planificación más legibles */
+th,td{
+  font-size:12.5px;
+  line-height:1.28;
+}
+th{
+  font-size:12px;
+  letter-spacing:.35px;
+}
+#tablaTrabajadores td:first-child,
+#tablaCollas td:first-child{
+  font-size:13px;
+  color:#0B5F86;
+}
+#tablaTrabajadores td,
+#tablaCollas td{
+  padding:10px 9px;
+}
+
+/* Badges más suaves y menos pesados */
+.badge{
+  font-size:11.5px;
+  font-weight:750;
+  min-height:32px;
+  padding:7px 10px;
+  border-radius:11px;
+}
+
+/* Personal disponible: lectura más clara */
+#listaDisponibles .badge,
+#listaOcupados .badge,
+#listaNoDisponibles .badge{
+  font-size:12px;
+  line-height:1.28;
+  padding:10px 12px;
+  border-radius:13px;
+  margin-bottom:8px;
+}
+#listaDisponibles .badge.green::before{content:'✓';font-weight:900;margin-right:6px}
+#listaOcupados .badge.blue{background:#fff7df;color:#92400e;border-left-color:#f59e0b}
+#listaOcupados .badge.blue::before{content:'●';font-weight:900;margin-right:6px}
+#listaNoDisponibles .badge.red::before{content:'!';font-weight:900;margin-right:6px}
+
+/* Calendario más fino y cómodo */
+.day-num{
+  font-size:20px;
+  font-weight:900;
+}
+.event-mini{
+  font-size:10.5px;
+  font-weight:750;
+  line-height:1.18;
+  border-radius:8px;
+  padding:6px 7px;
+}
+.weekday-head{
+  font-size:11.5px;
+  letter-spacing:1px;
+}
+
+/* Formularios un poco más cómodos */
+input,select,textarea{
+  font-size:14.5px;
+}
+label{
+  font-size:12px;
+  letter-spacing:.2px;
+}
+
+/* Vista previa de personal seleccionada más integrada */
+.selected-preview{
+  background:#f8fcff;
+  border-color:#dbe7ef;
+}
+.selected-chip{
+  font-size:11.5px;
+  padding:7px 10px;
+}
+
+/* ===== IMPRESIÓN CALENDARIO A4 MÁS COMPLETA ===== */
+@media print{
+  body.print-calendar main{
+    width:100%!important;
+    max-width:none!important;
+  }
+
+  body.print-calendar #tab-calendario .card{
+    padding:0!important;
+    margin:0!important;
+    width:100%!important;
+  }
+
+  body.print-calendar #tab-calendario h2{
+    display:none!important;
+  }
+
+  body.print-calendar .calendar-weekdays{
+    gap:4px!important;
+    margin-bottom:4px!important;
+  }
+
+  body.print-calendar .calendar-grid{
+    gap:4px!important;
+    width:100%!important;
+  }
+
+  body.print-calendar .day-box{
+    min-height:94px!important;
+    padding:5px!important;
+    border-radius:5px!important;
+  }
+
+  body.print-calendar .day-num{
+    font-size:14px!important;
+    line-height:1!important;
+    margin-bottom:2px!important;
+  }
+
+  body.print-calendar .event-mini{
+    font-size:8.5px!important;
+    line-height:1.12!important;
+    padding:3px 4px!important;
+    margin:2px 0!important;
+    border-radius:4px!important;
+  }
+
+  body.print-calendar .weekday-head{
+    font-size:9px!important;
+    padding:0 2px 2px!important;
+    letter-spacing:.5px!important;
+  }
+
+  body.print-calendar .calendar-print-month{
+    font-size:18px!important;
+    letter-spacing:1.5px!important;
+    padding:5px 14px!important;
+    border-radius:8px!important;
+    min-width:180px!important;
+    margin:8px auto 0 auto!important;
+    box-shadow:none!important;
+  }
+}
+
+/* ===== IMPRESIÓN CALENDARIO TIPO PÓSTER A4 ===== */
+@media print{
+  body.print-calendar main{
+    width:100%!important;
+    max-width:none!important;
+    padding:0!important;
+  }
+
+  body.print-calendar #tab-calendario .card{
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    height:200mm!important;
+    padding:0!important;
+    margin:0!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+
+  body.print-calendar #tab-calendario h2,
+  body.print-calendar #tab-calendario .filters,
+  body.print-calendar #tab-calendario .section-head{
+    display:none!important;
+  }
+
+  body.print-calendar .calendar-print-month{
+    order:0!important;
+    display:block!important;
+    align-self:center!important;
+    text-align:center!important;
+    font-size:21px!important;
+    font-weight:900!important;
+    letter-spacing:2px!important;
+    color:#fff!important;
+    background:linear-gradient(135deg,var(--azul),var(--azul-oscuro))!important;
+    padding:7px 26px!important;
+    border-radius:13px!important;
+    min-width:230px!important;
+    margin:0 auto 7px auto!important;
+    text-transform:uppercase!important;
+    box-shadow:0 4px 14px rgba(20,164,227,.28)!important;
+  }
+
+  body.print-calendar #calendario{
+    order:1!important;
+    display:flex!important;
+    flex-direction:column!important;
+    flex:1!important;
+    width:100%!important;
+    min-height:0!important;
+  }
+
+  body.print-calendar .calendar-weekdays{
+    display:grid!important;
+    grid-template-columns:repeat(7,1fr)!important;
+    gap:4px!important;
+    margin-bottom:4px!important;
+    width:100%!important;
+  }
+
+  body.print-calendar .weekday-head{
+    font-size:9.5px!important;
+    font-weight:900!important;
+    letter-spacing:.7px!important;
+    padding:0 2px 2px!important;
+  }
+
+  body.print-calendar .calendar-grid{
+    display:grid!important;
+    grid-template-columns:repeat(7,1fr)!important;
+    grid-auto-rows:1fr!important;
+    gap:4px!important;
+    width:100%!important;
+    flex:1!important;
+    min-height:0!important;
+  }
+
+  body.print-calendar .day-box{
+    min-height:0!important;
+    height:auto!important;
+    padding:5px!important;
+    border-radius:6px!important;
+    break-inside:avoid!important;
+    overflow:visible!important;
+  }
+
+  body.print-calendar .day-num{
+    font-size:15px!important;
+    line-height:1!important;
+    margin-bottom:3px!important;
+  }
+
+  body.print-calendar .event-mini{
+    font-size:8.2px!important;
+    line-height:1.12!important;
+    padding:3px 4px!important;
+    margin:2px 0!important;
+    border-radius:4px!important;
+  }
+
+  body.print-calendar .day-tag{
+    font-size:7px!important;
+    padding:2px 4px!important;
+    top:4px!important;
+    right:4px!important;
+  }
+}
+
+/* ===== IMPRESIÓN SIMPLE TIPO PIZARRA ===== */
+.print-simple-card{display:none!important}.plan-folder,.plan-accordion,.pantalla-planificacion{display:block}
+@media print{
+  .print-excel-grid,.print-excel-card{display:none!important}
+  .print-simple-card{
+    display:block!important;
+    width:100%!important;
+    height:198mm!important;
+    max-height:198mm!important;
+    border:3px solid var(--azul)!important;
+    background:white!important;
+    overflow:hidden!important;
+    page-break-inside:avoid!important;
+    break-inside:avoid!important;
+    font-family:Arial,Helvetica,sans-serif!important;
+  }
+  .print-simple-title{
+    background:var(--azul)!important;
+    color:white!important;
+    text-align:center!important;
+    font-size:38px!important;
+    font-weight:900!important;
+    letter-spacing:2px!important;
+    padding:12px 8px!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-row{
+    border-top:3px solid var(--azul)!important;
+    color:#111827!important;
+    font-size:23px!important;
+    font-weight:900!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-row span,
+  .print-simple-stand{
+    color:#0B5F86!important;
+  }
+  .print-simple-row.top{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+  }
+  .print-simple-row.top div{
+    padding:12px 20px!important;
+    border-right:3px solid var(--azul)!important;
+  }
+  .print-simple-row.top div:last-child{border-right:0!important}
+  .print-simple-row.center{
+    text-align:center!important;
+    padding:12px 8px!important;
+  }
+  .print-simple-stand{
+    border-top:3px solid var(--azul)!important;
+    text-align:center!important;
+    font-size:30px!important;
+    font-weight:900!important;
+    padding:12px 8px!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-heads{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    border-top:3px solid var(--azul)!important;
+    background:#f7fdff!important;
+  }
+  .print-simple-heads div{
+    text-align:center!important;
+    color:#0B5F86!important;
+    font-size:22px!important;
+    font-weight:900!important;
+    padding:9px!important;
+    border-right:3px solid var(--azul)!important;
+  }
+  .print-simple-heads div:last-child{border-right:0!important}
+  .print-simple-body{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    height:calc(198mm - 252px)!important;
+    border-top:3px solid var(--azul)!important;
+  }
+  .print-simple-card.has-obs .print-simple-body{
+    height:calc(198mm - 286px)!important;
+  }
+  .print-simple-obs{
+    display:block!important;
+    border-top:3px solid var(--azul)!important;
+    padding:7px 14px!important;
+    min-height:28mm!important;
+    max-height:34mm!important;
+    overflow:hidden!important;
+    background:#fff!important;
+  }
+  .print-simple-obs-title{
+    color:#0B5F86!important;
+    font-size:16px!important;
+    font-weight:900!important;
+    text-transform:uppercase!important;
+    margin-bottom:4px!important;
+  }
+  .print-simple-obs-text{
+    color:#111827!important;
+    font-size:16px!important;
+    font-weight:700!important;
+    line-height:1.18!important;
+    text-transform:uppercase!important;
+  }
+  
+  .print-simple-card{overflow:hidden!important}
+  
+  .print-simple-col{
+    padding:18px 18px 10px!important;
+    border-right:3px solid var(--azul)!important;
+  }
+  .print-simple-col:last-child{border-right:0!important}
+  .print-simple-name,
+  .print-simple-line{
+    color:#111827!important;
+    font-size:20px!important;
+    font-weight:500!important;
+    line-height:1.25!important;
+    min-height:32px!important;
+    border-bottom:2px solid var(--azul)!important;
+    padding:3px 8px!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-card.many .print-simple-name,
+  .print-simple-card.many .print-simple-line{
+    font-size:18px!important;
+    min-height:24px!important;
+    line-height:1.12!important;
+    padding:2px 6px!important;
+  }
+  .print-simple-card.ultra .print-simple-name,
+  .print-simple-card.ultra .print-simple-line{
+    font-size:15px!important;
+    min-height:19px!important;
+    line-height:1.08!important;
+    padding:1px 5px!important;
+  }
+  .print-simple-name.head{
+    font-weight:900!important;
+  }
+}
+
+/* ===== DISPONIBLES MÁS LIMPIO ===== */
+#listaDisponibles,#listaOcupados,#listaNoDisponibles{display:flex;flex-direction:column;gap:8px}
+.disp-card{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:flex-start;border-radius:14px;padding:11px 12px;border:1px solid #dbe7ef;background:white;line-height:1.2}
+.disp-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;margin-top:1px}
+.disp-name{font-size:12.5px;font-weight:900;text-transform:uppercase;letter-spacing:.2px;margin-bottom:4px}
+.disp-meta{font-size:10.5px;font-weight:800;text-transform:uppercase;color:#64748b;line-height:1.25;margin-bottom:3px}
+.disp-extra{font-size:10.5px;font-weight:900;text-transform:uppercase;line-height:1.25}
+.disp-ok{background:#eefaf0;border-left:5px solid #34a853}.disp-ok .disp-icon{background:#dff5df;color:#207a35}.disp-ok .disp-name,.disp-ok .disp-extra{color:#207a35}
+.disp-busy{background:#fff7df;border-left:5px solid #f59e0b}.disp-busy .disp-icon{background:#fdecc8;color:#92400e}.disp-busy .disp-name,.disp-busy .disp-extra{color:#92400e}
+.disp-no{background:#fff1f1;border-left:5px solid #e53935}.disp-no .disp-icon{background:#ffe1e1;color:#b42318}.disp-no .disp-name,.disp-no .disp-extra{color:#b42318}
+
+/* ===== CORRECCIÓN FINAL IMPRESIÓN TRABAJO / CALENDARIO ===== */
+@media print{
+  body.print-simple-mode main > #tab-planificacion{display:block!important;visibility:visible!important}
+  body.print-simple-mode #tab-planificacion .grid{display:block!important;visibility:visible!important}
+  body.print-simple-mode #tab-planificacion .span-8{display:block!important;width:100%!important;visibility:visible!important}
+  body.print-simple-mode #tab-planificacion .card{display:block!important;visibility:visible!important;padding:0!important;margin:0!important;border:0!important;box-shadow:none!important}
+  body.print-simple-mode #printPlanificacion{display:block!important;visibility:visible!important;position:absolute!important;left:0!important;top:0!important;width:100%!important;background:white!important;margin:0!important;padding:0!important}
+  body.print-simple-mode #printPlanificacion *{visibility:visible!important}
+  body.print-simple-mode #planAccordion,
+  body.print-simple-mode .plan-accordion,
+  body.print-simple-mode .pantalla-planificacion,
+  body.print-simple-mode .filters,
+  body.print-simple-mode .folder-actions,
+  body.print-simple-mode #tab-planificacion h2,
+  body.print-simple-mode #tab-planificacion .span-4{display:none!important;visibility:hidden!important}
+
+  body.print-calendar *{visibility:visible!important}
+  body.print-calendar #printPlanificacion{display:none!important}
+  body.print-calendar #tab-calendario{display:block!important;visibility:visible!important}
+  body.print-calendar #calendario,
+  body.print-calendar #calendario *{visibility:visible!important}
+}
+
+/* ===== BOTÓN CERRAR AVISOS ===== */
+.dismissable-alert{position:relative;padding-right:34px!important}
+.dismissable-alert .dismiss-alert-btn,
+.dismiss-alert-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:20px;height:20px;min-width:20px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.75);color:#b42318;border:1px solid rgba(180,35,24,.25);box-shadow:none;font-size:13px;font-weight:900;line-height:1;cursor:pointer}
+.dismiss-alert-btn:hover{background:#fff;color:#8f1515;transform:translateY(-50%) scale(1.05)}
+.alerta.dismissable-alert{display:block}
+
+/* ===== RESPONSIVE TABLET / MÓVIL ===== */
+@media(max-width:1100px){
+  header{padding:10px 14px}
+  .brand-logo{width:58px;height:58px;border-radius:15px}
+  .brand-title{height:58px}
+  h1{font-size:14px;letter-spacing:.7px}
+  .brand-by{font-size:8px}
+  nav{top:78px;padding:10px 12px;gap:6px;overflow-x:auto;flex-wrap:nowrap;white-space:nowrap}
+  .tab-btn{min-width:max-content;padding:9px 12px;font-size:12px}
+  main{padding:12px}
+  .grid{gap:10px}
+  .card{padding:12px;border-radius:15px}
+  .span-4,.span-8,.span-12{grid-column:span 12}
+  .worker-picker{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));max-height:240px}
+  .plan-folder-head{grid-template-columns:30px 1fr;gap:8px;padding:11px 10px}
+  .folder-pill,.folder-date,.folder-count{grid-column:2;text-align:left;justify-content:flex-start}
+  .folder-detail-grid,.folder-detail-grid.compact{grid-template-columns:1fr!important}
+  .folder-actions{justify-content:flex-start}
+}
+
+@media(max-width:720px){
+  .brand-area{overflow:visible!important;min-width:0}
+  .brand-logo{flex:0 0 auto;overflow:visible!important;object-fit:contain}
+  .brand-logo img,.brand-logo svg{width:100%!important;height:100%!important;object-fit:contain;overflow:visible!important}
+  .brand-badge{min-width:0;overflow:visible!important}
+  .brand-title{padding-right:10px;overflow:visible!important}
+  body{font-size:13px}
+  .topbar{align-items:flex-start}
+  .brand-area{gap:10px;width:100%}
+  .brand-logo{width:50px;height:50px;border-radius:13px}
+  .brand-title{height:50px}
+  h1{font-size:12.5px;letter-spacing:.45px}
+  .brand-badge::after{width:130px}
+  .topbar .no-print{width:100%;justify-content:flex-end;display:flex;gap:6px}
+  .top-icon-btn{width:36px;height:36px;border-radius:11px}
+  nav{top:70px;padding:8px 10px}
+  .tab-btn{font-size:11px;padding:8px 10px;border-radius:11px}
+  .tab-btn .ico{width:14px;height:14px}
+  main{padding:10px}
+  h2{font-size:18px}
+  h3{font-size:15px}
+  input,select,textarea{font-size:16px;padding:10px}
+  .form-row{grid-template-columns:1fr}
+  .actions button{width:100%;justify-content:center}
+  .filters{display:grid;grid-template-columns:1fr;gap:8px}
+  .filters>div{min-width:0;width:100%}
+  .worker-picker{grid-template-columns:1fr;max-height:260px}
+  .selected-list{gap:5px}
+  .selected-chip{font-size:10.5px;max-width:100%;overflow-wrap:anywhere}
+  .plan-folder-head{padding:10px 9px}
+  .folder-feria{font-size:13px}
+  .folder-sub{font-size:10.5px;display:block;margin-top:4px}
+  .folder-title-line{display:block}
+  .folder-sub::before{display:none}
+  .folder-pill{font-size:10px;padding:5px 8px;width:max-content}
+  .folder-date,.folder-count{font-size:10.5px}
+  .folder-detail-box{padding:9px}
+  .badge{font-size:10.5px;min-height:30px;padding:7px 8px}
+  .table-wrap{overflow-x:auto}
+  table{min-width:720px}
+  #calendario{overflow-x:auto}
+  .calendar-weekdays,.calendar-grid{min-width:720px}
+  .day-box{min-height:95px;padding:6px}
+  .event-mini{font-size:9px;padding:4px}
+  #listaDisponibles,#listaOcupados,#listaNoDisponibles{gap:7px}
+  .disp-card{grid-template-columns:24px 1fr;padding:10px;gap:8px}
+  .disp-icon{width:22px;height:22px;font-size:12px}
+  .disp-name{font-size:11.5px}
+  .disp-meta,.disp-extra{font-size:10px}
+}
+
+@media(max-width:430px){
+  header{position:sticky}
+  nav{top:66px}
+  .brand-logo{width:46px;height:46px}
+  .brand-title{height:46px}
+  h1{font-size:11.5px}
+  .brand-by{font-size:7.5px}
+  .brand-badge::after{width:115px}
+  .card{padding:10px;border-radius:13px}
+  .folder-arrow{width:24px;height:24px}
+  .folder-feria{font-size:12.5px}
+  .folder-sub,.folder-date,.folder-count{font-size:10px}
+  .folder-actions .action-btn{width:32px;height:32px}
+}
+
+/* ===== CORRECCIÓN REAL LOGO EN TABLET/MÓVIL ===== */
+@media(max-width:720px){
+  .brand-area{gap:12px!important;overflow:visible!important;flex-wrap:nowrap!important}
+  .brand-logo{
+    width:96px!important;
+    min-width:96px!important;
+    max-width:96px!important;
+    height:46px!important;
+    object-fit:contain!important;
+    object-position:left center!important;
+    border-radius:10px!important;
+    overflow:visible!important;
+  }
+  .brand-title{height:46px!important;min-width:0!important;overflow:visible!important}
+}
+
+@media(max-width:430px){
+  .brand-logo{
+    width:88px!important;
+    min-width:88px!important;
+    max-width:88px!important;
+    height:42px!important;
+  }
+}
+
+/* ===== CORRECCIÓN DEFINITIVA LOGO TABLET ===== */
+@media(max-width:1100px){
+  .brand-area{
+    width:100%!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:14px!important;
+    flex-wrap:nowrap!important;
+    overflow:visible!important;
+  }
+  .brand-logo{
+    width:185px!important;
+    min-width:185px!important;
+    max-width:185px!important;
+    height:58px!important;
+    min-height:58px!important;
+    object-fit:contain!important;
+    object-position:left center!important;
+    border-radius:12px!important;
+    overflow:visible!important;
+    flex:0 0 185px!important;
+  }
+  .brand-title{
+    flex:1 1 auto!important;
+    min-width:0!important;
+    height:58px!important;
+    overflow:visible!important;
+  }
+  .brand-badge{
+    min-width:0!important;
+    overflow:visible!important;
+  }
+}
+
+@media(max-width:720px){
+  .brand-logo{
+    width:150px!important;
+    min-width:150px!important;
+    max-width:150px!important;
+    height:48px!important;
+    flex:0 0 150px!important;
+  }
+  h1{font-size:13px!important;letter-spacing:.6px!important}
+}
+
+@media(max-width:430px){
+  .brand-logo{
+    width:126px!important;
+    min-width:126px!important;
+    max-width:126px!important;
+    height:42px!important;
+    flex:0 0 126px!important;
+  }
+  h1{font-size:11px!important;letter-spacing:.35px!important}
+}
+
+/* ===== AJUSTE DEFINITIVO HEADER TABLET: LOGO + BOTONES ===== */
+@media(max-width:1100px){
+  header{
+    padding:10px 120px 10px 14px!important;
+    min-height:82px!important;
+  }
+  .topbar{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    flex-wrap:nowrap!important;
+    gap:10px!important;
+    position:relative!important;
+  }
+  .brand-area{
+    width:auto!important;
+    max-width:100%!important;
+    flex:1 1 auto!important;
+    min-width:0!important;
+    gap:10px!important;
+    overflow:hidden!important;
+  }
+  .brand-logo{
+    width:132px!important;
+    min-width:132px!important;
+    max-width:132px!important;
+    height:52px!important;
+    flex:0 0 132px!important;
+    object-fit:contain!important;
+    object-position:left center!important;
+    border-radius:10px!important;
+  }
+  .brand-title{
+    flex:1 1 auto!important;
+    min-width:0!important;
+    height:52px!important;
+  }
+  .brand-badge{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  h1{
+    font-size:14px!important;
+    line-height:1.1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .brand-by{font-size:8px!important}
+  .brand-badge::after{width:150px!important;max-width:100%!important}
+  .topbar .no-print{
+    position:absolute!important;
+    right:-106px!important;
+    top:50%!important;
+    transform:translateY(-50%)!important;
+    width:auto!important;
+    display:flex!important;
+    gap:7px!important;
+    justify-content:flex-end!important;
+    align-items:center!important;
+  }
+  .top-icon-btn{width:42px!important;height:42px!important;border-radius:14px!important}
+}
+
+@media(max-width:720px){
+  header{
+    padding:10px 105px 10px 10px!important;
+    min-height:76px!important;
+  }
+  .brand-logo{
+    width:112px!important;
+    min-width:112px!important;
+    max-width:112px!important;
+    height:46px!important;
+    flex:0 0 112px!important;
+  }
+  .brand-title{height:46px!important}
+  h1{font-size:12px!important;letter-spacing:.4px!important}
+  .brand-by{font-size:7.5px!important}
+  .brand-badge::after{width:120px!important}
+  .topbar .no-print{right:-94px!important;gap:6px!important}
+  .top-icon-btn{width:38px!important;height:38px!important;border-radius:12px!important}
+  nav{top:76px!important}
+}
+
+@media(max-width:430px){
+  header{
+    padding:9px 92px 9px 8px!important;
+    min-height:70px!important;
+  }
+  .brand-logo{
+    width:92px!important;
+    min-width:92px!important;
+    max-width:92px!important;
+    height:40px!important;
+    flex:0 0 92px!important;
+  }
+  .brand-title{height:40px!important}
+  h1{font-size:10.5px!important;letter-spacing:.2px!important}
+  .brand-by{font-size:7px!important}
+  .brand-badge::after{width:96px!important}
+  .topbar .no-print{right:-84px!important}
+  .top-icon-btn{width:34px!important;height:34px!important;border-radius:10px!important}
+  nav{top:70px!important}
+}
+
+
+/* ===== AJUSTE FINAL OBSERVACIONES EN IMPRESIÓN ===== */
+@media print{
+  .print-simple-card.has-obs .print-simple-body{
+    height:calc(198mm - 300px)!important;
+  }
+  .print-simple-obs{
+    display:block!important;
+    visibility:visible!important;
+    height:30mm!important;
+    max-height:30mm!important;
+    overflow:hidden!important;
+    border-top:3px solid var(--azul)!important;
+    padding:7px 14px!important;
+    background:white!important;
+  }
+  .print-simple-obs-title{
+    display:block!important;
+    visibility:visible!important;
+    color:#0B5F86!important;
+    font-size:15px!important;
+    font-weight:900!important;
+    text-transform:uppercase!important;
+    margin-bottom:4px!important;
+  }
+  .print-simple-obs-text{
+    display:block!important;
+    visibility:visible!important;
+    color:#111827!important;
+    font-size:15px!important;
+    font-weight:700!important;
+    line-height:1.15!important;
+    text-transform:uppercase!important;
+  }
+}
+
+/* ===== FIX DEFINITIVO OBSERVACIONES EN IMPRESIÓN ===== */
+@media print{
+  .print-simple-card{
+    display:flex!important;
+    flex-direction:column!important;
+  }
+  .print-simple-body{
+    flex:1 1 auto!important;
+    height:auto!important;
+    min-height:0!important;
+  }
+  .print-simple-card.has-obs .print-simple-body{
+    flex:1 1 auto!important;
+    height:auto!important;
+    min-height:0!important;
+  }
+  .print-simple-obs{
+    display:block!important;
+    flex:0 0 auto!important;
+    visibility:visible!important;
+    border-top:3px solid var(--azul)!important;
+    background:white!important;
+    padding:7px 14px!important;
+    min-height:22mm!important;
+    max-height:28mm!important;
+    overflow:hidden!important;
+  }
+  .print-simple-obs-title{
+    display:block!important;
+    visibility:visible!important;
+    color:#0B5F86!important;
+    font-size:15px!important;
+    font-weight:900!important;
+    text-transform:uppercase!important;
+    margin-bottom:4px!important;
+  }
+  .print-simple-obs-text{
+    display:block!important;
+    visibility:visible!important;
+    color:#111827!important;
+    font-size:15px!important;
+    font-weight:800!important;
+    line-height:1.15!important;
+    text-transform:uppercase!important;
+  }
+}
+
+/* ===== FIX SOLAPE PERSONAL / OBSERVACIONES EN IMPRESIÓN ===== */
+@media print{
+  .print-simple-card.has-obs .print-simple-body{
+    flex:1 1 auto!important;
+    overflow:hidden!important;
+  }
+
+  .print-simple-card.has-obs .print-simple-col{
+    overflow:hidden!important;
+    padding-top:10px!important;
+    padding-bottom:6px!important;
+  }
+
+  .print-simple-card.has-obs .print-simple-name,
+  .print-simple-card.has-obs .print-simple-line{
+    font-size:17px!important;
+    min-height:21px!important;
+    line-height:1.05!important;
+    padding:1px 6px!important;
+  }
+
+  .print-simple-card.has-obs.many .print-simple-name,
+  .print-simple-card.has-obs.many .print-simple-line{
+    font-size:14px!important;
+    min-height:16px!important;
+    line-height:1!important;
+    padding:0 5px!important;
+  }
+
+  .print-simple-card.has-obs.ultra .print-simple-name,
+  .print-simple-card.has-obs.ultra .print-simple-line{
+    font-size:12px!important;
+    min-height:13px!important;
+    line-height:.96!important;
+    padding:0 4px!important;
+  }
+
+  .print-simple-card.has-obs .print-simple-obs{
+    flex:0 0 24mm!important;
+    min-height:24mm!important;
+    max-height:24mm!important;
+    overflow:hidden!important;
+    padding:5px 12px!important;
+  }
+
+  .print-simple-card.has-obs.many .print-simple-obs,
+  .print-simple-card.has-obs.ultra .print-simple-obs{
+    flex:0 0 21mm!important;
+    min-height:21mm!important;
+    max-height:21mm!important;
+    padding:4px 10px!important;
+  }
+
+  .print-simple-card.has-obs .print-simple-obs-title{
+    font-size:13px!important;
+    margin-bottom:2px!important;
+  }
+
+  .print-simple-card.has-obs .print-simple-obs-text{
+    font-size:12px!important;
+    line-height:1.05!important;
+  }
+
+  .print-simple-card.has-obs.many .print-simple-obs-text,
+  .print-simple-card.has-obs.ultra .print-simple-obs-text{
+    font-size:10.5px!important;
+    line-height:1!important;
+  }
+}
+
+/* ===== REBALANCEO VISUAL IMPRESIÓN ===== */
+@media print{
+  .print-simple-card{
+    min-height:196mm!important;
+    max-height:196mm!important;
+    justify-content:flex-start!important;
+  }
+
+  .print-simple-title{
+    padding:10px 0 12px!important;
+    font-size:32px!important;
+  }
+
+  .print-simple-row.top{
+    min-height:42px!important;
+  }
+
+  .print-simple-row.center{
+    min-height:42px!important;
+  }
+
+  .print-simple-stand{
+    min-height:50px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-size:26px!important;
+  }
+
+  .print-simple-heads div{
+    min-height:38px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-size:17px!important;
+  }
+
+  .print-simple-body{
+    flex:1 1 auto!important;
+    align-items:stretch!important;
+  }
+
+  .print-simple-col{
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+  }
+
+  .print-simple-card.has-obs .print-simple-body{
+    min-height:92mm!important;
+    max-height:92mm!important;
+  }
+
+  .print-simple-card.has-obs .print-simple-obs{
+    margin-top:auto!important;
+    border-top:3px solid var(--azul)!important;
+  }
+
+  .print-simple-card.has-obs .print-simple-name,
+  .print-simple-card.has-obs .print-simple-line{
+    font-size:15px!important;
+    min-height:18px!important;
+    line-height:1!important;
+  }
+
+  .print-simple-card.has-obs .print-simple-obs-title{
+    font-size:14px!important;
+  }
+
+  .print-simple-card.has-obs .print-simple-obs-text{
+    font-size:11px!important;
+    line-height:1.05!important;
+  }
+}
+
+/* ===== OBSERVACIONES A LA DERECHA EN IMPRESIÓN ===== */
+@media print{
+  .print-simple-body.print-body-obs-right{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    flex:1 1 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    border-top:3px solid var(--azul)!important;
+  }
+  .print-right-col{
+    display:flex!important;
+    flex-direction:column!important;
+    padding:10px 18px 8px!important;
+  }
+  .print-personal-col{
+    padding:10px 18px 8px!important;
+  }
+  .print-colla-lines{
+    flex:0 0 auto!important;
+  }
+  .print-simple-obs.right-obs{
+    display:block!important;
+    visibility:visible!important;
+    margin-top:auto!important;
+    border-top:3px solid var(--azul)!important;
+    padding:8px 0 0!important;
+    min-height:42mm!important;
+    max-height:52mm!important;
+    overflow:hidden!important;
+    background:white!important;
+  }
+  .print-simple-obs.right-obs .print-simple-obs-title{
+    display:block!important;
+    visibility:visible!important;
+    color:#0B5F86!important;
+    font-size:17px!important;
+    font-weight:900!important;
+    text-transform:uppercase!important;
+    margin-bottom:8px!important;
+  }
+  .print-simple-obs.right-obs .print-simple-obs-text{
+    display:block!important;
+    visibility:visible!important;
+    color:#111827!important;
+    font-size:15px!important;
+    font-weight:900!important;
+    line-height:1.18!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-card.obs-right .print-simple-name,
+  .print-simple-card.obs-right .print-simple-line{
+    font-size:16px!important;
+    min-height:18px!important;
+    line-height:1.05!important;
+    padding:1px 6px!important;
+  }
+  .print-simple-card.obs-right.many .print-simple-name,
+  .print-simple-card.obs-right.many .print-simple-line{
+    font-size:14px!important;
+    min-height:15px!important;
+    line-height:1!important;
+    padding:0 5px!important;
+  }
+  .print-simple-card.obs-right.ultra .print-simple-name,
+  .print-simple-card.obs-right.ultra .print-simple-line{
+    font-size:12px!important;
+    min-height:13px!important;
+    line-height:.96!important;
+    padding:0 4px!important;
+  }
+}
+
+/* ===== IMPRESIÓN FINAL EQUILIBRADA TIPO BOCETO ===== */
+@media print{
+  .print-simple-card.obs-right{
+    display:flex!important;
+    flex-direction:column!important;
+    min-height:196mm!important;
+    max-height:196mm!important;
+    height:196mm!important;
+    border:3px solid var(--azul)!important;
+    overflow:hidden!important;
+    background:white!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-title{
+    flex:0 0 auto!important;
+    background:var(--azul)!important;
+    color:white!important;
+    font-size:34px!important;
+    line-height:1!important;
+    padding:13px 8px!important;
+    letter-spacing:2px!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-row{
+    flex:0 0 auto!important;
+    font-size:21px!important;
+    line-height:1.15!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-row.top div{
+    padding:12px 20px!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-row.center{
+    padding:12px 8px!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-stand{
+    flex:0 0 auto!important;
+    min-height:48px!important;
+    padding:8px!important;
+    font-size:29px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-heads{
+    flex:0 0 auto!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-heads div{
+    min-height:42px!important;
+    padding:8px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-size:21px!important;
+    font-weight:900!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-body.print-body-obs-right{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    border-top:3px solid var(--azul)!important;
+  }
+
+  .print-simple-card.obs-right .print-personal-col,
+  .print-simple-card.obs-right .print-right-col{
+    padding:18px 22px 12px!important;
+    overflow:hidden!important;
+  }
+
+  .print-simple-card.obs-right .print-right-col{
+    display:flex!important;
+    flex-direction:column!important;
+  }
+
+  .print-simple-card.obs-right .print-colla-lines{
+    flex:0 0 auto!important;
+    min-height:52mm!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-name,
+  .print-simple-card.obs-right .print-simple-line{
+    font-size:18px!important;
+    min-height:24px!important;
+    line-height:1.08!important;
+    padding:2px 6px!important;
+    border-bottom:2px solid var(--azul)!important;
+    font-weight:500!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-name.head{
+    font-weight:900!important;
+  }
+
+  .print-simple-card.obs-right.many .print-simple-name,
+  .print-simple-card.obs-right.many .print-simple-line{
+    font-size:16px!important;
+    min-height:21px!important;
+    line-height:1.08!important;
+    padding:1px 5px!important;
+  }
+
+  .print-simple-card.obs-right.ultra .print-simple-name,
+  .print-simple-card.obs-right.ultra .print-simple-line{
+    font-size:14px!important;
+    min-height:17px!important;
+    line-height:1.02!important;
+    padding:0 4px!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-obs.right-obs{
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-start!important;
+    flex:1 1 auto!important;
+    min-height:72mm!important;
+    margin-top:10px!important;
+    padding:14px 0 12px!important;
+    border-top:3px solid var(--azul)!important;
+    background:white!important;
+    overflow:visible!important;
+}
+
+  .print-simple-card.obs-right .print-simple-obs-title{
+    display:block!important;
+    font-size:24px!important;
+    font-weight:900!important;
+    line-height:1.1!important;
+    margin-bottom:12px!important;
+    text-transform:uppercase!important;
+    color:#0B5F86!important;
+}
+
+  .print-simple-card.obs-right .print-simple-obs-text{
+    display:block!important;
+    color:#111827!important;
+    font-size:14.5px!important;
+    font-weight:400!important;
+    line-height:1.26!important;
+    text-transform:uppercase!important;
+    white-space:pre-line!important;
+    overflow-wrap:anywhere!important;
+}
+
+  .print-simple-card.obs-right.many .print-simple-obs-title,
+  .print-simple-card.obs-right.ultra .print-simple-obs-title{
+    font-size:20px!important;
+    margin-bottom:8px!important;
+  }
+
+  .print-simple-card.obs-right.many .print-simple-obs-text{
+    font-size:13px!important;
+    font-weight:400!important;
+    line-height:1.18!important;
+    white-space:pre-line!important;
+}
+
+  .print-simple-card.obs-right.ultra .print-simple-obs-text{
+    font-size:11.5px!important;
+    font-weight:400!important;
+    line-height:1.12!important;
+    white-space:pre-line!important;
+}
+}
+
+/* ===== OVERRIDE FINAL IMPRESIÓN APROBADA ===== */
+@media print{
+  .print-simple-card.obs-right{
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    height:196mm!important;
+    max-height:196mm!important;
+    border:3px solid var(--azul)!important;
+    background:white!important;
+    overflow:hidden!important;
+    page-break-inside:avoid!important;
+    break-inside:avoid!important;
+  }
+  .print-simple-card.obs-right .print-simple-title{
+    background:var(--azul)!important;
+    color:white!important;
+    text-align:center!important;
+    font-size:38px!important;
+    font-weight:900!important;
+    letter-spacing:2px!important;
+    padding:12px 8px!important;
+    line-height:1!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-card.obs-right .print-simple-row{
+    border-top:3px solid var(--azul)!important;
+    color:#111827!important;
+    font-size:24px!important;
+    font-weight:900!important;
+    text-transform:uppercase!important;
+    line-height:1.15!important;
+    flex:0 0 auto!important;
+  }
+  .print-simple-card.obs-right .print-simple-row span,
+  .print-simple-card.obs-right .print-simple-stand,
+  .print-simple-card.obs-right .print-simple-heads div,
+  .print-simple-card.obs-right .print-simple-obs-title{color:#0B5F86!important}
+  .print-simple-card.obs-right .print-simple-row.top{display:grid!important;grid-template-columns:1fr 1fr!important}
+  .print-simple-card.obs-right .print-simple-row.top div{padding:14px 20px!important;border-right:3px solid var(--azul)!important}
+  .print-simple-card.obs-right .print-simple-row.top div:last-child{border-right:0!important}
+  .print-simple-card.obs-right .print-simple-row.center{text-align:center!important;padding:13px 8px!important}
+  .print-simple-card.obs-right .print-simple-stand{
+    border-top:3px solid var(--azul)!important;
+    text-align:center!important;
+    font-size:32px!important;
+    font-weight:900!important;
+    padding:13px 8px!important;
+    line-height:1.1!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-card.obs-right .print-simple-heads{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    border-top:3px solid var(--azul)!important;
+    background:#f7fdff!important;
+    flex:0 0 auto!important;
+  }
+  .print-simple-card.obs-right .print-simple-heads div{
+    text-align:center!important;
+    font-size:22px!important;
+    font-weight:900!important;
+    padding:10px!important;
+    border-right:3px solid var(--azul)!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-card.obs-right .print-simple-heads div:last-child{border-right:0!important}
+  .print-simple-card.obs-right .print-simple-body.print-body-obs-right{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    border-top:3px solid var(--azul)!important;
+  }
+  .print-simple-card.obs-right .print-personal-col,
+  .print-simple-card.obs-right .print-right-col{
+    padding:18px 22px 14px!important;
+    overflow:hidden!important;
+    border-right:3px solid var(--azul)!important;
+  }
+  .print-simple-card.obs-right .print-right-col{display:flex!important;flex-direction:column!important;border-right:0!important}
+  .print-simple-card.obs-right .print-colla-lines{flex:0 0 auto!important;min-height:70mm!important}
+  .print-simple-card.obs-right .print-simple-name,
+  .print-simple-card.obs-right .print-simple-line{
+    color:#111827!important;
+    font-size:21px!important;
+    font-weight:500!important;
+    line-height:1.18!important;
+    min-height:31px!important;
+    border-bottom:2px solid var(--azul)!important;
+    padding:2px 6px!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-card.obs-right .print-simple-name.head{font-weight:900!important}
+  .print-simple-card.obs-right.many .print-simple-name,
+  .print-simple-card.obs-right.many .print-simple-line{font-size:17px!important;min-height:23px!important;line-height:1.08!important;padding:1px 5px!important}
+  .print-simple-card.obs-right.ultra .print-simple-name,
+  .print-simple-card.obs-right.ultra .print-simple-line{font-size:14px!important;min-height:18px!important;line-height:1.02!important;padding:0 4px!important}
+  .print-simple-card.obs-right .print-simple-obs.right-obs{
+    display:block!important;
+    visibility:visible!important;
+    flex:1 1 auto!important;
+    min-height:44mm!important;
+    margin-top:8px!important;
+    padding:14px 0 0!important;
+    border-top:3px solid var(--azul)!important;
+    background:white!important;
+    overflow:hidden!important;
+  }
+  .print-simple-card.obs-right .print-simple-obs-title{
+    display:block!important;
+    font-size:24px!important;
+    font-weight:900!important;
+    line-height:1.1!important;
+    margin-bottom:12px!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-card.obs-right .print-simple-obs-text{
+    display:block!important;
+    color:#111827!important;
+    font-size:18px!important;
+    font-weight:900!important;
+    line-height:1.32!important;
+    text-transform:uppercase!important;
+    overflow-wrap:anywhere!important;
+  }
+  .print-simple-card.obs-right.many .print-simple-obs-title{font-size:21px!important;margin-bottom:8px!important}
+  .print-simple-card.obs-right.many .print-simple-obs-text{font-size:15px!important;line-height:1.22!important}
+  .print-simple-card.obs-right.ultra .print-simple-obs-title{font-size:18px!important;margin-bottom:6px!important}
+  .print-simple-card.obs-right.ultra .print-simple-obs-text{font-size:12.5px!important;line-height:1.12!important}
+}
+
+/* ===== RESPETAR SALTOS DE LÍNEA EN OBSERVACIONES ===== */
+.observaciones-box,
+.observaciones-box .muted,
+.print-simple-obs-text{
+  white-space:pre-line!important;
+}
+
+@media print{
+  .print-simple-obs-text{
+    white-space:pre-line!important;
+  }
+}
+
+/* ===== IMPRESIÓN FINAL PIZARRA PROFESIONAL ===== */
+@media print{
+  .print-simple-card.obs-right{
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    height:196mm!important;
+    max-height:196mm!important;
+    border:3px solid var(--azul)!important;
+    background:white!important;
+    overflow:hidden!important;
+    page-break-inside:avoid!important;
+    break-inside:avoid!important;
+  }
+  .print-simple-card.obs-right .print-simple-title{
+    background:var(--azul)!important;
+    color:white!important;
+    text-align:center!important;
+    font-size:42px!important;
+    font-weight:900!important;
+    letter-spacing:2px!important;
+    padding:13px 8px!important;
+    line-height:1!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-card.obs-right .print-simple-row{
+    border-top:3px solid var(--azul)!important;
+    color:#111827!important;
+    font-size:24px!important;
+    font-weight:900!important;
+    text-transform:uppercase!important;
+    line-height:1.15!important;
+    flex:0 0 auto!important;
+  }
+  .print-simple-card.obs-right .print-simple-row span,
+  .print-simple-card.obs-right .print-simple-stand,
+  .print-simple-card.obs-right .print-simple-heads div,
+  .print-simple-card.obs-right .print-simple-obs-title{color:#0B5F86!important}
+  .print-simple-card.obs-right .print-simple-row.top{display:grid!important;grid-template-columns:1fr 1fr!important}
+  .print-simple-card.obs-right .print-simple-row.top div{padding:13px 20px!important;border-right:3px solid var(--azul)!important}
+  .print-simple-card.obs-right .print-simple-row.top div:last-child{border-right:0!important}
+  .print-simple-card.obs-right .print-simple-row.center{text-align:center!important;padding:13px 8px!important}
+  .print-simple-card.obs-right .print-simple-stand{
+    border-top:3px solid var(--azul)!important;
+    text-align:center!important;
+    font-size:34px!important;
+    font-weight:900!important;
+    padding:13px 8px!important;
+    line-height:1.1!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-card.obs-right .print-simple-heads{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    border-top:3px solid var(--azul)!important;
+    background:#f7fdff!important;
+    flex:0 0 auto!important;
+  }
+  .print-simple-card.obs-right .print-simple-heads div{
+    text-align:center!important;
+    font-size:23px!important;
+    font-weight:900!important;
+    padding:10px!important;
+    border-right:3px solid var(--azul)!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-card.obs-right .print-simple-heads div:last-child{border-right:0!important}
+  .print-simple-card.obs-right .print-simple-body.print-body-obs-right{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    border-top:3px solid var(--azul)!important;
+  }
+  .print-simple-card.obs-right .print-personal-col,
+  .print-simple-card.obs-right .print-right-col{
+    padding:18px 26px 16px!important;
+    overflow:hidden!important;
+    border-right:3px solid var(--azul)!important;
+  }
+  .print-simple-card.obs-right .print-right-col{display:flex!important;flex-direction:column!important;border-right:0!important}
+  .print-simple-card.obs-right .print-colla-lines{flex:0 0 auto!important;min-height:62mm!important}
+  .print-simple-card.obs-right .print-simple-name,
+  .print-simple-card.obs-right .print-simple-line{
+    color:#111827!important;
+    font-size:21px!important;
+    font-weight:500!important;
+    line-height:1.15!important;
+    min-height:29px!important;
+    border-bottom:2px solid var(--azul)!important;
+    padding:2px 6px!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-card.obs-right .print-simple-name.head{font-weight:900!important}
+  .print-simple-card.obs-right.many .print-simple-name,
+  .print-simple-card.obs-right.many .print-simple-line{font-size:17px!important;min-height:23px!important;line-height:1.08!important;padding:1px 5px!important}
+  .print-simple-card.obs-right.ultra .print-simple-name,
+  .print-simple-card.obs-right.ultra .print-simple-line{font-size:14px!important;min-height:18px!important;line-height:1.02!important;padding:0 4px!important}
+  .print-simple-card.obs-right .print-simple-obs.right-obs{
+    display:block!important;
+    visibility:visible!important;
+    flex:1 1 auto!important;
+    min-height:48mm!important;
+    margin-top:8px!important;
+    padding:14px 0 0!important;
+    border-top:3px solid var(--azul)!important;
+    background:white!important;
+    overflow:hidden!important;
+  }
+  .print-simple-card.obs-right .print-simple-obs-title{
+    display:block!important;
+    font-size:25px!important;
+    font-weight:900!important;
+    line-height:1.1!important;
+    margin-bottom:12px!important;
+    text-transform:uppercase!important;
+  }
+  .print-simple-card.obs-right .print-simple-obs-text{
+    display:block!important;
+    color:#111827!important;
+    font-size:18px!important;
+    font-weight:900!important;
+    line-height:1.35!important;
+    text-transform:uppercase!important;
+    white-space:pre-line!important;
+    overflow-wrap:anywhere!important;
+  }
+  .print-simple-card.obs-right.many .print-simple-obs-title{font-size:21px!important;margin-bottom:8px!important}
+  .print-simple-card.obs-right.many .print-simple-obs-text{font-size:15px!important;line-height:1.24!important;white-space:pre-line!important}
+  .print-simple-card.obs-right.ultra .print-simple-obs-title{font-size:18px!important;margin-bottom:6px!important}
+  .print-simple-card.obs-right.ultra .print-simple-obs-text{font-size:12.5px!important;line-height:1.14!important;white-space:pre-line!important}
+}
+
+/* ===== FIX DEFINITIVO: OBSERVACIONES SIN CORTE ===== */
+@media print{
+  .print-simple-card.obs-right .print-colla-lines{
+    flex:0 0 auto!important;
+    min-height:34mm!important;
+    max-height:38mm!important;
+    overflow:hidden!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-obs.right-obs{
+    display:block!important;
+    visibility:visible!important;
+    flex:1 1 auto!important;
+    min-height:82mm!important;
+    max-height:none!important;
+    margin-top:8px!important;
+    padding:10px 0 8px!important;
+    border-top:3px solid var(--azul)!important;
+    background:white!important;
+    overflow:visible!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-obs-title{
+    display:block!important;
+    color:#0B5F86!important;
+    font-size:21px!important;
+    font-weight:900!important;
+    line-height:1.05!important;
+    margin-bottom:8px!important;
+    text-transform:uppercase!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-obs-text,
+  .print-simple-card.obs-right.many .print-simple-obs-text,
+  .print-simple-card.obs-right.ultra .print-simple-obs-text{
+    display:block!important;
+    color:#111827!important;
+    font-size:12px!important;
+    font-weight:800!important;
+    line-height:1.18!important;
+    text-transform:uppercase!important;
+    white-space:pre-line!important;
+    overflow-wrap:anywhere!important;
+    word-break:normal!important;
+    max-width:100%!important;
+  }
+
+  .print-simple-card.obs-right .print-right-col{
+    overflow:visible!important;
+  }
+}
+
+/* ===== AJUSTE FINAL OBSERVACIONES TAMAÑO MEDIO ===== */
+@media print{
+  .print-simple-card.obs-right .print-simple-obs-title{
+    font-size:20px!important;
+    line-height:1.08!important;
+    margin-bottom:8px!important;
+  }
+
+  .print-simple-card.obs-right .print-simple-obs-text{
+    font-size:14.5px!important;
+    line-height:1.26!important;
+    font-weight:850!important;
+    white-space:pre-line!important;
+    overflow-wrap:anywhere!important;
+  }
+
+  .print-simple-card.obs-right.many .print-simple-obs-title{
+    font-size:18px!important;
+    margin-bottom:6px!important;
+  }
+
+  .print-simple-card.obs-right.many .print-simple-obs-text{
+    font-size:13px!important;
+    line-height:1.18!important;
+  }
+
+  .print-simple-card.obs-right.ultra .print-simple-obs-title{
+    font-size:16px!important;
+    margin-bottom:5px!important;
+  }
+
+  .print-simple-card.obs-right.ultra .print-simple-obs-text{
+    font-size:11.5px!important;
+    line-height:1.12!important;
+  }
+}
+
+/* ===== IMPRESIÓN CALENDARIO SIN RECORTAR EVENTOS ===== */
+@media print{
+  body.print-calendar #tab-calendario .card{
+    height:auto!important;
+    min-height:200mm!important;
+    overflow:visible!important;
+  }
+
+  body.print-calendar #calendario{
+    overflow:visible!important;
+    height:auto!important;
+    min-height:0!important;
+  }
+
+  body.print-calendar .calendar-grid{
+    grid-auto-rows:minmax(32mm, auto)!important;
+    align-items:stretch!important;
+    overflow:visible!important;
+  }
+
+  body.print-calendar .day-box{
+    height:auto!important;
+    min-height:32mm!important;
+    overflow:visible!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+
+  body.print-calendar .event-mini{
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    height:auto!important;
+    max-height:none!important;
+    line-height:1.12!important;
+    font-size:7.5px!important;
+    padding:3px 4px!important;
+  }
+
+  body.print-calendar .calendar-print-month{
+    margin-bottom:5px!important;
+  }
+}
+
+/* ===== ESTILO TERMINADOS ===== */
+.plan-folder.finished{
+  background:#f0fbf2!important;
+  border-color:#bfe7c7!important;
+}
+.plan-folder.finished .plan-folder-head{
+  background:#f4fff6!important;
+}
+.plan-folder.finished .folder-feria{
+  color:#207a35!important;
+}
+.plan-folder.finished .folder-pill.m{
+  background:#eef7ff!important;
+  color:#0B5F86!important;
+  border-color:#bde7fb!important;
+}
+.plan-folder.finished .folder-pill.d{
+  background:#fff4f4!important;
+  color:#b42318!important;
+  border-color:#ffcaca!important;
+}
+.terminados-panel{
+  margin-top:14px;
+  border:1px solid #bfe7c7;
+  border-radius:16px;
+  overflow:hidden;
+  background:#f4fff6;
+}
+.terminados-head{
+  width:100%;
+  justify-content:flex-start;
+  border-radius:0;
+  background:#e5f7e8!important;
+  color:#207a35!important;
+  box-shadow:none!important;
+  font-weight:900;
+  letter-spacing:.6px;
+}
+.terminados-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:10px;
+}
+.finish-btn{
+  background:#eefaf0!important;
+  color:#207a35!important;
+  border:1px solid #bfe7c7!important;
+  font-size:16px!important;
+  font-weight:900!important;
+}
+
+/* ===== TERMINADOS: MANTENER COLOR MONTAJE / DESMONTAJE ===== */
+.plan-folder.finished .folder-pill.m,
+.terminados-list .folder-pill.m{
+  background:#eef7ff!important;
+  color:#0B5F86!important;
+  border:1px solid #bde7fb!important;
+}
+
+.plan-folder.finished .folder-pill.d,
+.terminados-list .folder-pill.d{
+  background:#fff4f4!important;
+  color:#b42318!important;
+  border:1px solid #ffcaca!important;
+}
+
+.plan-folder.finished .folder-count{
+  color:#207a35!important;
+}
+
+/* ===== BOTÓN PDF MENSUAL ===== */
+.pdf-mensual-btn{
+  height:38px;
+  white-space:nowrap;
+  background:linear-gradient(135deg,var(--azul),var(--azul-oscuro));
+  color:white;
+}
+
+@media(max-width:720px){
+  .pdf-mensual-btn{width:100%;justify-content:center}
+}
+</style>
+<svg width="0" height="0" style="position:absolute;display:none" aria-hidden="true">
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/><path d="M18 12h.01"/></symbol>
+  <symbol id="i-print-group" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/><path d="M9 17h6"/><path d="M9 20h6"/></symbol>
+  <symbol id="i-export" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/><path d="M5 17v4"/><path d="M19 17v4"/></symbol>
+  <symbol id="i-import" viewBox="0 0 24 24"><path d="M12 21V9"/><path d="m7 14 5-5 5 5"/><path d="M5 3h14"/><path d="M5 3v4"/><path d="M19 3v4"/></symbol>
+  <symbol id="i-plan" viewBox="0 0 24 24"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-handshake" viewBox="0 0 24 24"><path d="m11 17 2 2a2.8 2.8 0 0 0 4 0l4-4"/><path d="m7 11 4-4a2.8 2.8 0 0 1 4 0l1 1"/><path d="M2 12 7 7l5 5"/><path d="m22 12-5-5-5 5"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-available" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/><path d="M21 12a9 9 0 1 1-3.5-7.1"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 15H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></symbol>
+  <symbol id="i-clear" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="m8 6 8 15"/><path d="M16 6 8 21"/></symbol>
+</svg>
+</head>
+<body>
+<div id="toastAlert" class="toast-alert"></div>
+<header><div class="topbar"><div class="brand-area"><img src="images.jpg" alt="STANDECOR" class="brand-logo"><div class="brand-title"><div class="brand-badge"><h1>PLANIFICADOR DE MONTAJES</h1><div class="brand-by">by IsraelM</div></div></div></div><div class="no-print"><button class="light top-icon-btn" title="Exportar copia" onclick="exportarDatos()"><svg class="ico"><use href="#i-export"></use></svg></button><button class="light top-icon-btn" title="Importar copia" onclick="document.getElementById('importFile').click()"><svg class="ico"><use href="#i-import"></use></svg></button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importarDatos(event)"></div></div></header>
+<nav class="no-print"><button class="tab-btn active" onclick="showTab('planificacion',this)"><svg class="ico"><use href="#i-plan"></use></svg> PLANIFICACIÓN</button><button class="tab-btn" onclick="showTab('calendario',this)"><svg class="ico"><use href="#i-calendar"></use></svg> CALENDARIO</button><button class="tab-btn" onclick="showTab('trabajadores',this)"><svg class="ico"><use href="#i-users"></use></svg> TRABAJADORES</button><button class="tab-btn" onclick="showTab('collas',this)"><svg class="ico"><use href="#i-handshake"></use></svg> COLLAS</button><button class="tab-btn" onclick="showTab('disponibles',this)"><svg class="ico"><use href="#i-available"></use></svg> DISPONIBLES</button><button class="tab-btn" onclick="showTab('avisos',this)"><svg class="ico"><use href="#i-alert"></use></svg> AVISOS</button></nav>
+<main>
+<section id="tab-planificacion" class="tab active"><div class="grid"><div class="card span-4 no-print"><h2>Nuevo montaje / desmontaje</h2><input type="hidden" id="eventoId"><label>Feria</label><input list="feriasList" autocomplete="off" oninput="autocompletarLugar()" id="feria" oninput="mayus(this)" placeholder="FERIA"><div class="form-row"><div><label>Ciudad / país</label><input list="lugaresList" autocomplete="off" id="lugar" oninput="mayus(this)"></div><div><label>Stand / cliente</label><input list="standsList" autocomplete="off" id="stand" oninput="mayus(this)"></div></div><h3>Montaje</h3><div class="form-row"><div><label>Inicio montaje</label><input type="date" id="montajeInicio"></div><div><label>Final montaje</label><input type="date" id="montajeFin"></div></div><h3>Desmontaje</h3><div class="form-row"><div><label>Inicio desmontaje</label><input type="date" id="desmontajeInicio"></div><div><label>Final desmontaje</label><input type="date" id="desmontajeFin"></div></div><div class="form-row"><div><label>Colla externa</label><select id="colla"></select></div><div><label>Cantidad colla</label><input id="cantidadColla" type="number" min="1" placeholder="Ej: 4"></div></div><div id="extraCollas"></div><div class="actions"><button class="secondary" onclick="agregarCollaExtra()" type="button">+ Añadir otra colla</button></div><label>Buscar trabajadores</label><input id="buscarAsignar" oninput="renderWorkerPicker();mayus(this)" placeholder="BUSCAR"><div id="workerPicker" class="worker-picker"></div><div id="seleccionPreview" class="selected-preview"></div><label>Observaciones</label><textarea id="observaciones" oninput="mayus(this)"></textarea><div id="formAvisos"></div><div class="actions"><button class="success" onclick="guardarEvento()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarFormulario()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2>Planificación</h2><div class="filters no-print"><div><label>Buscar</label><input id="buscarPlan" oninput="mayus(this);renderAll()"></div><div><label>Desde</label><input type="date" id="filtroDesde" onchange="renderAll()"></div><div><label>Hasta</label><input type="date" id="filtroHasta" onchange="renderAll()"></div><div><label>&nbsp;</label><button type="button" class="small pdf-mensual-btn" title="Imprimir trabajos del mes / Guardar como PDF" onclick="imprimirMesPDF()"><svg class="ico"><use href="#i-print"></use></svg> PDF mensual</button></div></div><div class="table-wrap pantalla-planificacion"><table><thead><tr><th>Feria</th><th>Lugar</th><th>Stand / cliente</th><th>Trabajo</th><th>Personal</th><th>Colla</th><th>Avisos</th><th class="no-print">Acciones</th></tr></thead><tbody id="tablaEventos"></tbody></table></div><div id="printPlanificacion" class="print-board"></div></div></div></section>
+<section id="tab-calendario" class="tab"><div class="card"><div class="section-head no-print"><h2>Calendario mensual</h2><button class="small action-btn" title="Imprimir calendario" onclick="imprimirCalendario()"><svg class="ico"><use href="#i-print"></use></svg></button></div><div class="filters"><div><label>Mes</label><input type="month" id="mesCalendario" onchange="renderCalendario()"></div></div><div id="calendario"></div><div class="calendar-print-month" id="calendarPrintMonth"></div></div></section>
+<section id="tab-trabajadores" class="tab"><div class="grid"><div class="card span-4"><h2>Trabajador</h2><input type="hidden" id="trabajadorId"><label>Nombre</label><input id="trabNombre" oninput="mayus(this)"><label>Rol</label><select id="trabRol"><option>Cabeza de equipo</option><option>Ayudante</option><option>Montador</option><option>Encargado</option><option>Maquinista</option></select><label>Tipo</label><select id="trabTipo"><option>Sale a montaje</option><option>Taller</option><option>Oficina técnica</option></select><label>Estado</label><select id="trabEstado"><option>Disponible</option><option>Enfermo</option><option>Castigado</option><option>Baja temporal</option><option>No puede salir</option></select><label>Observaciones</label><textarea id="trabObs" oninput="mayus(this)"></textarea><div class="actions"><button class="success" onclick="guardarTrabajador()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarTrabajador()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2>Base de trabajadores</h2><div class="filters"><div><label>Buscar</label><input id="buscarTrab" oninput="mayus(this);renderTrabajadores()"></div></div><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Tipo</th><th>Estado</th><th>Obs.</th><th>Acciones</th></tr></thead><tbody id="tablaTrabajadores"></tbody></table></div></div></div></section>
+<section id="tab-collas" class="tab"><div class="grid"><div class="card span-4"><h2>Colla</h2><input type="hidden" id="collaId"><label>Nombre</label><input id="collaNombre" oninput="mayus(this)"><label>Responsable</label><input id="collaResponsable" oninput="mayus(this)"><label>Observaciones</label><textarea id="collaObs" oninput="mayus(this)"></textarea><div class="actions"><button class="success" onclick="guardarColla()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarColla()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2>Collas externas</h2><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Responsable</th><th>Obs.</th><th>Acciones</th></tr></thead><tbody id="tablaCollas"></tbody></table></div></div></div></section>
+<section id="tab-disponibles" class="tab"><div class="card"><h2>Personal disponible</h2><div class="filters"><div><label>Desde</label><input type="date" id="dispDesde" onchange="renderDisponibles()"></div><div><label>Hasta</label><input type="date" id="dispHasta" onchange="renderDisponibles()"></div><div><label>Rol</label><select id="dispRol" onchange="renderDisponibles()"><option value="">Todos</option><option>Cabeza de equipo</option><option>Ayudante</option><option>Montador</option><option>Encargado</option><option>Maquinista</option></select></div><div><label>Buscar</label><input id="buscarDisp" oninput="mayus(this);renderDisponibles()" placeholder="BUSCAR"></div></div><div class="grid"><div class="card span-4"><h2>Disponibles</h2><div id="listaDisponibles"></div></div><div class="card span-4"><h2>Ocupados</h2><div id="listaOcupados"></div></div><div class="card span-4"><h2>No disponibles</h2><div id="listaNoDisponibles"></div></div></div></div></section>
+<section id="tab-avisos" class="tab"><div class="card"><h2>Avisos generales</h2><div id="avisosGenerales"></div></div></section>
+<datalist id="feriasList"></datalist><datalist id="lugaresList"></datalist><datalist id="standsList"></datalist></main>
+<script>
+const STORAGE='standecor_planificador_montajes_beta_1';
+const nombresIniciales=['ADRIAN ALEJANDRO VEIZAGA (GORRA)','ADRIAN PRUDENTE (NOVITA)','ALEJANDRO CASTILLO','ALEJANDRO HOYOS (BILBAO)','ALEX COSTA','ALEXIS ANARIBA','ARNOLD GUZMAN','BRUCE LEE','CANCO','CARLOS ALBERTO AMOEDO (ARGENTINO)','CARLOS CAIZA','CARLOS SEGURA CARTAGENA','CRISTIAN (CHILENO)','DANI CAMPOS','DANIEL ANGEL PORTUGUEZ (PORTU)','DANIEL BELLIDO','EBER MISAEL ( LAGARTIJA)','EDSON ARAUJO LA FUENTE (ROBOCOP)','EDUARDO PATRICIO','ENRIC RIPOLL BELLIDO','ENRIQUE RIPOLL','ERIC BRU','EVERT RONALD SAGARDIA','FLORENCIO','FRANCESC VILA PLANA','FRANCISCO ROSALES (KIYO)','ISRAEL MARAÑON','JAIME CUEVA','JAVIER (MIRIAM)','JESUS','JHOASIL','JOEL FERNANDO YAÑEZ (GRANDU)','JOHAN CRUZ','JOHN STICK','JOSE ANTONIO ARCE (TOÑIN)','JOSE MANUEL (JOSITO)','JOSE NICOLAS (MANOLITO)','JUAN DE DIOS','MIGUEL ANGEL BUENO MARTOS','NELSON DANIEL COCCHI (CHECHA)','OUMAR','RAYMOND DASSI','REIFER','SARAY LOPEZ','SERGIO ZENTENO (GATO)','SILVIA MEDINA','VANESA','VASILE MOISA','VICENTE','XAVIE MAÑAS'];
+let db=cargar();
+function cargar(){try{const s=localStorage.getItem(STORAGE);if(s){const d=JSON.parse(s);d.trabajadores=d.trabajadores||[];d.collas=d.collas||[];d.eventos=d.eventos||[];return d}}catch(e){}return{trabajadores:nombresIniciales.map((nombre,i)=>({id:'t'+i,nombre,rol:'Montador',tipo:'Sale a montaje',estado:'Disponible',observaciones:''})),collas:[],eventos:[]}}
+function save(){localStorage.setItem(STORAGE,JSON.stringify(db))}function byId(id){return document.getElementById(id)}function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function mayus(el){
+  if(!el) return;
+  const inicio=el.selectionStart;
+  const fin=el.selectionEnd;
+  const valor=el.value;
+  const mayusculas=valor.toUpperCase();
+
+  if(valor!==mayusculas){
+    el.value=mayusculas;
+    if(typeof inicio==='number' && typeof fin==='number'){
+      el.setSelectionRange(inicio,fin);
+    }
+  }
+}function normal(s){return String(s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'')}function fmt(d){if(!d)return'';let a=d.split('-');return a.length===3?`${a[2]}/${a[1]}/${a[0]}`:d}function rango(a,b){return a&&b?`${fmt(a)} - ${fmt(b)}`:a?fmt(a):b?fmt(b):''}function trabajador(id){return db.trabajadores.find(t=>t.id===id)}function colla(id){return db.collas.find(c=>c.id===id)}function overlaps(a1,a2,b1,b2){if(!a1||!a2||!b1||!b2)return false;return a1<=b2&&b1<=a2}
+function showTab(tab,btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));byId('tab-'+tab).classList.add('active');btn.classList.add('active');renderAll()}
+function renderSelects(){byId('colla').innerHTML='<option value="">Sin colla</option>'+db.collas.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('')}
+function getSeleccionados(){return Array.from(document.querySelectorAll('#workerPicker input:checked')).map(x=>x.value)}
+function renderWorkerPicker(){const q=normal(byId('buscarAsignar').value);const selected=getSeleccionados();byId('workerPicker').innerHTML=db.trabajadores.filter(t=>!q||normal(t.nombre).includes(q)).sort((a,b)=>a.nombre.localeCompare(b.nombre)).map(t=>{let block=t.tipo!=='Sale a montaje'||t.estado!=='Disponible';return`<label class="worker-option ${block?'blocked':''}"><input type="checkbox" value="${t.id}" ${selected.includes(t.id)?'checked':''} ${block?'disabled':''} onchange="actualizarSeleccionPersonal()"><span><span class="worker-name">${esc(t.nombre)}</span><span class="worker-meta">${esc(t.rol)} · ${esc(t.tipo)} · ${esc(t.estado)}</span></span></label>`}).join('')||'<p class="muted">No hay trabajadores.</p>'}
+function getEventoForm(){
+  const seleccion=getSeleccionados();
+  const idActual=byId('eventoId').value.trim();
+  const collas=getCollasSeleccionadas ? getCollasSeleccionadas() : [];
+  return{
+    id:idActual || 'e'+Date.now(),
+    feria:byId('feria').value.trim(),
+    lugar:byId('lugar').value.trim(),
+    stand:byId('stand').value.trim(),
+    montajeInicio:byId('montajeInicio').value,
+    montajeFin:byId('montajeFin').value,
+    desmontajeInicio:byId('desmontajeInicio').value,
+    desmontajeFin:byId('desmontajeFin').value,
+    ayudantes:seleccion,
+    collaId:collas[0]?.collaId || byId('colla').value,
+    cantidadColla:collas[0]?.cantidad || byId('cantidadColla').value,
+    collasExtra:collas.slice(1),
+    cabezaPrincipalId:byId('cabezaPrincipal')?.value||'',
+    observaciones:byId('observaciones').value.trim()
+  };
+}
+function cabezaDe(ev){
+  if(ev.cabezaPrincipalId){
+    const elegido=trabajador(ev.cabezaPrincipalId);
+    if(elegido && (ev.ayudantes||[]).includes(elegido.id)) return elegido;
+  }
+  return (ev.ayudantes||[]).map(id=>trabajador(id)).find(t=>t&&t.rol==='Cabeza de equipo')||null;
+}
+
+function actualizarSeleccionPersonal(){
+  renderSeleccionPreview();
+  validarFormulario();
+}
+
+function quitarTrabajadorSeleccionado(id){
+  const ch=document.querySelector(`#workerPicker input[value="${id}"]`);
+  if(ch) ch.checked=false;
+  actualizarSeleccionPersonal();
+}
+
+function renderSeleccionPreview(){
+  const cont=byId('seleccionPreview');
+  if(!cont)return;
+  const ids=getSeleccionados();
+  const personas=ids.map(id=>trabajador(id)).filter(Boolean);
+  if(!personas.length){
+    cont.innerHTML='<div class="selected-preview-title">Personal seleccionado</div><p class="muted">Todavía no hay trabajadores seleccionados.</p>';
+    return;
+  }
+  const cabezas=personas.filter(t=>t.rol==='Cabeza de equipo');
+  let selector='';
+  if(cabezas.length>1){
+    const actual=byId('cabezaPrincipal')?.value || cabezas[0].id;
+    selector=`<div class="main-head-box"><label>Cabeza principal del montaje</label><select id="cabezaPrincipal" onchange="validarFormulario()">${cabezas.map(t=>`<option value="${t.id}" ${t.id===actual?'selected':''}>${esc(t.nombre)}</option>`).join('')}</select></div>`;
+  }else if(cabezas.length===1){
+    selector=`<input type="hidden" id="cabezaPrincipal" value="${cabezas[0].id}">`;
+  }else{
+    selector='<input type="hidden" id="cabezaPrincipal" value="">';
+  }
+  cont.innerHTML=`<div class="selected-preview-title">Personal seleccionado (${personas.length})</div><div class="selected-list">${personas.map(t=>`<span class="selected-chip ${t.rol==='Cabeza de equipo'?'head':''}">${esc(t.nombre)}<button type="button" onclick="quitarTrabajadorSeleccionado('${t.id}')">×</button></span>`).join('')}</div>${selector}`;
+}
+function validarEvento(ev,ignorarId){
+  let avisos=[];
+
+  if(!ev.feria) avisos.push('Falta feria.');
+  if(!ev.stand) avisos.push('Falta stand / cliente.');
+  if(ev.montajeInicio&&ev.montajeFin&&ev.montajeInicio>ev.montajeFin) avisos.push('Fechas de montaje incorrectas.');
+  if(ev.desmontajeInicio&&ev.desmontajeFin&&ev.desmontajeInicio>ev.desmontajeFin) avisos.push('Fechas de desmontaje incorrectas.');
+  if(ev.montajeInicio&&ev.montajeFin&&ev.desmontajeInicio&&ev.desmontajeFin&&overlaps(ev.montajeInicio,ev.montajeFin,ev.desmontajeInicio,ev.desmontajeFin)) avisos.push('Montaje y desmontaje coinciden en este mismo trabajo.');
+
+  let ids=ev.ayudantes||[];
+
+  ids.forEach(id=>{
+    let t=trabajador(id);
+    if(t){
+      if(t.tipo!=='Sale a montaje') avisos.push(t.nombre+' está marcado como '+t.tipo+'.');
+      if(t.estado!=='Disponible') avisos.push(t.nombre+' no está disponible: '+t.estado+'.');
+    }
+  });
+
+  if(!cabezaDe(ev)) avisos.push('No hay ningún cabeza de equipo seleccionado.');
+
+  db.eventos.filter(x=>x.id!==ignorarId).forEach(o=>{
+    let comunes=ids.filter(id=>(o.ayudantes||[]).includes(id));
+    if(!comunes.length) return;
+
+    let mismaFeria=normal(ev.feria)===normal(o.feria);
+    let mismoLugar=normal(ev.lugar)===normal(o.lugar);
+    let mismoStand=normal(ev.stand)===normal(o.stand);
+    let mismoEventoLugar = mismaFeria && mismoLugar;
+
+    let choqueMontajeMontaje = overlaps(ev.montajeInicio,ev.montajeFin,o.montajeInicio,o.montajeFin);
+    let choqueDesmontajeDesmontaje = overlaps(ev.desmontajeInicio,ev.desmontajeFin,o.desmontajeInicio,o.desmontajeFin);
+    let choqueMontajeDesmontaje = overlaps(ev.montajeInicio,ev.montajeFin,o.desmontajeInicio,o.desmontajeFin);
+    let choqueDesmontajeMontaje = overlaps(ev.desmontajeInicio,ev.desmontajeFin,o.montajeInicio,o.montajeFin);
+    let hayChoqueFechas = choqueMontajeMontaje || choqueDesmontajeDesmontaje || choqueMontajeDesmontaje || choqueDesmontajeMontaje;
+
+    if(!hayChoqueFechas) return;
+
+    comunes.forEach(id=>{
+      let nombre=trabajador(id)?.nombre||id;
+
+      if(mismoEventoLugar && !mismoStand){
+        // Misma feria y misma ciudad: se permite que una persona esté en varios stands.
+        return;
+      }
+
+      if(mismoEventoLugar && mismoStand){
+        avisos.push(nombre+' ya está asignado en este mismo stand/feria en fechas que coinciden.');
+        return;
+      }
+
+      avisos.push(nombre+' no puede asignarse: ya está en '+(o.feria||'OTRA FERIA')+' / '+(o.lugar||'OTRO LUGAR')+' en fechas que coinciden.');
+    });
+  });
+
+  return avisos;
+}
+function mostrarAvisoCentral(mensaje){
+  const toast=byId('toastAlert');
+  if(!toast)return;
+  toast.innerHTML='⚠️ '+esc(mensaje);
+  toast.classList.add('show');
+  clearTimeout(window.toastTimer);
+  window.toastTimer=setTimeout(()=>toast.classList.remove('show'),4200);
+}
+
+function validarFormulario(){
+  let ev=getEventoForm();
+  let avisos=validarEvento(ev,ev.id);
+  byId('formAvisos').innerHTML=avisos.map(a=>`<div class="alerta">⚠️ ${esc(a)}</div>`).join('');
+
+  const avisoImportante=avisos.find(a=>
+    a.includes('no puede asignarse') ||
+    a.includes('no está disponible') ||
+    a.includes('ya está asignado') ||
+    a.includes('marcado como')
+  );
+  if(avisoImportante) mostrarAvisoCentral(avisoImportante);
+}
+function guardarEvento(){
+  let ev=getEventoForm();
+  let i=db.eventos.findIndex(e=>e.id===ev.id);
+
+  if(i>=0){
+    db.eventos[i]=ev;
+  }else{
+    db.eventos.push(ev);
+  }
+
+  save();
+  limpiarFormulario();
+  renderAll();
+}
+function editarEvento(id){
+  let ev=db.eventos.find(e=>e.id===id);
+  if(!ev)return;
+
+  byId('eventoId').value = ev.id;
+  byId('feria').value = ev.feria || '';
+  byId('lugar').value = ev.lugar || '';
+  byId('stand').value = ev.stand || '';
+  byId('montajeInicio').value = ev.montajeInicio || '';
+  byId('montajeFin').value = ev.montajeFin || '';
+  byId('desmontajeInicio').value = ev.desmontajeInicio || '';
+  byId('desmontajeFin').value = ev.desmontajeFin || '';
+  byId('cantidadColla').value = ev.cantidadColla || '';
+  byId('observaciones').value = ev.observaciones || '';
+
+  renderSelects();
+  byId('colla').value = ev.collaId || '';
+  renderExtraCollas(ev.collasExtra || []);
+  byId('buscarAsignar').value='';
+  renderWorkerPicker();
+
+  seleccionTrabajadoresActual=[...(ev.ayudantes||[])];
+  document.querySelectorAll('#workerPicker input').forEach(ch=>{
+    ch.checked=seleccionTrabajadoresActual.includes(ch.value);
+  });
+  renderSeleccionPreview();
+  if(byId('cabezaPrincipal')) byId('cabezaPrincipal').value=ev.cabezaPrincipalId||cabezaDe(ev)?.id||'';
+  validarFormulario();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function borrarEvento(id){if(confirm('¿Eliminar montaje/desmontaje?')){db.eventos=db.eventos.filter(e=>e.id!==id);save();renderAll()}}
+
+function limpiarFormulario(){
+  ['eventoId','feria','lugar','stand','montajeInicio','montajeFin','desmontajeInicio','desmontajeFin','cantidadColla','observaciones','buscarAsignar'].forEach(id=>{
+    const el=byId(id);
+    if(el) el.value='';
+  });
+
+  seleccionTrabajadoresActual=[];
+  document.querySelectorAll('#workerPicker input[type="checkbox"]').forEach(ch=>{
+    ch.checked=false;
+  });
+
+  renderSelects();
+  renderExtraCollas([]);
+  byId('colla').value='';
+  renderWorkerPicker();
+
+  document.querySelectorAll('#workerPicker input[type="checkbox"]').forEach(ch=>{
+    ch.checked=false;
+  });
+  renderSeleccionPreview();
+  byId('formAvisos').innerHTML='';
+}
+
+function getCollasSeleccionadas(){
+  const lista=[];
+  const principal=byId('colla')?.value||'';
+  const cantidad=byId('cantidadColla')?.value||'';
+  if(principal) lista.push({collaId:principal,cantidad});
+  document.querySelectorAll('.extra-colla-row').forEach(row=>{
+    const c=row.querySelector('.extra-colla-select')?.value||'';
+    const q=row.querySelector('.extra-colla-cantidad')?.value||'';
+    if(c) lista.push({collaId:c,cantidad:q});
+  });
+  return lista;
+}
+
+function opcionesCollas(selected){
+  return '<option value="">Sin colla</option>'+db.collas.map(c=>`<option value="${c.id}" ${c.id===selected?'selected':''}>${esc(c.nombre)}</option>`).join('');
+}
+
+function agregarCollaExtra(data={}){
+  const cont=byId('extraCollas');
+  if(!cont)return;
+  const div=document.createElement('div');
+  div.className='form-row extra-colla-row';
+  div.innerHTML=`<div><label>Otra colla</label><select class="extra-colla-select">${opcionesCollas(data.collaId||'')}</select></div><div><label>Cantidad</label><div style="display:flex;gap:6px"><input class="extra-colla-cantidad" type="number" min="1" placeholder="Ej: 4" value="${esc(data.cantidad||'')}"><button class="small danger" type="button" onclick="this.closest('.extra-colla-row').remove()">×</button></div></div>`;
+  cont.appendChild(div);
+}
+
+function renderExtraCollas(lista){
+  const cont=byId('extraCollas');
+  if(!cont)return;
+  cont.innerHTML='';
+  (lista||[]).forEach(x=>agregarCollaExtra(x));
+}
+
+function eventosFiltrados(){
+  const q=normal(byId('buscarPlan')?.value||'');
+  const desde=byId('filtroDesde')?.value||'';
+  const hasta=byId('filtroHasta')?.value||'';
+
+  return db.eventos
+    .filter(ev=>{
+      const pers=(ev.ayudantes||[]).map(id=>trabajador(id)?.nombre||'').join(' ');
+      const txt=normal([ev.feria,ev.lugar,ev.stand,pers,ev.observaciones].join(' '));
+      if(q&&!txt.includes(q))return false;
+
+      const ini=ev.montajeInicio||ev.desmontajeInicio||'';
+      const fin=ev.desmontajeFin||ev.montajeFin||ini;
+      if(desde&&fin<desde)return false;
+      if(hasta&&ini>hasta)return false;
+      return true;
+    })
+    .sort((a,b)=>{
+      const fechaA = a.montajeInicio || a.desmontajeInicio || '';
+      const fechaB = b.montajeInicio || b.desmontajeInicio || '';
+      if(fechaA !== fechaB) return fechaB.localeCompare(fechaA);
+      return String(b.id||'').localeCompare(String(a.id||''));
+    });
+}
+
+function textoCollas(ev){
+  let lista=[];
+  if(ev.collaId) lista.push({collaId:ev.collaId,cantidad:ev.cantidadColla||''});
+  (ev.collasExtra||[]).forEach(x=>lista.push(x));
+  return lista.map(x=>{const c=colla(x.collaId);return c?`${c.nombre}${x.cantidad?' · '+x.cantidad+' PERSONAS':''}`:''}).filter(Boolean);
+}
+
+function renderEventos(){
+  const rows=eventosFiltrados().map(ev=>{
+    const cab=cabezaDe(ev);
+    const ayudas=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
+    const avisos=avisosVisibles(ev);
+    let trabajoHtml='';
+    if(ev.montajeInicio||ev.montajeFin)trabajoHtml+=`<span class="badge blue">MONTAJE · ${esc(rango(ev.montajeInicio,ev.montajeFin))}</span>`;
+    if(ev.desmontajeInicio||ev.desmontajeFin)trabajoHtml+=`<span class="badge red">DESMONTAJE · ${esc(rango(ev.desmontajeInicio,ev.desmontajeFin))}</span>`;
+    let personalHtml='';
+    if(cab)personalHtml+=`<span class="badge green">${esc(cab.nombre)}</span>`;
+    ayudas.filter(t=>!cab||t.id!==cab.id).forEach(t=>personalHtml+=`<span class="badge gray">${esc(t.nombre)}</span>`);
+    const collaHtml=textoCollas(ev).map(t=>`<span class="badge blue">${esc(t)}</span>`).join('');
+    const avisosHtml=avisos.length?avisos.map(a=>`<span class="badge red dismissable-alert">⚠️ ${esc(a)} <button type="button" class="dismiss-alert-btn" onclick="event.stopPropagation();ocultarAviso('${ev.id}',decodeURIComponent('${encodeURIComponent(a)}'))">×</button></span>`).join(''):'<span class="badge green">OK</span>';
+    return `<tr><td><span class="feria-tag">${esc(ev.feria)}</span></td><td>${esc(ev.lugar)}</td><td>${esc(ev.stand)}</td><td>${trabajoHtml}</td><td><div class="industrial-list">${personalHtml}</div></td><td>${collaHtml}</td><td>${avisosHtml}</td><td class="no-print"><div class="row-actions"><button class="small action-btn" title="Imprimir este trabajo" onclick="imprimirEvento('${ev.id}')"><svg class="ico"><use href="#i-print"></use></svg></button><button class="small action-btn" title="Editar" onclick="editarEvento('${ev.id}')"><svg class="ico"><use href="#i-edit"></use></svg></button><button class="small action-btn delete" title="Eliminar" onclick="borrarEvento('${ev.id}')"><svg class="ico"><use href="#i-trash"></use></svg></button></div></td></tr>`;
+  }).join('');
+  byId('tablaEventos').innerHTML=rows||'<tr><td colspan="8" class="muted">No hay montajes creados.</td></tr>';
+  renderPrint();
+}
+
+function renderPrint(eventosPersonalizados){
+  const eventos=eventosPersonalizados||eventosFiltrados();
+  const montajes=eventos.filter(e=>e.montajeInicio||e.montajeFin);
+  const desmontajes=eventos.filter(e=>e.desmontajeInicio||e.desmontajeFin);
+
+  function lineasVacias(cantidad){
+    let html='';
+    for(let i=0;i<cantidad;i++) html+='<div class="print-simple-line">&nbsp;</div>';
+    return html;
+  }
+
+  function card(ev,tipo){
+    const cab=cabezaDe(ev);
+    const todos=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
+    const ayudas=todos.filter(t=>!cab||t.id!==cab.id);
+    const fecha=tipo==='m'?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
+    const titulo=tipo==='m'?'MONTAJE':'DESMONTAJE';
+    const collas=textoCollas(ev);
+
+    let personal='';
+    if(cab) personal+=`<div class="print-simple-name head">${esc(cab.nombre)}</div>`;
+    ayudas.forEach(t=>personal+=`<div class="print-simple-name">${esc(t.nombre)}</div>`);
+    personal+=lineasVacias(Math.max(6,10-todos.length));
+
+    let collaLines='';
+    collas.forEach(c=>collaLines+=`<div class="print-simple-name head">${esc(c)}</div>`);
+    collaLines+=lineasVacias(Math.max(7,10-collas.length));
+
+    const maxLineas=Math.max(todos.length,collas.length);
+    const tieneObs=Boolean((ev.observaciones||'').trim());
+    const compactClass=(maxLineas>16?' ultra':(maxLineas>10?' many':''))+(tieneObs?' has-obs':'');
+
+    return `<div class="print-simple-card${compactClass}">
+      <div class="print-simple-title">${titulo}</div>
+      <div class="print-simple-row top">
+        <div><span>FERIA:</span> <b>${esc(ev.feria||'')}</b></div>
+        <div><span>LUGAR:</span> <b>${esc(ev.lugar||'')}</b></div>
+      </div>
+      <div class="print-simple-row center"><span>FECHA:</span> <b>${esc(fecha||'')}</b></div>
+      <div class="print-simple-stand">${esc(ev.stand||'STAND')}</div>
+      <div class="print-simple-heads"><div>PERSONAL</div><div>COLLA</div></div>
+      <div class="print-simple-body">
+        <div class="print-simple-col">${personal}</div>
+        <div class="print-simple-col">${collaLines}</div>
+      </div>
+      ${(ev.observaciones||'').trim() ? `
+        <div class="print-simple-obs">
+          <div class="print-simple-obs-title">OBSERVACIONES</div>
+          <div class="print-simple-obs-text">${esc(ev.observaciones)}</div>
+        </div>
+      ` : ''}
+    </div>`;
+  }
+
+  let html='';
+  if(montajes.length) html+=montajes.map(e=>card(e,'m')).join('');
+  if(desmontajes.length) html+=desmontajes.map(e=>card(e,'d')).join('');
+  if(!montajes.length&&!desmontajes.length) html='<div class="print-empty">SIN PLANIFICACIÓN PARA IMPRIMIR</div>';
+  byId('printPlanificacion').innerHTML=html;
+}
+
+function renderCalendario(){
+  const nombresMeses=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+  const diasSemana=['LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES','SÁBADO','DOMINGO'];
+  let mes=byId('mesCalendario').value||new Date().toISOString().slice(0,7);byId('mesCalendario').value=mes;
+  let[y,m]=mes.split('-').map(Number);let last=new Date(y,m,0).getDate();byId('calendarPrintMonth').textContent=nombresMeses[m-1]+' '+y;
+  let html=`<div class="calendar-weekdays">${diasSemana.map((d,i)=>`<div class="weekday-head ${i>=5?'weekend-head':''}">${d}</div>`).join('')}</div><div class="calendar-grid">`;
+  let huecosInicio=(new Date(y,m-1,1).getDay()+6)%7;for(let h=0;h<huecosInicio;h++)html+='<div class="day-box empty-day"></div>';
+  for(let d=1;d<=last;d++){const f=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const fechaObj=new Date(y,m-1,d);const esFinde=fechaObj.getDay()===0||fechaObj.getDay()===6;const mo=db.eventos.filter(e=>e.montajeInicio&&e.montajeFin&&f>=e.montajeInicio&&f<=e.montajeFin);const de=db.eventos.filter(e=>e.desmontajeInicio&&e.desmontajeFin&&f>=e.desmontajeInicio&&f<=e.desmontajeFin);const todosDia=[...mo,...de];const feriasLugaresUnicos=[...new Set(todosDia.map(e=>normal((e.feria||'')+'|'+(e.lugar||''))))].filter(Boolean);const haySolape=feriasLugaresUnicos.length>1;html+=`<div class="day-box ${esFinde?'weekend':''} ${haySolape?'overlap-day':''}"><div class="day-num">${d}</div>${haySolape?'<div class="day-tag">SOLAPE</div>':''}${mo.map(e=>`<div class="event-mini montaje-mini">MONTAJE<br>${esc(e.feria)}<br>${esc(e.lugar||'')}<br>${esc(e.stand)}</div>`).join('')}${de.map(e=>`<div class="event-mini desmontaje-mini">DESMONTAJE<br>${esc(e.feria)}<br>${esc(e.lugar||'')}<br>${esc(e.stand)}</div>`).join('')}</div>`}html+='</div>';byId('calendario').innerHTML=html;
+}
+
+function guardarTrabajador(){const id=byId('trabajadorId').value||'t'+Date.now();const t={id,nombre:byId('trabNombre').value.trim(),rol:byId('trabRol').value,tipo:byId('trabTipo').value,estado:byId('trabEstado').value,observaciones:byId('trabObs').value.trim()};if(!t.nombre)return alert('Falta nombre');const i=db.trabajadores.findIndex(x=>x.id===id);if(i>=0)db.trabajadores[i]=t;else db.trabajadores.push(t);save();limpiarTrabajador();renderAll()}
+function editarTrabajador(id){const t=trabajador(id);if(!t)return;byId('trabajadorId').value=t.id;byId('trabNombre').value=t.nombre;byId('trabRol').value=t.rol;byId('trabTipo').value=t.tipo;byId('trabEstado').value=t.estado;byId('trabObs').value=t.observaciones||''}
+function borrarTrabajador(id){if(confirm('¿Eliminar trabajador?')){db.trabajadores=db.trabajadores.filter(t=>t.id!==id);save();renderAll()}}
+function limpiarTrabajador(){byId('trabajadorId').value='';byId('trabNombre').value='';byId('trabRol').value='Montador';byId('trabTipo').value='Sale a montaje';byId('trabEstado').value='Disponible';byId('trabObs').value=''}
+function renderTrabajadores(){const q=normal(byId('buscarTrab').value);byId('tablaTrabajadores').innerHTML=db.trabajadores.filter(t=>{const texto=normal([t.nombre,t.rol,t.tipo,t.estado,t.observaciones].join(' '));return !q||texto.includes(q)}).sort((a,b)=>a.nombre.localeCompare(b.nombre)).map(t=>`<tr><td><b>${esc(t.nombre)}</b></td><td>${esc(t.rol)}</td><td>${esc(t.tipo)}</td><td>${esc(t.estado)}</td><td>${esc(t.observaciones)}</td><td><button class="small action-btn" onclick="editarTrabajador('${t.id}')"><svg class="ico"><use href="#i-edit"></use></svg></button> <button class="small action-btn delete" onclick="borrarTrabajador('${t.id}')"><svg class="ico"><use href="#i-trash"></use></svg></button></td></tr>`).join('')}
+function guardarColla(){const id=byId('collaId').value||'c'+Date.now();const c={id,nombre:byId('collaNombre').value.trim(),responsable:byId('collaResponsable').value.trim(),observaciones:byId('collaObs').value.trim()};if(!c.nombre)return alert('Falta nombre');const i=db.collas.findIndex(x=>x.id===id);if(i>=0)db.collas[i]=c;else db.collas.push(c);save();limpiarColla();renderAll()}
+function editarColla(id){const c=colla(id);if(!c)return;byId('collaId').value=c.id;byId('collaNombre').value=c.nombre;byId('collaResponsable').value=c.responsable;byId('collaObs').value=c.observaciones}
+function borrarColla(id){if(confirm('¿Eliminar colla?')){db.collas=db.collas.filter(c=>c.id!==id);save();renderAll()}}
+function limpiarColla(){['collaId','collaNombre','collaResponsable','collaObs'].forEach(id=>byId(id).value='')}
+function renderCollas(){byId('tablaCollas').innerHTML=db.collas.map(c=>`<tr><td><b>${esc(c.nombre)}</b></td><td>${esc(c.responsable)}</td><td>${esc(c.observaciones)}</td><td><button class="small action-btn" onclick="editarColla('${c.id}')"><svg class="ico"><use href="#i-edit"></use></svg></button> <button class="small action-btn delete" onclick="borrarColla('${c.id}')"><svg class="ico"><use href="#i-trash"></use></svg></button></td></tr>`).join('')||'<tr><td colspan="4">Sin collas.</td></tr>'}
+
+function estaOcupadoTrabajador(trabajadorId, desde, hasta){
+  if(!desde || !hasta) return null;
+  for(const ev of db.eventos){
+    if(!(ev.ayudantes||[]).includes(trabajadorId)) continue;
+    const choqueMontaje = overlaps(desde,hasta,ev.montajeInicio,ev.montajeFin);
+    const choqueDesmontaje = overlaps(desde,hasta,ev.desmontajeInicio,ev.desmontajeFin);
+    if(choqueMontaje || choqueDesmontaje){
+      return ev;
+    }
+  }
+  return null;
+}
+
+function personaCard(t, extra, tipo){
+  const cls = tipo==='ok' ? 'disp-ok' : tipo==='busy' ? 'disp-busy' : 'disp-no';
+  const icon = tipo==='ok' ? '✓' : tipo==='busy' ? '●' : '!';
+  return `<div class="disp-card ${cls}">
+    <div class="disp-icon">${icon}</div>
+    <div class="disp-content">
+      <div class="disp-name">${esc(t.nombre)}</div>
+      <div class="disp-meta">${esc(t.rol)} · ${esc(t.tipo)} · ${esc(t.estado)}</div>
+      ${extra?`<div class="disp-extra">${esc(extra)}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function renderDisponibles(){
+  const hoy = new Date().toISOString().slice(0,10);
+  const desde = byId('dispDesde')?.value || hoy;
+  const hasta = byId('dispHasta')?.value || desde;
+  if(byId('dispDesde') && !byId('dispDesde').value) byId('dispDesde').value = desde;
+  if(byId('dispHasta') && !byId('dispHasta').value) byId('dispHasta').value = hasta;
+
+  const rol = byId('dispRol')?.value || '';
+  const q = normal(byId('buscarDisp')?.value || '');
+  let disponibles='', ocupados='', noDisponibles='';
+
+  db.trabajadores
+    .filter(t=>(!rol || t.rol===rol) && (!q || normal(t.nombre).includes(q)))
+    .sort((a,b)=>a.nombre.localeCompare(b.nombre))
+    .forEach(t=>{
+      if(t.tipo !== 'Sale a montaje' || t.estado !== 'Disponible'){
+        noDisponibles += personaCard(t, 'NO APTO PARA SALIR', 'no');
+        return;
+      }
+      const ev = estaOcupadoTrabajador(t.id, desde, hasta);
+      if(ev){
+        ocupados += personaCard(t, `OCUPADO: ${ev.feria || ''} / ${ev.lugar || ''}`, 'busy');
+      }else{
+        disponibles += personaCard(t, 'LIBRE PARA ESAS FECHAS', 'ok');
+      }
+    });
+
+  byId('listaDisponibles').innerHTML = disponibles || '<p class="muted">No hay trabajadores disponibles con estos filtros.</p>';
+  byId('listaOcupados').innerHTML = ocupados || '<p class="muted">No hay ocupados en estas fechas.</p>';
+  byId('listaNoDisponibles').innerHTML = noDisponibles || '<p class="muted">No hay no disponibles con estos filtros.</p>';
+}
+
+function renderAvisos(){
+  let a=[];
+  db.eventos.forEach(e=>avisosVisibles(e).forEach(x=>{
+    a.push(`<div class="alerta dismissable-alert"><span>${esc(e.feria)} / ${esc(e.stand)}: ${esc(x)}</span><button type="button" class="dismiss-alert-btn" onclick="ocultarAviso('${e.id}',decodeURIComponent('${encodeURIComponent(x)}'))">×</button></div>`);
+  }));
+  byId('avisosGenerales').innerHTML=a.join('')||'<div class="ok">No hay avisos.</div>';
+}
+function imprimirCalendario(){
+  renderCalendario();
+  document.body.classList.add('print-calendar');
+  setTimeout(()=>{
+    activarModoImpresionSimple();
+  setTimeout(()=>{
+    window.print();
+    setTimeout(desactivarModoImpresionSimple,500);
+  },120);
+    setTimeout(()=>document.body.classList.remove('print-calendar'),300);
+  },80);
+}
+function activarModoImpresionSimple(){document.body.classList.add('print-simple-mode')}
+function desactivarModoImpresionSimple(){document.body.classList.remove('print-simple-mode')}
+
+function imprimirEvento(id){
+  const ev=db.eventos.find(e=>e.id===id);
+  if(!ev)return;
+  renderPrint([ev]);
+  setTimeout(()=>{window.print();renderPrint();},80);
+}
+function imprimirCalendario(){
+  renderCalendario();
+  document.body.classList.remove('print-simple-mode');
+  document.body.classList.add('print-calendar');
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>document.body.classList.remove('print-calendar'),500);
+  },120);
+}
+
+function imprimirFeria(id){
+  const ev=db.eventos.find(e=>e.id===id);
+  if(!ev)return;
+  const feria=normal(ev.feria);
+  const lugar=normal(ev.lugar);
+  const eventos=db.eventos.filter(e=>normal(e.feria)===feria && normal(e.lugar)===lugar);
+  renderPrint(eventos);
+  setTimeout(()=>{window.print();renderPrint();},80);
+}function exportarDatos(){let blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='standecor_planificador.json';a.click()}function importarDatos(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();renderAll();alert('Importado.')}catch(err){alert('Archivo incorrecto.')}};r.readAsText(f)}
+function getMemoriaFerias(){return JSON.parse(localStorage.getItem('memoria_ferias_standecor')||'[]')}
+function guardarMemoriaFerias(){
+  const memoria=[];
+  db.eventos.forEach(ev=>{
+    if(ev.feria){
+      memoria.push({
+        feria:ev.feria||'',
+        lugar:ev.lugar||'',
+        stand:ev.stand||''
+      });
+    }
+  });
+  localStorage.setItem('memoria_ferias_standecor',JSON.stringify(memoria));
+}
+
+function renderAutocompletado(){
+  const memoria=getMemoriaFerias();
+  const ferias=[...new Set(memoria.map(x=>x.feria).filter(Boolean))];
+  const lugares=[...new Set(memoria.map(x=>x.lugar).filter(Boolean))];
+  const stands=[...new Set(memoria.map(x=>x.stand).filter(Boolean))];
+
+  byId('feriasList').innerHTML=ferias.map(f=>`<option value="${esc(f)}">`).join('');
+  byId('lugaresList').innerHTML=lugares.map(f=>`<option value="${esc(f)}">`).join('');
+  byId('standsList').innerHTML=stands.map(f=>`<option value="${esc(f)}">`).join('');
+}
+
+function autocompletarLugar(){
+  const feria=normal(byId('feria').value||'');
+  const memoria=getMemoriaFerias();
+  const encontrado=memoria.find(x=>normal(x.feria)===feria);
+  if(encontrado){
+    if(byId('lugar') && !byId('lugar').value){
+      byId('lugar').value=encontrado.lugar||'';
+    }
+  }
+}
+
+function renderAll(){renderSelects();renderWorkerPicker();renderSeleccionPreview();renderEventos();renderTrabajadores();renderCollas();renderDisponibles();renderAvisos();renderCalendario();guardarMemoriaFerias();renderAutocompletado()}
+
+/* ===== MEJORA SEGURA: PREVIO DE PERSONAL Y CABEZA PRINCIPAL ===== */
+function injectSeleccionPreviewCSS(){
+  if(document.getElementById('seleccionPreviewCSS'))return;
+  const st=document.createElement('style');
+  st.id='seleccionPreviewCSS';
+  st.textContent=`
+    .selected-preview{margin-top:10px;border:1px solid var(--borde);border-radius:14px;background:#f8fcff;padding:10px}
+    .selected-preview-title{font-size:11px;font-weight:900;color:#0B5F86;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+    .selected-list{display:flex;flex-wrap:wrap;gap:6px}
+    .selected-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #dbe7ef;background:white;color:#334155;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:800}
+    .selected-chip.head{background:#eefaf0;color:#207a35;border-color:#cdebd2}
+    .selected-chip button{width:18px;height:18px;min-width:18px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#eef2f7;color:#475569;box-shadow:none;font-size:12px}
+    .main-head-box{margin-top:10px}
+    .main-head-box label{margin-top:0}
+  `;
+  document.head.appendChild(st);
+}
+
+function ensureSeleccionPreview(){
+  injectSeleccionPreviewCSS();
+  let cont=byId('seleccionPreview');
+  const picker=byId('workerPicker');
+  if(!cont && picker){
+    cont=document.createElement('div');
+    cont.id='seleccionPreview';
+    cont.className='selected-preview';
+    picker.insertAdjacentElement('afterend',cont);
+  }
+  return cont;
+}
+
+function cabezaDe(ev){
+  if(ev.cabezaPrincipalId){
+    const elegido=trabajador(ev.cabezaPrincipalId);
+    if(elegido && (ev.ayudantes||[]).includes(elegido.id)) return elegido;
+  }
+  return (ev.ayudantes||[]).map(id=>trabajador(id)).find(t=>t&&t.rol==='Cabeza de equipo')||null;
+}
+
+function quitarTrabajadorSeleccionado(id){
+  const ch=document.querySelector(`#workerPicker input[value="${id}"]`);
+  if(ch) ch.checked=false;
+  actualizarSeleccionPersonal();
+}
+
+function renderSeleccionPreview(){
+  const cont=ensureSeleccionPreview();
+  if(!cont)return;
+  const ids=getSeleccionados();
+  const personas=ids.map(id=>trabajador(id)).filter(Boolean);
+
+  if(!personas.length){
+    cont.innerHTML='<div class="selected-preview-title">Personal seleccionado</div><p class="muted">Todavía no hay trabajadores seleccionados.</p>';
+    return;
+  }
+
+  const cabezas=personas.filter(t=>t.rol==='Cabeza de equipo');
+  let selector='';
+  if(cabezas.length>1){
+    const actual=byId('cabezaPrincipal')?.value || cabezas[0].id;
+    selector=`<div class="main-head-box"><label>Cabeza principal del montaje</label><select id="cabezaPrincipal" onchange="validarFormulario()">${cabezas.map(t=>`<option value="${t.id}" ${t.id===actual?'selected':''}>${esc(t.nombre)}</option>`).join('')}</select></div>`;
+  }else if(cabezas.length===1){
+    selector=`<input type="hidden" id="cabezaPrincipal" value="${cabezas[0].id}">`;
+  }else{
+    selector='<input type="hidden" id="cabezaPrincipal" value="">';
+  }
+
+  cont.innerHTML=`<div class="selected-preview-title">Personal seleccionado (${personas.length})</div><div class="selected-list">${personas.map(t=>`<span class="selected-chip ${t.rol==='Cabeza de equipo'?'head':''}">${esc(t.nombre)}<button type="button" onclick="quitarTrabajadorSeleccionado('${t.id}')">×</button></span>`).join('')}</div>${selector}`;
+}
+
+function actualizarSeleccionPersonal(){
+  renderSeleccionPreview();
+  validarFormulario();
+}
+
+const renderWorkerPickerOriginal=renderWorkerPicker;
+renderWorkerPicker=function(){
+  const picker=byId('workerPicker');
+  if(!picker)return;
+  const q=normal(byId('buscarAsignar')?.value||'');
+  const selected=getSeleccionados();
+  picker.innerHTML=db.trabajadores
+    .filter(t=>t.tipo==='Sale a montaje'&&t.estado==='Disponible')
+    .filter(t=>!q||normal(t.nombre).includes(q))
+    .sort((a,b)=>a.nombre.localeCompare(b.nombre))
+    .map(t=>`<label class="worker-option"><input type="checkbox" value="${t.id}" ${selected.includes(t.id)?'checked':''} onchange="actualizarSeleccionPersonal()"><span><span class="worker-name">${esc(t.nombre)}</span><span class="worker-meta">${esc(t.rol)} · ${esc(t.tipo)} · ${esc(t.estado)}</span></span></label>`).join('')||'<p class="muted">No hay trabajadores.</p>';
+  renderSeleccionPreview();
+};
+
+const getEventoFormOriginal=getEventoForm;
+getEventoForm=function(){
+  const ev=getEventoFormOriginal();
+  ev.cabezaPrincipalId=byId('cabezaPrincipal')?.value||'';
+  return ev;
+};
+
+
+/* ===== VISTA PLANIFICACIÓN TIPO CARPETAS / ACORDEÓN ===== */
+function injectPlanAccordionCSS(){
+  if(document.getElementById('planAccordionCSS'))return;
+  const st=document.createElement('style');
+  st.id='planAccordionCSS';
+  st.textContent=`
+    .pantalla-planificacion{display:none!important}
+    .plan-accordion{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .plan-folder{background:#fff;border:1px solid #dbe7ef;border-radius:16px;box-shadow:0 4px 14px rgba(15,23,42,.05);overflow:hidden}
+    .plan-folder-head{width:100%;border:0;background:#fff;color:#1f2937;box-shadow:none;border-radius:0;padding:12px 14px;display:grid;grid-template-columns:36px 1.5fr .9fr .9fr .8fr;gap:10px;align-items:center;text-align:left;cursor:pointer}
+    .plan-folder-head:hover{transform:none;background:#f8fcff;box-shadow:none}
+    .folder-arrow{width:26px;height:26px;border-radius:9px;background:#eef8fc;color:#0B5F86;display:flex;align-items:center;justify-content:center;font-weight:900;transition:.18s}
+    .plan-folder.open .folder-arrow{transform:rotate(90deg)}
+    .folder-main{min-width:0}.folder-title-line{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.folder-feria{font-size:15px;font-weight:900;color:#0B5F86;text-transform:uppercase;line-height:1.15;letter-spacing:.2px}.folder-sub{font-size:11.5px;color:#64748b;font-weight:750;text-transform:uppercase;letter-spacing:.15px}.folder-sub::before{content:'·';font-weight:900;color:#94a3b8;margin-right:8px}
+    .folder-pill{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:900;text-transform:uppercase;white-space:nowrap}
+    .folder-pill.m{background:#eef7ff;color:#0B5F86;border:1px solid #bde7fb}.folder-pill.d{background:#fff4f4;color:#b42318;border:1px solid #ffcaca}.folder-date{font-size:12px;font-weight:900;color:#334155;text-transform:uppercase}.folder-count{font-size:11px;font-weight:900;color:#475569;text-align:right}
+    .plan-folder-body{display:none;border-top:1px solid #e7eef5;background:#fbfdff;padding:14px}
+    .plan-folder.open .plan-folder-body{display:block}
+    .folder-detail-grid{display:grid;grid-template-columns:1.35fr 1fr .82fr;gap:12px}.folder-detail-grid.compact{grid-template-columns:1.35fr 1fr .82fr}.folder-detail-box{background:white;border:1px solid #e2e8f0;border-radius:13px;padding:10px}.folder-detail-title{font-size:10px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+    .folder-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;justify-content:flex-end}.folder-detail-box.avisos-box{min-width:0}.folder-detail-box.avisos-box .badge{font-size:10.5px;padding:6px 8px;min-height:28px}.folder-detail-box.observaciones-box{grid-column:1 / -1}.folder-actions .action-btn{width:34px;height:34px;border-radius:12px}
+    @media(max-width:900px){.plan-folder-head{grid-template-columns:30px 1fr;gap:8px}.folder-pill,.folder-date,.folder-count{grid-column:2}.folder-detail-grid{grid-template-columns:1fr}}
+  `;
+  document.head.appendChild(st);
+}
+
+function togglePlanDetalle(id){
+  const el=document.getElementById('folder_'+id);
+  if(el)el.classList.toggle('open');
+}
+
+function ensurePlanAccordion(){
+  injectPlanAccordionCSS();
+  let cont=byId('planAccordion');
+  if(!cont){
+    const tabla=document.querySelector('.pantalla-planificacion');
+    cont=document.createElement('div');
+    cont.id='planAccordion';
+    cont.className='plan-accordion';
+    if(tabla)tabla.insertAdjacentElement('beforebegin',cont);
+  }
+  return cont;
+}
+
+function renderEventos(){
+  const cont=ensurePlanAccordion();
+  const eventos=eventosFiltrados();
+
+  const html=eventos.map(ev=>{
+    const cab=cabezaDe(ev);
+    const ayudas=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
+    const avisos=avisosVisibles(ev);
+    const collas=textoCollas(ev);
+    const tieneMontaje=ev.montajeInicio||ev.montajeFin;
+    const tipo=tieneMontaje?'m':'d';
+    const tipoTxt=tieneMontaje?'MONTAJE':'DESMONTAJE';
+    const fecha=tieneMontaje?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
+
+    let personalHtml='';
+    if(cab)personalHtml+=`<span class="badge green">${esc(cab.nombre)}</span>`;
+    ayudas.filter(t=>!cab||t.id!==cab.id).forEach(t=>personalHtml+=`<span class="badge gray">${esc(t.nombre)}</span>`);
+    if(!personalHtml)personalHtml='<p class="muted">Sin personal seleccionado.</p>';
+
+    const collaHtml=collas.length?collas.map(t=>`<span class="badge blue">${esc(t)}</span>`).join(''):'<p class="muted">Sin colla.</p>';
+    const avisosHtml=avisos.length?avisos.map(a=>`<span class="badge red">⚠️ ${esc(a)}</span>`).join(''):'<span class="badge green">OK</span>';
+    const obs=ev.observaciones?esc(ev.observaciones):'<span class="muted">Sin observaciones.</span>';
+
+    return `<div class="plan-folder" id="folder_${ev.id}">
+      <button type="button" class="plan-folder-head" onclick="togglePlanDetalle('${ev.id}')">
+        <span class="folder-arrow">›</span>
+        <span class="folder-main"><span class="folder-title-line"><span class="folder-feria">${esc(ev.feria||'SIN FERIA')}</span><span class="folder-sub">${esc(ev.lugar||'SIN LUGAR')} · ${esc(ev.stand||'SIN STAND')}</span></span></span>
+        <span class="folder-pill ${tipo}">${tipoTxt}</span>
+        <span class="folder-date">${esc(fecha||'SIN FECHA')}</span>
+        <span class="folder-count">${ayudas.length} pers. · ${collas.length} colla${collas.length===1?'':'s'}${avisos.length?' · ⚠ '+avisos.length:''}</span>
+      </button>
+      <div class="plan-folder-body">
+        <div class="folder-detail-grid compact">
+          <div class="folder-detail-box"><div class="folder-detail-title">Personal</div><div class="industrial-list">${personalHtml}</div></div>
+          <div class="folder-detail-box"><div class="folder-detail-title">Collas</div><div class="industrial-list">${collaHtml}</div></div>
+          <div class="folder-detail-box avisos-box"><div class="folder-detail-title">Avisos</div><div class="industrial-list">${avisosHtml}</div></div>
+          <div class="folder-detail-box observaciones-box"><div class="folder-detail-title">Observaciones</div>${obs}</div>
+        </div>
+        <div class="folder-actions no-print">
+          <button class="small action-btn" title="Imprimir este trabajo" onclick="imprimirEvento('${ev.id}')"><svg class="ico"><use href="#i-print"></use></svg></button>
+          <button class="small action-btn" title="Editar" onclick="editarEvento('${ev.id}')"><svg class="ico"><use href="#i-edit"></use></svg></button>
+          <button class="small action-btn delete" title="Eliminar" onclick="borrarEvento('${ev.id}')"><svg class="ico"><use href="#i-trash"></use></svg></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  cont.innerHTML=html||'<p class="muted">No hay montajes creados.</p>';
+  const tabla=byId('tablaEventos');
+  if(tabla)tabla.innerHTML='';
+  renderPrint();
+}
+
+
+/* ===== CORRECCIÓN ACCIONES PLANIFICACIÓN: SOLO 3 BOTONES ===== */
+function renderEventos(){
+  const cont=ensurePlanAccordion();
+  const eventos=eventosFiltrados();
+
+  const html=eventos.map(ev=>{
+    const cab=cabezaDe(ev);
+    const ayudas=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
+    const avisos=avisosVisibles(ev);
+    const collas=textoCollas(ev);
+    const tieneMontaje=ev.montajeInicio||ev.montajeFin;
+    const tipo=tieneMontaje?'m':'d';
+    const tipoTxt=tieneMontaje?'MONTAJE':'DESMONTAJE';
+    const fecha=tieneMontaje?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
+
+    let personalHtml='';
+    if(cab)personalHtml+=`<span class="badge green">${esc(cab.nombre)}</span>`;
+    ayudas.filter(t=>!cab||t.id!==cab.id).forEach(t=>personalHtml+=`<span class="badge gray">${esc(t.nombre)}</span>`);
+    if(!personalHtml)personalHtml='<p class="muted">Sin personal seleccionado.</p>';
+
+    const collaHtml=collas.length?collas.map(t=>`<span class="badge blue">${esc(t)}</span>`).join(''):'<p class="muted">Sin colla.</p>';
+    const avisosHtml=avisos.length?avisos.map(a=>`<span class="badge red">⚠️ ${esc(a)}</span>`).join(''):'<span class="badge green">OK</span>';
+    const obs=ev.observaciones?esc(ev.observaciones):'<span class="muted">Sin observaciones.</span>';
+
+    return `<div class="plan-folder" id="folder_${ev.id}">
+      <button type="button" class="plan-folder-head" onclick="togglePlanDetalle('${ev.id}')">
+        <span class="folder-arrow">›</span>
+        <span class="folder-main"><span class="folder-title-line"><span class="folder-feria">${esc(ev.feria||'SIN FERIA')}</span><span class="folder-sub">${esc(ev.lugar||'SIN LUGAR')} · ${esc(ev.stand||'SIN STAND')}</span></span></span>
+        <span class="folder-pill ${tipo}">${tipoTxt}</span>
+        <span class="folder-date">${esc(fecha||'SIN FECHA')}</span>
+        <span class="folder-count">${ayudas.length} pers. · ${collas.length} colla${collas.length===1?'':'s'}${avisos.length?' · ⚠ '+avisos.length:''}</span>
+      </button>
+      <div class="plan-folder-body">
+        <div class="folder-detail-grid compact">
+          <div class="folder-detail-box"><div class="folder-detail-title">Personal</div><div class="industrial-list">${personalHtml}</div></div>
+          <div class="folder-detail-box"><div class="folder-detail-title">Collas</div><div class="industrial-list">${collaHtml}</div></div>
+          <div class="folder-detail-box avisos-box"><div class="folder-detail-title">Avisos</div><div class="industrial-list">${avisosHtml}</div></div>
+          <div class="folder-detail-box observaciones-box"><div class="folder-detail-title">Observaciones</div>${obs}</div>
+        </div>
+        <div class="folder-actions no-print">
+          <button class="small action-btn" title="Imprimir este trabajo" onclick="imprimirEvento('${ev.id}')"><svg class="ico"><use href="#i-print"></use></svg></button>
+          <button class="small action-btn" title="Editar" onclick="editarEvento('${ev.id}')"><svg class="ico"><use href="#i-edit"></use></svg></button>
+          <button class="small action-btn delete" title="Eliminar" onclick="borrarEvento('${ev.id}')"><svg class="ico"><use href="#i-trash"></use></svg></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  cont.innerHTML=html||'<p class="muted">No hay montajes creados.</p>';
+  const tabla=byId('tablaEventos');
+  if(tabla)tabla.innerHTML='';
+  renderPrint();
+}
+
+
+/* ===== FUNCIONES DE IMPRESIÓN CORREGIDAS ===== */
+function imprimirEvento(id){
+  const ev=db.eventos.find(e=>e.id===id);
+  if(!ev)return;
+  renderPrint([ev]);
+  document.body.classList.remove('print-calendar');
+  document.body.classList.add('print-simple-mode');
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>{
+      document.body.classList.remove('print-simple-mode');
+      renderPrint();
+    },500);
+  },120);
+}
+
+function imprimirCalendario(){
+  renderCalendario();
+  document.body.classList.remove('print-simple-mode');
+  document.body.classList.add('print-calendar');
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>document.body.classList.remove('print-calendar'),500);
+  },120);
+}
+
+
+/* ===== AVISOS DESCARTABLES ===== */
+function asegurarAvisosOcultos(){
+  if(!Array.isArray(db.avisosOcultos)) db.avisosOcultos=[];
+}
+
+function claveAviso(ev,msg){
+  return String(ev.id||'')+'|'+normal(msg||'');
+}
+
+function avisosVisibles(ev){
+  asegurarAvisosOcultos();
+  return validarEvento(ev,ev.id).filter(a=>!db.avisosOcultos.includes(claveAviso(ev,a)));
+}
+
+function ocultarAviso(evId,msg){
+  asegurarAvisosOcultos();
+  const ev=db.eventos.find(e=>e.id===evId);
+  if(!ev)return;
+  const k=claveAviso(ev,msg);
+  if(!db.avisosOcultos.includes(k)) db.avisosOcultos.push(k);
+  save();
+  renderAll();
+}
+
+
+/* ===== CORRECCIÓN: MANTENER TRABAJADORES SELECCIONADOS AL BUSCAR ===== */
+let seleccionTrabajadoresActual=[];
+
+function sincronizarSeleccionDesdeChecks(){
+  document.querySelectorAll('#workerPicker input[type="checkbox"]').forEach(ch=>{
+    if(ch.checked){
+      if(!seleccionTrabajadoresActual.includes(ch.value)) seleccionTrabajadoresActual.push(ch.value);
+    }else{
+      seleccionTrabajadoresActual=seleccionTrabajadoresActual.filter(id=>id!==ch.value);
+    }
+  });
+}
+
+function getSeleccionados(){
+  sincronizarSeleccionDesdeChecks();
+  return [...seleccionTrabajadoresActual];
+}
+
+function marcarSeleccionEnPicker(){
+  document.querySelectorAll('#workerPicker input[type="checkbox"]').forEach(ch=>{
+    ch.checked=seleccionTrabajadoresActual.includes(ch.value);
+  });
+}
+
+function renderWorkerPicker(){
+  const picker=byId('workerPicker');
+  if(!picker)return;
+  const q=normal(byId('buscarAsignar')?.value||'');
+
+  picker.innerHTML=db.trabajadores
+    .filter(t=>t.tipo==='Sale a montaje'&&t.estado==='Disponible')
+    .filter(t=>!q||normal(t.nombre).includes(q))
+    .sort((a,b)=>a.nombre.localeCompare(b.nombre))
+    .map(t=>`<label class="worker-option"><input type="checkbox" value="${t.id}" ${seleccionTrabajadoresActual.includes(t.id)?'checked':''} onchange="actualizarSeleccionPersonal()"><span><span class="worker-name">${esc(t.nombre)}</span><span class="worker-meta">${esc(t.rol)} · ${esc(t.tipo)} · ${esc(t.estado)}</span></span></label>`)
+    .join('')||'<p class="muted">No hay trabajadores disponibles.</p>';
+
+  marcarSeleccionEnPicker();
+  renderSeleccionPreview();
+}
+
+function actualizarSeleccionPersonal(){
+  sincronizarSeleccionDesdeChecks();
+  renderSeleccionPreview();
+  validarFormulario();
+}
+
+function quitarTrabajadorSeleccionado(id){
+  seleccionTrabajadoresActual=seleccionTrabajadoresActual.filter(x=>x!==id);
+  const ch=document.querySelector(`#workerPicker input[value="${id}"]`);
+  if(ch) ch.checked=false;
+  renderWorkerPicker();
+  renderSeleccionPreview();
+  validarFormulario();
+}
+
+
+/* ===== IMPRESIÓN FINAL CON OBSERVACIONES FUNCIONALES ===== */
+function renderPrint(eventosPersonalizados){
+  const eventos=eventosPersonalizados||eventosFiltrados();
+  const montajes=eventos.filter(e=>e.montajeInicio||e.montajeFin);
+  const desmontajes=eventos.filter(e=>e.desmontajeInicio||e.desmontajeFin);
+
+  function lineasVacias(cantidad){
+    let html='';
+    for(let i=0;i<cantidad;i++) html+='<div class="print-simple-line">&nbsp;</div>';
+    return html;
+  }
+
+  function card(ev,tipo){
+    const cab=cabezaDe(ev);
+    const todos=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
+    const ayudas=todos.filter(t=>!cab||t.id!==cab.id);
+    const fecha=tipo==='m'?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
+    const titulo=tipo==='m'?'MONTAJE':'DESMONTAJE';
+    const collas=textoCollas(ev);
+    const obs=(ev.observaciones||'').trim();
+    const maxLineas=Math.max(todos.length,collas.length);
+    const compactClass=(maxLineas>16?' ultra':(maxLineas>10?' many':''))+(obs?' has-obs':'');
+
+    let personal='';
+    if(cab) personal+=`<div class="print-simple-name head">${esc(cab.nombre)}</div>`;
+    ayudas.forEach(t=>personal+=`<div class="print-simple-name">${esc(t.nombre)}</div>`);
+    personal+=lineasVacias(Math.max(3,10-todos.length));
+
+    let collaLines='';
+    collas.forEach(c=>collaLines+=`<div class="print-simple-name head">${esc(c)}</div>`);
+    collaLines+=lineasVacias(Math.max(3,10-collas.length));
+
+    return `<div class="print-simple-card${compactClass}">
+      <div class="print-simple-title">${titulo}</div>
+      <div class="print-simple-row top">
+        <div><span>FERIA:</span> <b>${esc(ev.feria||'')}</b></div>
+        <div><span>LUGAR:</span> <b>${esc(ev.lugar||'')}</b></div>
+      </div>
+      <div class="print-simple-row center"><span>FECHA:</span> <b>${esc(fecha||'')}</b></div>
+      <div class="print-simple-stand">${esc(ev.stand||'STAND')}</div>
+      <div class="print-simple-heads"><div>PERSONAL</div><div>COLLA</div></div>
+      <div class="print-simple-body">
+        <div class="print-simple-col">${personal}</div>
+        <div class="print-simple-col">${collaLines}</div>
+      </div>
+      ${obs?`<div class="print-simple-obs"><div class="print-simple-obs-title">OBSERVACIONES</div><div class="print-simple-obs-text">${esc(obs)}</div></div>`:''}
+    </div>`;
+  }
+
+  let html='';
+  if(montajes.length) html+=montajes.map(e=>card(e,'m')).join('');
+  if(desmontajes.length) html+=desmontajes.map(e=>card(e,'d')).join('');
+  if(!montajes.length&&!desmontajes.length) html='<div class="print-empty">SIN PLANIFICACIÓN PARA IMPRIMIR</div>';
+  byId('printPlanificacion').innerHTML=html;
+}
+
+
+/* ===== TERMINADOS EN PLANIFICACIÓN ===== */
+function toggleTerminadoEvento(id){
+  const ev=db.eventos.find(e=>e.id===id);
+  if(!ev)return;
+  ev.terminado=!ev.terminado;
+  save();
+  renderAll();
+}
+
+function toggleTerminadosLista(){
+  const box=byId('terminadosList');
+  const arrow=byId('terminadosArrow');
+  if(!box)return;
+  const abierto=box.style.display!=='none';
+  box.style.display=abierto?'none':'flex';
+  if(arrow)arrow.textContent=abierto?'›':'⌄';
+}
+
+function renderEventos(){
+  const cont=ensurePlanAccordion();
+  const eventos=eventosFiltrados();
+  const activos=eventos.filter(e=>!e.terminado);
+  const terminados=eventos.filter(e=>e.terminado);
+
+  function carpeta(ev,terminado=false){
+    const cab=cabezaDe(ev);
+    const ayudas=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
+    const avisos=avisosVisibles?avisosVisibles(ev):validarEvento(ev,ev.id);
+    const collas=textoCollas(ev);
+    const tieneMontaje=ev.montajeInicio||ev.montajeFin;
+    const tipo=tieneMontaje?'m':'d';
+    const tipoTxt=tieneMontaje?'MONTAJE':'DESMONTAJE';
+    const fecha=tieneMontaje?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
+
+    let personalHtml='';
+    if(cab)personalHtml+=`<span class="badge green">${esc(cab.nombre)}</span>`;
+    ayudas.filter(t=>!cab||t.id!==cab.id).forEach(t=>personalHtml+=`<span class="badge gray">${esc(t.nombre)}</span>`);
+    if(!personalHtml)personalHtml='<p class="muted">Sin personal seleccionado.</p>';
+
+    const collaHtml=collas.length?collas.map(t=>`<span class="badge blue">${esc(t)}</span>`).join(''):'<p class="muted">Sin colla.</p>';
+    const avisosHtml=avisos.length?avisos.map(a=>`<span class="badge red dismissable-alert">⚠️ ${esc(a)} <button type="button" class="dismiss-alert-btn" onclick="event.stopPropagation();ocultarAviso('${ev.id}',decodeURIComponent('${encodeURIComponent(a)}'))">×</button></span>`).join(''):'<span class="badge green">OK</span>';
+    const obs=ev.observaciones?esc(ev.observaciones):'<span class="muted">Sin observaciones.</span>';
+
+    return `<div class="plan-folder ${terminado?'finished':''}" id="folder_${ev.id}">
+      <button type="button" class="plan-folder-head" onclick="togglePlanDetalle('${ev.id}')">
+        <span class="folder-arrow">›</span>
+        <span class="folder-main"><span class="folder-title-line"><span class="folder-feria">${esc(ev.feria||'SIN FERIA')}</span><span class="folder-sub">${esc(ev.lugar||'SIN LUGAR')} · ${esc(ev.stand||'SIN STAND')}</span></span></span>
+        <span class="folder-pill ${tipo}">${tipoTxt}</span>
+        <span class="folder-date">${esc(fecha||'SIN FECHA')}</span>
+        <span class="folder-count">${terminado?'✅ TERMINADO · ':''}${ayudas.length} pers. · ${collas.length} colla${collas.length===1?'':'s'}${avisos.length?' · ⚠ '+avisos.length:''}</span>
+      </button>
+      <div class="plan-folder-body">
+        <div class="folder-detail-grid compact">
+          <div class="folder-detail-box"><div class="folder-detail-title">Personal</div><div class="industrial-list">${personalHtml}</div></div>
+          <div class="folder-detail-box"><div class="folder-detail-title">Collas</div><div class="industrial-list">${collaHtml}</div></div>
+          <div class="folder-detail-box avisos-box"><div class="folder-detail-title">Avisos</div><div class="industrial-list">${avisosHtml}</div></div>
+          <div class="folder-detail-box observaciones-box"><div class="folder-detail-title">Observaciones</div>${obs}</div>
+        </div>
+        <div class="folder-actions no-print">
+          <button class="small action-btn finish-btn" title="${terminado?'Volver a activos':'Marcar terminado'}" onclick="event.stopPropagation();toggleTerminadoEvento('${ev.id}')">${terminado?'↩':'✓'}</button>
+          <button class="small action-btn" title="Imprimir este trabajo" onclick="imprimirEvento('${ev.id}')"><svg class="ico"><use href="#i-print"></use></svg></button>
+          <button class="small action-btn" title="Editar" onclick="editarEvento('${ev.id}')"><svg class="ico"><use href="#i-edit"></use></svg></button>
+          <button class="small action-btn delete" title="Eliminar" onclick="borrarEvento('${ev.id}')"><svg class="ico"><use href="#i-trash"></use></svg></button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  let html=activos.map(e=>carpeta(e,false)).join('')||'<p class="muted">No hay montajes activos.</p>';
+  html+=`<div class="terminados-panel no-print">
+    <button type="button" class="terminados-head" onclick="toggleTerminadosLista()"><span id="terminadosArrow">›</span> TERMINADOS (${terminados.length})</button>
+    <div id="terminadosList" class="terminados-list" style="display:none">${terminados.map(e=>carpeta(e,true)).join('')||'<p class="muted">No hay trabajos terminados.</p>'}</div>
+  </div>`;
+
+  cont.innerHTML=html;
+  const tabla=byId('tablaEventos');
+  if(tabla)tabla.innerHTML='';
+  renderPrint();
+}
+
+
+/* ===== PDF / IMPRESIÓN MENSUAL ===== */
+function obtenerMesPlanificacionPDF(){
+  const desde=byId('filtroDesde')?.value||'';
+  const hasta=byId('filtroHasta')?.value||'';
+  const mesCal=byId('mesCalendario')?.value||'';
+  const base=desde||hasta||(mesCal?mesCal+'-01':'')||new Date().toISOString().slice(0,10);
+  return base.slice(0,7);
+}
+
+function fechaPerteneceMes(fecha,mes){
+  return Boolean(fecha && String(fecha).slice(0,7)===mes);
+}
+
+function eventoPerteneceMesPDF(ev,mes){
+  return fechaPerteneceMes(ev.montajeInicio,mes)||fechaPerteneceMes(ev.montajeFin,mes)||fechaPerteneceMes(ev.desmontajeInicio,mes)||fechaPerteneceMes(ev.desmontajeFin,mes);
+}
+
+function imprimirMesPDF(){
+  const mes=obtenerMesPlanificacionPDF();
+  const trabajos=db.eventos
+    .filter(ev=>eventoPerteneceMesPDF(ev,mes) && (ev.montajeInicio || ev.montajeFin))
+    .sort((a,b)=>{
+      const fechaA=a.montajeInicio||a.desmontajeInicio||'';
+      const fechaB=b.montajeInicio||b.desmontajeInicio||'';
+      if(fechaA!==fechaB)return fechaB.localeCompare(fechaA);
+      return String(b.id||'').localeCompare(String(a.id||''));
+    });
+
+  if(!trabajos.length){
+    alert('No hay montajes para imprimir en ese mes.');
+    return;
+  }
+
+  renderPrint(trabajos);
+  document.body.classList.remove('print-calendar');
+  document.body.classList.add('print-simple-mode');
+  setTimeout(()=>{
+    window.print();
+    setTimeout(()=>{
+      document.body.classList.remove('print-simple-mode');
+      renderPrint();
+    },500);
+  },120);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{try{byId('mesCalendario').value=new Date().toISOString().slice(0,7);renderAll()}catch(err){console.error('Error al iniciar:',err);alert('Hay un error en el código. Revisa la consola del navegador.')}});
+
+/* ===== ÚLTIMA VERSIÓN REAL DE IMPRESIÓN CON OBSERVACIONES ===== */
+function renderPrint(eventosPersonalizados){
+  const eventos=eventosPersonalizados||eventosFiltrados();
+  const montajes=eventos.filter(e=>e.montajeInicio||e.montajeFin);
+  const desmontajes=eventos.filter(e=>e.desmontajeInicio||e.desmontajeFin);
+
+  function lineasVacias(cantidad){
+    let html='';
+    for(let i=0;i<cantidad;i++) html+='<div class="print-simple-line">&nbsp;</div>';
+    return html;
+  }
+
+  function card(ev,tipo){
+    const cab=cabezaDe(ev);
+    const todos=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
+    const ayudas=todos.filter(t=>!cab||t.id!==cab.id);
+    const fecha=tipo==='m'?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
+    const titulo=tipo==='m'?'MONTAJE':'DESMONTAJE';
+    const collas=textoCollas(ev);
+    const obs=(ev.observaciones||'').trim();
+    const maxLineas=Math.max(todos.length,collas.length);
+    const compactClass=(maxLineas>16?' ultra':(maxLineas>10?' many':''))+(obs?' has-obs':'');
+
+    let personal='';
+    if(cab) personal+=`<div class="print-simple-name head">${esc(cab.nombre)}</div>`;
+    ayudas.forEach(t=>personal+=`<div class="print-simple-name">${esc(t.nombre)}</div>`);
+    personal+=lineasVacias(Math.max(3,10-todos.length));
+
+    let collaLines='';
+    collas.forEach(c=>collaLines+=`<div class="print-simple-name head">${esc(c)}</div>`);
+    collaLines+=lineasVacias(Math.max(3,10-collas.length));
+
+    return `<div class="print-simple-card${compactClass}">
+      <div class="print-simple-title">${titulo}</div>
+      <div class="print-simple-row top">
+        <div><span>FERIA:</span> <b>${esc(ev.feria||'')}</b></div>
+        <div><span>LUGAR:</span> <b>${esc(ev.lugar||'')}</b></div>
+      </div>
+      <div class="print-simple-row center"><span>FECHA:</span> <b>${esc(fecha||'')}</b></div>
+      <div class="print-simple-stand">${esc(ev.stand||'STAND')}</div>
+      <div class="print-simple-heads"><div>PERSONAL</div><div>COLLA</div></div>
+      <div class="print-simple-body">
+        <div class="print-simple-col">${personal}</div>
+        <div class="print-simple-col">${collaLines}</div>
+      </div>
+      ${obs?`<div class="print-simple-obs"><div class="print-simple-obs-title">OBSERVACIONES</div><div class="print-simple-obs-text">${esc(obs)}</div></div>`:''}
+    </div>`;
+  }
+
+  let html='';
+  if(montajes.length) html+=montajes.map(e=>card(e,'m')).join('');
+  if(desmontajes.length) html+=desmontajes.map(e=>card(e,'d')).join('');
+  if(!montajes.length&&!desmontajes.length) html='<div class="print-empty">SIN PLANIFICACIÓN PARA IMPRIMIR</div>';
+  byId('printPlanificacion').innerHTML=html;
+}
+
+/* ===== IMPRESIÓN: OBSERVACIONES DEBAJO DE COLLA ===== */
+function renderPrint(eventosPersonalizados){
+  const eventos=eventosPersonalizados||eventosFiltrados();
+  const montajes=eventos.filter(e=>e.montajeInicio||e.montajeFin);
+  const desmontajes=eventos.filter(e=>e.desmontajeInicio||e.desmontajeFin);
+
+  function lineasVacias(cantidad){
+    let html='';
+    for(let i=0;i<cantidad;i++) html+='<div class="print-simple-line">&nbsp;</div>';
+    return html;
+  }
+
+  function card(ev,tipo){
+    const cab=cabezaDe(ev);
+    const todos=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
+    const ayudas=todos.filter(t=>!cab||t.id!==cab.id);
+    const fecha=tipo==='m'?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
+    const titulo=tipo==='m'?'MONTAJE':'DESMONTAJE';
+    const collas=textoCollas(ev);
+    const obs=(ev.observaciones||'').trim();
+    const maxLineas=Math.max(todos.length,collas.length);
+    const compactClass=(maxLineas>16?' ultra':(maxLineas>10?' many':''))+(obs?' has-obs obs-right':'');
+
+    let personal='';
+    if(cab) personal+=`<div class="print-simple-name head">${esc(cab.nombre)}</div>`;
+    ayudas.forEach(t=>personal+=`<div class="print-simple-name">${esc(t.nombre)}</div>`);
+    personal+=lineasVacias(Math.max(6,18-todos.length));
+
+    let collaLines='';
+    collas.forEach(c=>collaLines+=`<div class="print-simple-name head">${esc(c)}</div>`);
+    collaLines+=lineasVacias(Math.max(4,8-collas.length));
+
+    return `<div class="print-simple-card${compactClass}">
+      <div class="print-simple-title">${titulo}</div>
+      <div class="print-simple-row top">
+        <div><span>FERIA:</span> <b>${esc(ev.feria||'')}</b></div>
+        <div><span>LUGAR:</span> <b>${esc(ev.lugar||'')}</b></div>
+      </div>
+      <div class="print-simple-row center"><span>FECHA:</span> <b>${esc(fecha||'')}</b></div>
+      <div class="print-simple-stand">${esc(ev.stand||'STAND')}</div>
+      <div class="print-simple-heads"><div>PERSONAL</div><div>COLLA</div></div>
+      <div class="print-simple-body print-body-obs-right">
+        <div class="print-simple-col print-personal-col">${personal}</div>
+        <div class="print-simple-col print-right-col">
+          <div class="print-colla-lines">${collaLines}</div>
+          ${obs?`<div class="print-simple-obs right-obs"><div class="print-simple-obs-title">OBSERVACIONES</div><div class="print-simple-obs-text">${esc(obs)}</div></div>`:''}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  let html='';
+  if(montajes.length) html+=montajes.map(e=>card(e,'m')).join('');
+  if(desmontajes.length) html+=desmontajes.map(e=>card(e,'d')).join('');
+  if(!montajes.length&&!desmontajes.length) html='<div class="print-empty">SIN PLANIFICACIÓN PARA IMPRIMIR</div>';
+  byId('printPlanificacion').innerHTML=html;
+}
+
+/* ===== RENDERPRINT FINAL APROBADO ===== */
+function renderPrint(eventosPersonalizados){
+  const eventos=eventosPersonalizados||eventosFiltrados();
+  const montajes=eventos.filter(e=>e.montajeInicio||e.montajeFin);
+  const desmontajes=eventos.filter(e=>e.desmontajeInicio||e.desmontajeFin);
+
+  function lineasVacias(cantidad){
+    let html='';
+    for(let i=0;i<cantidad;i++) html+='<div class="print-simple-line">&nbsp;</div>';
+    return html;
+  }
+
+  function card(ev,tipo){
+    const cab=cabezaDe(ev);
+    const todos=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
+    const ayudas=todos.filter(t=>!cab||t.id!==cab.id);
+    const fecha=tipo==='m'?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
+    const titulo=tipo==='m'?'MONTAJE':'DESMONTAJE';
+    const collas=textoCollas(ev);
+    const obs=(ev.observaciones||'').trim();
+    const maxLineas=Math.max(todos.length,collas.length);
+    const compactClass=(maxLineas>16?' ultra':(maxLineas>10?' many':''))+(obs?' obs-right':'');
+
+    let personal='';
+    if(cab) personal+=`<div class="print-simple-name head">${esc(cab.nombre)}</div>`;
+    ayudas.forEach(t=>personal+=`<div class="print-simple-name">${esc(t.nombre)}</div>`);
+    personal+=lineasVacias(Math.max(5,18-todos.length));
+
+    let collaLines='';
+    collas.forEach(c=>collaLines+=`<div class="print-simple-name head">${esc(c)}</div>`);
+    collaLines+=lineasVacias(Math.max(6,10-collas.length));
+
+    return `<div class="print-simple-card${compactClass}">
+      <div class="print-simple-title">${titulo}</div>
+      <div class="print-simple-row top">
+        <div><span>FERIA:</span> <b>${esc(ev.feria||'')}</b></div>
+        <div><span>LUGAR:</span> <b>${esc(ev.lugar||'')}</b></div>
+      </div>
+      <div class="print-simple-row center"><span>FECHA:</span> <b>${esc(fecha||'')}</b></div>
+      <div class="print-simple-stand">${esc(ev.stand||'STAND')}</div>
+      <div class="print-simple-heads"><div>PERSONAL</div><div>COLLA</div></div>
+      <div class="print-simple-body print-body-obs-right">
+        <div class="print-simple-col print-personal-col">${personal}</div>
+        <div class="print-simple-col print-right-col">
+          <div class="print-colla-lines">${collaLines}</div>
+          ${obs?`<div class="print-simple-obs right-obs"><div class="print-simple-obs-title">OBSERVACIONES</div><div class="print-simple-obs-text">${esc(obs)}</div></div>`:''}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  let html='';
+  if(montajes.length) html+=montajes.map(e=>card(e,'m')).join('');
+  if(desmontajes.length) html+=desmontajes.map(e=>card(e,'d')).join('');
+  if(!montajes.length&&!desmontajes.length) html='<div class="print-empty">SIN PLANIFICACIÓN PARA IMPRIMIR</div>';
+  byId('printPlanificacion').innerHTML=html;
+}
+</script>
+</body>
+</html>
