@@ -1870,6 +1870,18 @@ label{
   <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></symbol>
   <symbol id="i-clear" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="m8 6 8 15"/><path d="M16 6 8 21"/></symbol>
 </svg>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfigStandecor = {
+  apiKey: "AIzaSyAi0qaAM1uasqe10N-2G1xScQ_6_rRZ4Fg",
+  authDomain: "planificador-de-montajes-8c285.firebaseapp.com",
+  projectId: "planificador-de-montajes-8c285",
+  storageBucket: "planificador-de-montajes-8c285.firebasestorage.app",
+  messagingSenderId: "19044791240",
+  appId: "1:19044791240:web:adecbf30a304d9184f06fd"
+};
+</script>
 </head>
 <body>
 <div id="toastAlert" class="toast-alert"></div>
@@ -1888,7 +1900,12 @@ const STORAGE='standecor_planificador_montajes_beta_1';
 const nombresIniciales=['ADRIAN ALEJANDRO VEIZAGA (GORRA)','ADRIAN PRUDENTE (NOVITA)','ALEJANDRO CASTILLO','ALEJANDRO HOYOS (BILBAO)','ALEX COSTA','ALEXIS ANARIBA','ARNOLD GUZMAN','BRUCE LEE','CANCO','CARLOS ALBERTO AMOEDO (ARGENTINO)','CARLOS CAIZA','CARLOS SEGURA CARTAGENA','CRISTIAN (CHILENO)','DANI CAMPOS','DANIEL ANGEL PORTUGUEZ (PORTU)','DANIEL BELLIDO','EBER MISAEL ( LAGARTIJA)','EDSON ARAUJO LA FUENTE (ROBOCOP)','EDUARDO PATRICIO','ENRIC RIPOLL BELLIDO','ENRIQUE RIPOLL','ERIC BRU','EVERT RONALD SAGARDIA','FLORENCIO','FRANCESC VILA PLANA','FRANCISCO ROSALES (KIYO)','ISRAEL MARAÑON','JAIME CUEVA','JAVIER (MIRIAM)','JESUS','JHOASIL','JOEL FERNANDO YAÑEZ (GRANDU)','JOHAN CRUZ','JOHN STICK','JOSE ANTONIO ARCE (TOÑIN)','JOSE MANUEL (JOSITO)','JOSE NICOLAS (MANOLITO)','JUAN DE DIOS','MIGUEL ANGEL BUENO MARTOS','NELSON DANIEL COCCHI (CHECHA)','OUMAR','RAYMOND DASSI','REIFER','SARAY LOPEZ','SERGIO ZENTENO (GATO)','SILVIA MEDINA','VANESA','VASILE MOISA','VICENTE','XAVIE MAÑAS'];
 let db=cargar();
 function cargar(){try{const s=localStorage.getItem(STORAGE);if(s){const d=JSON.parse(s);d.trabajadores=d.trabajadores||[];d.collas=d.collas||[];d.eventos=d.eventos||[];return d}}catch(e){}return{trabajadores:nombresIniciales.map((nombre,i)=>({id:'t'+i,nombre,rol:'Montador',tipo:'Sale a montaje',estado:'Disponible',observaciones:''})),collas:[],eventos:[]}}
-function save(){localStorage.setItem(STORAGE,JSON.stringify(db))}function byId(id){return document.getElementById(id)}function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function mayus(el){
+function save(){
+  localStorage.setItem(STORAGE,JSON.stringify(db));
+  if(window.guardarFirebaseStandecor && !window.aplicandoDatosFirebase){
+    window.guardarFirebaseStandecor();
+  }
+}function byId(id){return document.getElementById(id)}function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function mayus(el){
   if(!el) return;
   const inicio=el.selectionStart;
   const fin=el.selectionEnd;
@@ -2966,7 +2983,57 @@ function imprimirMesPDF(){
   },120);
 }
 
-document.addEventListener('DOMContentLoaded',()=>{try{byId('mesCalendario').value=new Date().toISOString().slice(0,7);renderAll()}catch(err){console.error('Error al iniciar:',err);alert('Hay un error en el código. Revisa la consola del navegador.')}});
+
+/* ===== FIREBASE SYNC BETA ===== */
+let firebaseDbStandecor=null;
+let firebaseReadyStandecor=false;
+let firebaseTimerStandecor=null;
+window.aplicandoDatosFirebase=false;
+
+function iniciarFirebaseStandecor(){
+  try{
+    if(!window.firebase || firebaseReadyStandecor)return;
+    firebase.initializeApp(firebaseConfigStandecor);
+    firebaseDbStandecor=firebase.firestore();
+    firebaseReadyStandecor=true;
+
+    const ref=firebaseDbStandecor.collection('standecor').doc('planificador');
+
+    ref.onSnapshot((snap)=>{
+      if(!snap.exists)return;
+      const data=snap.data()||{};
+      if(!data.db)return;
+
+      const localTime=Number(db.actualizadoFirebase||0);
+      const remoteTime=Number(data.actualizadoFirebase||0);
+      if(remoteTime && remoteTime<=localTime)return;
+
+      window.aplicandoDatosFirebase=true;
+      db=data.db;
+      db.actualizadoFirebase=remoteTime||Date.now();
+      localStorage.setItem(STORAGE,JSON.stringify(db));
+      renderAll();
+      window.aplicandoDatosFirebase=false;
+    });
+
+    window.guardarFirebaseStandecor=function(){
+      if(!firebaseReadyStandecor || !firebaseDbStandecor)return;
+      clearTimeout(firebaseTimerStandecor);
+      firebaseTimerStandecor=setTimeout(()=>{
+        try{
+          db.actualizadoFirebase=Date.now();
+          ref.set({db:db,actualizadoFirebase:db.actualizadoFirebase},{merge:true});
+        }catch(e){console.warn('No se pudo guardar en Firebase',e)}
+      },700);
+    };
+
+    window.guardarFirebaseStandecor();
+  }catch(e){
+    console.warn('Firebase no iniciado. La app sigue con localStorage.',e);
+  }
+}
+
+document.addEventListener('DOMContentLoaded',()=>{try{byId('mesCalendario').value=new Date().toISOString().slice(0,7);renderAll();iniciarFirebaseStandecor()}catch(err){console.error('Error al iniciar:',err);alert('Hay un error en el código. Revisa la consola del navegador.')}});
 
 /* ===== ÚLTIMA VERSIÓN REAL DE IMPRESIÓN CON OBSERVACIONES ===== */
 function renderPrint(eventosPersonalizados){
