@@ -498,7 +498,7 @@ label{
     color:#0B5F86!important;
     font-size:22px!important;
     font-weight:900!important;
-    padding:9px!important;
+    padding:7px!important;
     border-right:3px solid var(--azul)!important;
   }
   .print-simple-heads div:last-child{border-right:0!important}
@@ -717,8 +717,8 @@ label{
 
 @media(max-width:430px){
   .brand-logo{
-    width:88px!important;
-    min-width:88px!important;
+    width:72px!important;
+    min-width:72px!important;
     max-width:88px!important;
     height:42px!important;
   }
@@ -771,8 +771,8 @@ label{
 
 @media(max-width:430px){
   .brand-logo{
-    width:126px!important;
-    min-width:126px!important;
+    width:88px!important;
+    min-width:88px!important;
     max-width:126px!important;
     height:42px!important;
     flex:0 0 126px!important;
@@ -784,7 +784,7 @@ label{
 @media(max-width:1100px){
   header{
     padding:10px 120px 10px 14px!important;
-    min-height:82px!important;
+    min-height:64px!important;
   }
   .topbar{
     display:flex!important;
@@ -850,8 +850,8 @@ label{
     min-height:76px!important;
   }
   .brand-logo{
-    width:112px!important;
-    min-width:112px!important;
+    width:64px!important;
+    min-width:64px!important;
     max-width:112px!important;
     height:46px!important;
     flex:0 0 112px!important;
@@ -1853,6 +1853,172 @@ label{
 @media(max-width:720px){
   .pdf-mensual-btn{width:100%;justify-content:center}
 }
+
+/* ===== LOGIN INTERNO STANDECOR ===== */
+#loginOverlayStandecor{position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#0B5F86,#14A4E3);display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card-standecor{width:min(420px,94vw);background:white;border-radius:24px;padding:28px;box-shadow:0 24px 70px rgba(0,0,0,.25);text-align:center}
+.login-logo-standecor{font-size:30px;font-weight:900;color:#0B5F86;letter-spacing:1px;margin-bottom:6px}
+.login-sub-standecor{font-size:12px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:22px}
+.login-card-standecor input,.login-card-standecor select{width:100%;margin-bottom:10px;text-transform:none!important}
+.login-error-standecor{color:#b42318;font-weight:800;font-size:12px;min-height:18px;margin-top:8px}
+.user-session-box{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:900;color:white;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:7px 10px}
+.user-session-box button{padding:5px 8px;border-radius:999px;font-size:10px;background:rgba(255,255,255,.9);color:#0B5F86;box-shadow:none}
+.user-admin-btn{background:linear-gradient(135deg,#eefaf0,#dff5df)!important;color:#207a35!important;border:1px solid #bfe7c7!important}
+#usuariosPanelStandecor{position:fixed;inset:0;z-index:99998;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:18px}
+.usuarios-modal{width:min(760px,96vw);max-height:88vh;overflow:auto;background:white;border-radius:22px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.25)}
+.usuarios-modal h2{margin-top:0;color:#0B5F86}.usuarios-grid{display:grid;grid-template-columns:1fr 1fr 160px auto;gap:8px;align-items:end;margin-bottom:14px}.usuarios-list{display:flex;flex-direction:column;gap:8px}.usuario-row{display:grid;grid-template-columns:1fr 120px auto;gap:8px;align-items:center;border:1px solid #dbe7ef;border-radius:14px;padding:10px;background:#f8fcff}.usuario-role{font-weight:900;color:#0B5F86;text-transform:uppercase;font-size:11px}.usuario-delete{background:#fff1f1!important;color:#b42318!important;border:1px solid #ffcaca!important}
+body.user-viewer #tab-planificacion .span-4,
+body.user-viewer #tab-trabajadores .span-4,
+body.user-viewer #tab-collas .span-4{display:none!important}
+body.user-viewer .finish-btn,
+body.user-viewer button[title="Editar"],
+body.user-viewer button[title="Eliminar"],
+body.user-viewer .delete,
+body.user-viewer button[onclick^="guardar"],
+body.user-viewer button[onclick^="borrar"],
+body.user-viewer button[onclick^="editar"],
+body.user-viewer button[onclick^="toggleTerminado"]{display:none!important}
+@media(max-width:720px){.usuarios-grid{grid-template-columns:1fr}.usuario-row{grid-template-columns:1fr}.user-session-box{font-size:10px;padding:6px 8px}}
+
+/* ===== AJUSTE LOGO CABECERA ===== */
+.brand-logo,
+.logo-box,
+.header-logo,
+.app-logo{
+  width:126px!important;
+  height:72px!important;
+  min-width:126px!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:linear-gradient(135deg,#14A4E3,#0B8FD0)!important;
+  box-shadow:0 12px 30px rgba(15,23,42,.18)!important;
+}
+
+.brand-logo img,
+.logo-box img,
+.header-logo img,
+.app-logo img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  border-radius:22px!important;
+  display:block!important;
+  padding:8px!important;
+  box-sizing:border-box!important;
+}
+
+@media(max-width:900px){
+  .brand-logo,
+  .logo-box,
+  .header-logo,
+  .app-logo{
+    width:112px!important;
+    height:82px!important;
+    min-width:112px!important;
+    border-radius:18px!important;
+  }
+
+  .brand-logo img,
+  .logo-box img,
+  .header-logo img,
+  .app-logo img{
+    border-radius:20px!important;
+    object-fit:contain!important;
+    padding:9px!important;
+  }
+}
+
+/* ===== LOGO TEXTO STANDECOR - FINAL ===== */
+.standecor-text-logo{
+  width:126px;
+  height:72px;
+  min-width:126px;
+  border-radius:22px;
+  background:linear-gradient(135deg,#1db4ff 0%,#1297dd 100%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  box-shadow:0 10px 24px rgba(15,23,42,.18), inset 0 1px 0 rgba(255,255,255,.18);
+  overflow:hidden;
+  flex-shrink:0;
+}
+
+.standecor-text-logo::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(145deg,rgba(255,255,255,.18),transparent 46%);
+  pointer-events:none;
+}
+
+.standecor-text-logo .logo-main{
+  color:white;
+  font-family:"Helvetica Neue",Arial,Helvetica,sans-serif;
+  font-size:20px;
+  font-weight:400;
+  letter-spacing:-1.1px;
+  line-height:1;
+  position:relative;
+  z-index:2;
+  transform:scaleX(.94);
+}
+
+.standecor-text-logo .logo-dotcom{
+  position:absolute;
+  right:13px;
+  bottom:16px;
+  color:white;
+  font-family:"Helvetica Neue",Arial,Helvetica,sans-serif;
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:-.2px;
+  line-height:1;
+  opacity:.98;
+  z-index:2;
+}
+
+@media(max-width:900px){
+  .standecor-text-logo{
+    width:108px;
+    height:64px;
+    min-width:108px;
+    border-radius:20px;
+  }
+
+  .standecor-text-logo .logo-main{
+    font-size:17px;
+    letter-spacing:-.9px;
+  }
+
+  .standecor-text-logo .logo-dotcom{
+    right:12px;
+    bottom:14px;
+    font-size:8.5px;
+  }
+}
+
+@media(max-width:430px){
+  .standecor-text-logo{
+    width:96px;
+    height:56px;
+    min-width:96px;
+    border-radius:18px;
+  }
+
+  .standecor-text-logo .logo-main{
+    font-size:15px;
+  }
+
+  .standecor-text-logo .logo-dotcom{
+    right:10px;
+    bottom:12px;
+    font-size:7.5px;
+  }
+}
 </style>
 <svg width="0" height="0" style="position:absolute;display:none" aria-hidden="true">
   <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/><path d="M18 12h.01"/></symbol>
@@ -1870,7 +2036,137 @@ label{
   <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></symbol>
   <symbol id="i-clear" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="m8 6 8 15"/><path d="M16 6 8 21"/></symbol>
 </svg>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
+/* ===== LOGIN INTERNO BÁSICO STANDECOR ===== */
+const LOGIN_STORAGE_STANDECOR='standecor_usuario_activo';
+let usuarioActivoStandecor=null;
+
+function asegurarUsuariosStandecor(){
+  if(!db.usuariosInternos || !Array.isArray(db.usuariosInternos)) db.usuariosInternos=[];
+  if(!db.usuariosInternos.some(u=>u.usuario==='IsraelM')){
+    db.usuariosInternos.push({usuario:'IsraelM',password:'1234',rol:'admin',creado:new Date().toISOString()});
+    try{save()}catch(e){}
+  }
+}
+
+function esAdminStandecor(){return usuarioActivoStandecor && usuarioActivoStandecor.rol==='admin'}
+
+function mostrarLoginStandecor(){
+  if(document.getElementById('loginOverlayStandecor'))return;
+  const div=document.createElement('div');
+  div.id='loginOverlayStandecor';
+  div.innerHTML=`<div class="login-card-standecor">
+    <div class="login-logo-standecor">STANDECOR</div>
+    <div class="login-sub-standecor">Planificador de montajes</div>
+    <input id="loginUserStandecor" placeholder="Usuario" autocomplete="username">
+    <input id="loginPassStandecor" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <button type="button" onclick="entrarStandecor()">Entrar</button>
+    <div class="login-error-standecor" id="loginErrorStandecor"></div>
+  </div>`;
+  document.body.appendChild(div);
+  setTimeout(()=>document.getElementById('loginUserStandecor')?.focus(),50);
+}
+
+function entrarStandecor(){
+  asegurarUsuariosStandecor();
+  const usuario=(document.getElementById('loginUserStandecor')?.value||'').trim();
+  const password=document.getElementById('loginPassStandecor')?.value||'';
+  const u=db.usuariosInternos.find(x=>x.usuario===usuario && x.password===password);
+  if(!u){
+    const err=document.getElementById('loginErrorStandecor');
+    if(err)err.textContent='Usuario o contraseña incorrectos';
+    return;
+  }
+  usuarioActivoStandecor={usuario:u.usuario,rol:u.rol};
+  localStorage.setItem(LOGIN_STORAGE_STANDECOR,JSON.stringify(usuarioActivoStandecor));
+  document.getElementById('loginOverlayStandecor')?.remove();
+  aplicarPermisosStandecor();
+}
+
+function cerrarSesionStandecor(){
+  localStorage.removeItem(LOGIN_STORAGE_STANDECOR);
+  usuarioActivoStandecor=null;
+  aplicarPermisosStandecor();
+  mostrarLoginStandecor();
+}
+
+function aplicarPermisosStandecor(){
+  document.body.classList.toggle('user-viewer',Boolean(usuarioActivoStandecor && usuarioActivoStandecor.rol!=='admin'));
+  let box=document.getElementById('userSessionStandecor');
+  const zona=document.querySelector('.topbar .no-print')||document.querySelector('header')||document.body;
+  if(!box){
+    box=document.createElement('div');
+    box.id='userSessionStandecor';
+    box.className='user-session-box no-print';
+    zona.appendChild(box);
+  }
+  if(usuarioActivoStandecor){
+    box.innerHTML=`<span>${usuarioActivoStandecor.usuario} · ${usuarioActivoStandecor.rol==='admin'?'ADMIN':'VISOR'}</span>${esAdminStandecor()?'<button type="button" class="user-admin-btn" onclick="abrirUsuariosStandecor()">Usuarios</button>':''}<button type="button" onclick="cerrarSesionStandecor()">Salir</button>`;
+  }else{
+    box.innerHTML='';
+  }
+}
+
+function abrirUsuariosStandecor(){
+  if(!esAdminStandecor())return;
+  renderUsuariosStandecor();
+  let panel=document.getElementById('usuariosPanelStandecor');
+  if(!panel){
+    panel=document.createElement('div');
+    panel.id='usuariosPanelStandecor';
+    document.body.appendChild(panel);
+  }
+  panel.style.display='flex';
+}
+
+function cerrarUsuariosStandecor(){const p=document.getElementById('usuariosPanelStandecor');if(p)p.style.display='none'}
+
+function renderUsuariosStandecor(){
+  asegurarUsuariosStandecor();
+  let panel=document.getElementById('usuariosPanelStandecor');
+  if(!panel){panel=document.createElement('div');panel.id='usuariosPanelStandecor';document.body.appendChild(panel)}
+  panel.innerHTML=`<div class="usuarios-modal">
+    <h2>Usuarios</h2>
+    <div class="usuarios-grid">
+      <div><label>Usuario</label><input id="nuevoUsuarioStandecor" placeholder="Usuario"></div>
+      <div><label>Contraseña</label><input id="nuevoPassStandecor" placeholder="Contraseña"></div>
+      <div><label>Rol</label><select id="nuevoRolStandecor"><option value="visor">Visor</option><option value="admin">Admin</option></select></div>
+      <button type="button" onclick="crearUsuarioStandecor()">Crear</button>
+    </div>
+    <div class="usuarios-list">${db.usuariosInternos.map(u=>`<div class="usuario-row"><strong>${esc(u.usuario)}</strong><span class="usuario-role">${esc(u.rol)}</span>${u.usuario==='IsraelM'?'<span class="muted">Admin principal</span>':`<button type="button" class="usuario-delete" onclick="borrarUsuarioStandecor('${esc(u.usuario)}')">Borrar</button>`}</div>`).join('')}</div>
+    <div style="display:flex;justify-content:flex-end;margin-top:14px"><button type="button" class="light" onclick="cerrarUsuariosStandecor()">Cerrar</button></div>
+  </div>`;
+}
+
+function crearUsuarioStandecor(){
+  asegurarUsuariosStandecor();
+  const usuario=(document.getElementById('nuevoUsuarioStandecor')?.value||'').trim();
+  const password=document.getElementById('nuevoPassStandecor')?.value||'';
+  const rol=document.getElementById('nuevoRolStandecor')?.value||'visor';
+  if(!usuario||!password){alert('Introduce usuario y contraseña.');return}
+  if(db.usuariosInternos.some(u=>u.usuario===usuario)){alert('Ese usuario ya existe.');return}
+  db.usuariosInternos.push({usuario,password,rol,creado:new Date().toISOString()});
+  save();
+  renderUsuariosStandecor();
+}
+
+function borrarUsuarioStandecor(usuario){
+  if(usuario==='IsraelM')return;
+  if(!confirm('¿Borrar usuario '+usuario+'?'))return;
+  db.usuariosInternos=db.usuariosInternos.filter(u=>u.usuario!==usuario);
+  save();
+  renderUsuariosStandecor();
+}
+
+function iniciarLoginInternoStandecor(){
+  asegurarUsuariosStandecor();
+  try{usuarioActivoStandecor=JSON.parse(localStorage.getItem(LOGIN_STORAGE_STANDECOR)||'null')}catch(e){usuarioActivoStandecor=null}
+  aplicarPermisosStandecor();
+  if(!usuarioActivoStandecor)mostrarLoginStandecor();
+}
+
+document.addEventListener('DOMContentLoaded',()=>setTimeout(iniciarLoginInternoStandecor,400));
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script>
 const firebaseConfigStandecor = {
@@ -1885,7 +2181,7 @@ const firebaseConfigStandecor = {
 </head>
 <body>
 <div id="toastAlert" class="toast-alert"></div>
-<header><div class="topbar"><div class="brand-area"><img src="images.jpg" alt="STANDECOR" class="brand-logo"><div class="brand-title"><div class="brand-badge"><h1>PLANIFICADOR DE MONTAJES</h1><div class="brand-by">by IsraelM</div></div></div></div><div class="no-print"><button class="light top-icon-btn" title="Exportar copia" onclick="exportarDatos()"><svg class="ico"><use href="#i-export"></use></svg></button><button class="light top-icon-btn" title="Importar copia" onclick="document.getElementById('importFile').click()"><svg class="ico"><use href="#i-import"></use></svg></button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importarDatos(event)"></div></div></header>
+<header><div class="topbar"><div class="brand-area"><div class="standecor-text-logo"><span class="logo-main">STANDECOR</span><span class="logo-dotcom">.com</span></div><div class="brand-title"><div class="brand-badge"><h1>PLANIFICADOR DE MONTAJES</h1><div class="brand-by">by IsraelM</div></div></div></div><div class="no-print"><button class="light top-icon-btn" title="Exportar copia" onclick="exportarDatos()"><svg class="ico"><use href="#i-export"></use></svg></button><button class="light top-icon-btn" title="Importar copia" onclick="document.getElementById('importFile').click()"><svg class="ico"><use href="#i-import"></use></svg></button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importarDatos(event)"></div></div></header>
 <nav class="no-print"><button class="tab-btn active" onclick="showTab('planificacion',this)"><svg class="ico"><use href="#i-plan"></use></svg> PLANIFICACIÓN</button><button class="tab-btn" onclick="showTab('calendario',this)"><svg class="ico"><use href="#i-calendar"></use></svg> CALENDARIO</button><button class="tab-btn" onclick="showTab('trabajadores',this)"><svg class="ico"><use href="#i-users"></use></svg> TRABAJADORES</button><button class="tab-btn" onclick="showTab('collas',this)"><svg class="ico"><use href="#i-handshake"></use></svg> COLLAS</button><button class="tab-btn" onclick="showTab('disponibles',this)"><svg class="ico"><use href="#i-available"></use></svg> DISPONIBLES</button><button class="tab-btn" onclick="showTab('avisos',this)"><svg class="ico"><use href="#i-alert"></use></svg> AVISOS</button></nav>
 <main>
 <section id="tab-planificacion" class="tab active"><div class="grid"><div class="card span-4 no-print"><h2>Nuevo montaje / desmontaje</h2><input type="hidden" id="eventoId"><label>Feria</label><input list="feriasList" autocomplete="off" oninput="autocompletarLugar()" id="feria" oninput="mayus(this)" placeholder="FERIA"><div class="form-row"><div><label>Ciudad / país</label><input list="lugaresList" autocomplete="off" id="lugar" oninput="mayus(this)"></div><div><label>Stand / cliente</label><input list="standsList" autocomplete="off" id="stand" oninput="mayus(this)"></div></div><h3>Montaje</h3><div class="form-row"><div><label>Inicio montaje</label><input type="date" id="montajeInicio"></div><div><label>Final montaje</label><input type="date" id="montajeFin"></div></div><h3>Desmontaje</h3><div class="form-row"><div><label>Inicio desmontaje</label><input type="date" id="desmontajeInicio"></div><div><label>Final desmontaje</label><input type="date" id="desmontajeFin"></div></div><div class="form-row"><div><label>Colla externa</label><select id="colla"></select></div><div><label>Cantidad colla</label><input id="cantidadColla" type="number" min="1" placeholder="Ej: 4"></div></div><div id="extraCollas"></div><div class="actions"><button class="secondary" onclick="agregarCollaExtra()" type="button">+ Añadir otra colla</button></div><label>Buscar trabajadores</label><input id="buscarAsignar" oninput="renderWorkerPicker();mayus(this)" placeholder="BUSCAR"><div id="workerPicker" class="worker-picker"></div><div id="seleccionPreview" class="selected-preview"></div><label>Observaciones</label><textarea id="observaciones" oninput="mayus(this)"></textarea><div id="formAvisos"></div><div class="actions"><button class="success" onclick="guardarEvento()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarFormulario()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2>Planificación</h2><div class="filters no-print"><div><label>Buscar</label><input id="buscarPlan" oninput="mayus(this);renderAll()"></div><div><label>Desde</label><input type="date" id="filtroDesde" onchange="renderAll()"></div><div><label>Hasta</label><input type="date" id="filtroHasta" onchange="renderAll()"></div><div><label>&nbsp;</label><button type="button" class="small pdf-mensual-btn" title="Imprimir trabajos del mes / Guardar como PDF" onclick="imprimirMesPDF()"><svg class="ico"><use href="#i-print"></use></svg> PDF mensual</button></div></div><div class="table-wrap pantalla-planificacion"><table><thead><tr><th>Feria</th><th>Lugar</th><th>Stand / cliente</th><th>Trabajo</th><th>Personal</th><th>Colla</th><th>Avisos</th><th class="no-print">Acciones</th></tr></thead><tbody id="tablaEventos"></tbody></table></div><div id="printPlanificacion" class="print-board"></div></div></div></section>
@@ -3207,5 +3503,470 @@ function renderPrint(eventosPersonalizados){
   byId('printPlanificacion').innerHTML=html;
 }
 </script>
-</body>
+<script>
+/* ===== ARRANQUE FORZADO LOGIN INTERNO ===== */
+(function(){
+  function bootLoginStandecor(){
+    try{
+      if(typeof iniciarLoginInternoStandecor==='function'){
+        iniciarLoginInternoStandecor();
+      }else{
+        console.warn('Login interno todavía no disponible');
+      }
+    }catch(e){
+      console.error('Error iniciando login interno:',e);
+    }
+  }
+  window.addEventListener('load',()=>setTimeout(bootLoginStandecor,900));
+  setTimeout(bootLoginStandecor,1800);
+})();
+</script>
+<script>
+/* ===== LOGIN INTERNO STANDECOR - ARRANQUE AUTÓNOMO ===== */
+(function(){
+  const LOGIN_KEY='standecor_usuario_activo';
+  const ADMIN_USER='IsraelM';
+  const ADMIN_PASS='1234';
+
+  function cssLogin(){
+    if(document.getElementById('loginInternoCSSFinal'))return;
+    const st=document.createElement('style');
+    st.id='loginInternoCSSFinal';
+    st.textContent=`
+      #loginOverlayStandecorFinal{position:fixed;inset:0;z-index:2147483647;background:linear-gradient(135deg,#0B5F86,#14A4E3);display:flex;align-items:center;justify-content:center;padding:20px}
+      .login-card-final{width:min(420px,94vw);background:#fff;border-radius:24px;padding:28px;box-shadow:0 24px 70px rgba(0,0,0,.28);text-align:center}
+      .login-card-final h1{color:#0B5F86!important;font-size:30px!important;margin:0 0 4px!important;letter-spacing:1px!important}
+      .login-card-final p{margin:0 0 20px;color:#64748b;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:1px}
+      .login-card-final input{width:100%;box-sizing:border-box;margin-bottom:10px;text-transform:none!important}
+      .login-card-final button{width:100%;justify-content:center}
+      #loginErrorFinal{min-height:18px;color:#b42318;font-size:12px;font-weight:900;margin-top:8px}
+      #usuarioBarraFinal{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.26);color:white;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900}
+      #usuarioBarraFinal button{padding:5px 8px;border-radius:999px;font-size:10px;background:rgba(255,255,255,.92);color:#0B5F86;box-shadow:none}
+      #usuariosPanelFinal{position:fixed;inset:0;z-index:2147483646;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:18px}
+      .usuarios-modal-final{width:min(760px,96vw);max-height:88vh;overflow:auto;background:#fff;border-radius:22px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.25)}
+      .usuarios-modal-final h2{margin-top:0;color:#0B5F86}.usuarios-form-final{display:grid;grid-template-columns:1fr 1fr 140px auto;gap:8px;align-items:end;margin-bottom:14px}.usuario-row-final{display:grid;grid-template-columns:1fr 120px auto;gap:8px;align-items:center;border:1px solid #dbe7ef;border-radius:14px;padding:10px;background:#f8fcff;margin-bottom:8px}.usuario-row-final span{font-size:11px;font-weight:900;color:#0B5F86;text-transform:uppercase}
+      body.user-viewer .folder-actions button:not([title*="Imprimir"]),body.user-viewer .span-4,body.user-viewer .delete,body.user-viewer .finish-btn{display:none!important}
+      @media(max-width:720px){.usuarios-form-final,.usuario-row-final{grid-template-columns:1fr}#usuarioBarraFinal{font-size:10px}}
+    `;
+    document.head.appendChild(st);
+  }
+
+  function asegurarDB(){
+    if(!window.db)return false;
+    if(!Array.isArray(window.db.usuariosInternos)) window.db.usuariosInternos=[];
+    if(!window.db.usuariosInternos.some(u=>u.usuario===ADMIN_USER)){
+      window.db.usuariosInternos.push({usuario:ADMIN_USER,password:ADMIN_PASS,rol:'admin',creado:new Date().toISOString()});
+      try{ if(typeof window.save==='function') window.save(); }catch(e){}
+    }
+    return true;
+  }
+
+  function usuarioActivo(){try{return JSON.parse(localStorage.getItem(LOGIN_KEY)||'null')}catch(e){return null}}
+  function setUsuario(u){localStorage.setItem(LOGIN_KEY,JSON.stringify({usuario:u.usuario,rol:u.rol}))}
+  function esAdmin(){const u=usuarioActivo();return u&&u.rol==='admin'}
+
+  function mostrarLogin(){
+    cssLogin();
+    if(document.getElementById('loginOverlayStandecorFinal'))return;
+    const d=document.createElement('div');
+    d.id='loginOverlayStandecorFinal';
+    d.innerHTML=`<div class="login-card-final"><h1>STANDECOR</h1><p>Planificador de montajes</p><input id="loginUserFinal" placeholder="Usuario"><input id="loginPassFinal" type="password" placeholder="Contraseña"><button type="button" id="loginBtnFinal">Entrar</button><div id="loginErrorFinal"></div></div>`;
+    document.body.appendChild(d);
+    document.getElementById('loginBtnFinal').onclick=entrar;
+    document.getElementById('loginPassFinal').addEventListener('keydown',e=>{if(e.key==='Enter')entrar()});
+    setTimeout(()=>document.getElementById('loginUserFinal')?.focus(),50);
+  }
+
+  function entrar(){
+    if(!asegurarDB())return;
+    const usuario=(document.getElementById('loginUserFinal')?.value||'').trim();
+    const pass=document.getElementById('loginPassFinal')?.value||'';
+    const u=window.db.usuariosInternos.find(x=>x.usuario===usuario&&x.password===pass);
+    if(!u){document.getElementById('loginErrorFinal').textContent='Usuario o contraseña incorrectos';return}
+    setUsuario(u);
+    document.getElementById('loginOverlayStandecorFinal')?.remove();
+    aplicarPermisos();
+  }
+
+  function salir(){localStorage.removeItem(LOGIN_KEY);aplicarPermisos();mostrarLogin()}
+
+  function aplicarPermisos(){
+    const u=usuarioActivo();
+    document.body.classList.toggle('user-viewer',!!(u&&u.rol!=='admin'));
+    let box=document.getElementById('usuarioBarraFinal');
+    const zona=document.querySelector('.topbar .no-print')||document.querySelector('header')||document.body;
+    if(!box){box=document.createElement('div');box.id='usuarioBarraFinal';box.className='no-print';zona.appendChild(box)}
+    if(!u){box.innerHTML='';return}
+    box.innerHTML=`<span>${u.usuario} · ${u.rol==='admin'?'ADMIN':'VISOR'}</span>${u.rol==='admin'?'<button type="button" id="btnUsuariosFinal">Usuarios</button>':''}<button type="button" id="btnSalirFinal">Salir</button>`;
+    const bu=document.getElementById('btnUsuariosFinal');if(bu)bu.onclick=abrirUsuarios;
+    document.getElementById('btnSalirFinal').onclick=salir;
+  }
+
+  function abrirUsuarios(){
+    if(!esAdmin()||!asegurarDB())return;
+    cssLogin();
+    let p=document.getElementById('usuariosPanelFinal');
+    if(!p){p=document.createElement('div');p.id='usuariosPanelFinal';document.body.appendChild(p)}
+    p.style.display='flex';
+    renderUsuarios();
+  }
+
+  function renderUsuarios(){
+    const p=document.getElementById('usuariosPanelFinal');
+    p.innerHTML=`<div class="usuarios-modal-final"><h2>Usuarios</h2><div class="usuarios-form-final"><div><label>Usuario</label><input id="nuevoUserFinal"></div><div><label>Contraseña</label><input id="nuevoPassFinal"></div><div><label>Rol</label><select id="nuevoRolFinal"><option value="visor">Visor</option><option value="admin">Admin</option></select></div><button type="button" id="crearUserFinal">Crear</button></div><div>${window.db.usuariosInternos.map(u=>`<div class="usuario-row-final"><strong>${u.usuario}</strong><span>${u.rol}</span>${u.usuario===ADMIN_USER?'<em>Admin principal</em>':`<button type="button" data-del-user="${u.usuario}">Borrar</button>`}</div>`).join('')}</div><div style="display:flex;justify-content:flex-end;margin-top:14px"><button type="button" id="cerrarUsersFinal">Cerrar</button></div></div>`;
+    document.getElementById('crearUserFinal').onclick=crearUsuario;
+    document.getElementById('cerrarUsersFinal').onclick=()=>p.style.display='none';
+    p.querySelectorAll('[data-del-user]').forEach(b=>b.onclick=()=>borrarUsuario(b.getAttribute('data-del-user')));
+  }
+
+  function crearUsuario(){
+    const usuario=(document.getElementById('nuevoUserFinal').value||'').trim();
+    const password=document.getElementById('nuevoPassFinal').value||'';
+    const rol=document.getElementById('nuevoRolFinal').value||'visor';
+    if(!usuario||!password){alert('Introduce usuario y contraseña.');return}
+    if(window.db.usuariosInternos.some(u=>u.usuario===usuario)){alert('Ese usuario ya existe.');return}
+    window.db.usuariosInternos.push({usuario,password,rol,creado:new Date().toISOString()});
+    if(typeof window.save==='function')window.save();
+    renderUsuarios();
+  }
+
+  function borrarUsuario(usuario){
+    if(usuario===ADMIN_USER)return;
+    if(!confirm('¿Borrar usuario '+usuario+'?'))return;
+    window.db.usuariosInternos=window.db.usuariosInternos.filter(u=>u.usuario!==usuario);
+    if(typeof window.save==='function')window.save();
+    renderUsuarios();
+  }
+
+  function boot(){
+    cssLogin();
+    if(!asegurarDB()){setTimeout(boot,400);return}
+    aplicarPermisos();
+    if(!usuarioActivo())mostrarLogin();
+  }
+
+  window.addEventListener('load',()=>setTimeout(boot,300));
+  setTimeout(boot,1200);
+})();
+</script>
+<script>
+/* ===== PANEL USUARIOS ADMIN - CORRECCIÓN FINAL ===== */
+(function(){
+  const LOGIN_KEY='standecor_usuario_activo';
+  const ADMIN_USER='IsraelM';
+  const ADMIN_PASS='1234';
+
+  function getUserActivoPanel(){
+    try{return JSON.parse(localStorage.getItem(LOGIN_KEY)||'null')}catch(e){return null}
+  }
+
+  function esAdminPanel(){
+    const u=getUserActivoPanel();
+    return u && u.usuario===ADMIN_USER && u.rol==='admin';
+  }
+
+  function asegurarUsuariosPanel(){
+    if(!window.db)return false;
+    if(!Array.isArray(db.usuariosInternos))db.usuariosInternos=[];
+    if(!db.usuariosInternos.some(u=>u.usuario===ADMIN_USER)){
+      db.usuariosInternos.push({usuario:ADMIN_USER,password:ADMIN_PASS,rol:'admin',creado:new Date().toISOString()});
+      try{if(typeof save==='function')save()}catch(e){}
+    }
+    return true;
+  }
+
+  function cssUsuariosPanel(){
+    if(document.getElementById('usuariosAdminFixCSS'))return;
+    const st=document.createElement('style');
+    st.id='usuariosAdminFixCSS';
+    st.textContent=`
+      #btnUsuariosAdminFix{position:fixed;right:18px;bottom:18px;z-index:99990;background:linear-gradient(135deg,#0B5F86,#14A4E3);color:white;border:0;border-radius:999px;padding:12px 16px;font-weight:900;box-shadow:0 10px 28px rgba(15,23,42,.25);display:none;align-items:center;gap:8px}
+      #usuariosAdminFixPanel{position:fixed;inset:0;z-index:99991;background:rgba(15,23,42,.58);display:none;align-items:center;justify-content:center;padding:18px}
+      .usuarios-admin-fix-modal{width:min(780px,96vw);max-height:88vh;overflow:auto;background:white;border-radius:22px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.25)}
+      .usuarios-admin-fix-modal h2{margin:0 0 14px;color:#0B5F86}
+      .usuarios-admin-fix-form{display:grid;grid-template-columns:1fr 1fr 150px auto;gap:8px;align-items:end;margin-bottom:16px}
+      .usuarios-admin-fix-list{display:flex;flex-direction:column;gap:8px}
+      .usuarios-admin-fix-row{display:grid;grid-template-columns:1fr 120px auto;gap:8px;align-items:center;border:1px solid #dbe7ef;border-radius:14px;background:#f8fcff;padding:10px}
+      .usuarios-admin-fix-row strong{color:#0f172a}.usuarios-admin-fix-row span{font-size:11px;font-weight:900;color:#0B5F86;text-transform:uppercase}
+      .usuarios-admin-fix-delete{background:#fff1f1!important;color:#b42318!important;border:1px solid #ffcaca!important}
+      .usuarios-admin-fix-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+      @media(max-width:720px){.usuarios-admin-fix-form,.usuarios-admin-fix-row{grid-template-columns:1fr}#btnUsuariosAdminFix{right:12px;bottom:12px;padding:10px 13px}}
+    `;
+    document.head.appendChild(st);
+  }
+
+  function crearBotonUsuariosPanel(){
+    cssUsuariosPanel();
+    let btn=document.getElementById('btnUsuariosAdminFix');
+    if(!btn){
+      btn=document.createElement('button');
+      btn.id='btnUsuariosAdminFix';
+      btn.type='button';
+      btn.innerHTML='👤 Usuarios';
+      btn.onclick=abrirUsuariosPanelFix;
+      document.body.appendChild(btn);
+    }
+    btn.style.display=esAdminPanel()?'flex':'none';
+  }
+
+  function abrirUsuariosPanelFix(){
+    if(!asegurarUsuariosPanel()||!esAdminPanel())return;
+    cssUsuariosPanel();
+    let panel=document.getElementById('usuariosAdminFixPanel');
+    if(!panel){
+      panel=document.createElement('div');
+      panel.id='usuariosAdminFixPanel';
+      document.body.appendChild(panel);
+    }
+    panel.style.display='flex';
+    renderUsuariosPanelFix();
+  }
+
+  function cerrarUsuariosPanelFix(){
+    const panel=document.getElementById('usuariosAdminFixPanel');
+    if(panel)panel.style.display='none';
+  }
+
+  function renderUsuariosPanelFix(){
+    const panel=document.getElementById('usuariosAdminFixPanel');
+    if(!panel)return;
+    asegurarUsuariosPanel();
+    panel.innerHTML=`<div class="usuarios-admin-fix-modal">
+      <h2>Gestión de usuarios</h2>
+      <div class="usuarios-admin-fix-form">
+        <div><label>Usuario</label><input id="fixNuevoUsuario" placeholder="Ej: oficina"></div>
+        <div><label>Contraseña</label><input id="fixNuevaPass" placeholder="Contraseña"></div>
+        <div><label>Rol</label><select id="fixNuevoRol"><option value="visor">Visor</option><option value="admin">Admin</option></select></div>
+        <button type="button" onclick="crearUsuarioPanelFix()">Crear</button>
+      </div>
+      <div class="usuarios-admin-fix-list">
+        ${db.usuariosInternos.map(u=>`<div class="usuarios-admin-fix-row"><strong>${esc(u.usuario)}</strong><span>${esc(u.rol)}</span>${u.usuario===ADMIN_USER?'<em>Admin principal</em>':`<button type="button" class="usuarios-admin-fix-delete" onclick="borrarUsuarioPanelFix('${esc(u.usuario)}')">Borrar</button>`}</div>`).join('')}
+      </div>
+      <div class="usuarios-admin-fix-actions"><button type="button" class="light" onclick="cerrarUsuariosPanelFix()">Cerrar</button></div>
+    </div>`;
+  }
+
+  window.crearUsuarioPanelFix=function(){
+    if(!asegurarUsuariosPanel()||!esAdminPanel())return;
+    const usuario=(document.getElementById('fixNuevoUsuario')?.value||'').trim();
+    const password=document.getElementById('fixNuevaPass')?.value||'';
+    const rol=document.getElementById('fixNuevoRol')?.value||'visor';
+    if(!usuario||!password){alert('Introduce usuario y contraseña.');return}
+    if(db.usuariosInternos.some(u=>u.usuario===usuario)){alert('Ese usuario ya existe.');return}
+    db.usuariosInternos.push({usuario,password,rol,creado:new Date().toISOString()});
+    if(typeof save==='function')save();
+    renderUsuariosPanelFix();
+  };
+
+  window.borrarUsuarioPanelFix=function(usuario){
+    if(usuario===ADMIN_USER)return;
+    if(!confirm('¿Borrar usuario '+usuario+'?'))return;
+    db.usuariosInternos=db.usuariosInternos.filter(u=>u.usuario!==usuario);
+    if(typeof save==='function')save();
+    renderUsuariosPanelFix();
+  };
+
+  window.cerrarUsuariosPanelFix=cerrarUsuariosPanelFix;
+
+  function bootUsuariosPanel(){
+    if(!asegurarUsuariosPanel()){setTimeout(bootUsuariosPanel,500);return}
+    crearBotonUsuariosPanel();
+  }
+
+  window.addEventListener('load',()=>setTimeout(bootUsuariosPanel,800));
+  setInterval(crearBotonUsuariosPanel,2000);
+})();
+</script>
+<script>
+/* =========================================================
+   BETA USUARIOS STANDECOR - AISLADA DE LOS DATOS PRINCIPALES
+   No modifica db.eventos, db.trabajadores, db.collas ni planificación.
+   Usa Firestore separado: standecor/usuarios_beta
+========================================================= */
+(function(){
+  const SESSION_KEY='standecor_beta_user_session';
+  const ADMIN_USER='IsraelM';
+  const ADMIN_PASS='1234';
+  let usuariosBeta=[];
+  let usuariosRef=null;
+
+  function injectUsuariosBetaCSS(){
+    if(document.getElementById('usuariosBetaCSS'))return;
+    const st=document.createElement('style');
+    st.id='usuariosBetaCSS';
+    st.textContent=`
+      #loginBetaOverlay{position:fixed;inset:0;z-index:2147483600;background:linear-gradient(135deg,#0B5F86,#14A4E3);display:flex;align-items:center;justify-content:center;padding:20px}
+      .loginBetaCard{width:min(430px,94vw);background:white;border-radius:24px;padding:30px;box-shadow:0 24px 70px rgba(0,0,0,.30);text-align:center}
+      .loginBetaLogo{font-size:32px;font-weight:900;color:#0B5F86;letter-spacing:1px;margin-bottom:6px}
+      .loginBetaSub{font-size:12px;font-weight:900;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:22px}
+      .loginBetaCard input{width:100%;box-sizing:border-box;margin-bottom:10px;text-transform:none!important}
+      .loginBetaCard button{width:100%;justify-content:center}
+      #loginBetaError{min-height:18px;color:#b42318;font-size:12px;font-weight:900;margin-top:8px}
+      #betaUserBar{position:fixed;right:150px;top:25px;z-index:99980;display:flex;align-items:center;gap:8px;background:rgba(11,95,134,.92);color:white;border-radius:999px;padding:8px 10px;font-size:11px;font-weight:900;box-shadow:0 10px 25px rgba(15,23,42,.22);border:1px solid rgba(255,255,255,.18)}
+      #betaUserBar button{width:34px;height:34px;padding:0;border-radius:999px;font-size:16px;background:white;color:#0B5F86!important;box-shadow:none;font-weight:900;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+      #usuariosBetaPanel{position:fixed;inset:0;z-index:2147483500;background:rgba(15,23,42,.58);display:none;align-items:center;justify-content:center;padding:18px}
+      .usuariosBetaModal{width:min(780px,96vw);max-height:88vh;overflow:auto;background:white;border-radius:22px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.25)}
+      .usuariosBetaModal h2{margin:0 0 14px;color:#0B5F86}
+      .usuariosBetaForm{display:grid;grid-template-columns:1fr 1fr 140px auto;gap:8px;align-items:end;margin-bottom:16px}
+      .usuariosBetaRow{display:grid;grid-template-columns:1fr 120px auto;gap:8px;align-items:center;border:1px solid #dbe7ef;border-radius:14px;background:#f8fcff;padding:10px;margin-bottom:8px}
+      .usuariosBetaRow strong{color:#0f172a}.usuariosBetaRow span{font-size:11px;font-weight:900;color:#0B5F86;text-transform:uppercase}
+      .usuariosBetaDelete{background:#fff1f1!important;color:#b42318!important;border:1px solid #ffcaca!important}
+      .usuariosBetaActions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+      body.beta-viewer .folder-actions button:not([title*="Imprimir"]),
+      body.beta-viewer .finish-btn,
+      body.beta-viewer button[title="Editar"],
+      body.beta-viewer button[title="Eliminar"],
+      body.beta-viewer .delete,
+      body.beta-viewer #tab-planificacion .span-4,
+      body.beta-viewer #tab-trabajadores .span-4,
+      body.beta-viewer #tab-collas .span-4{display:none!important}
+      @media(max-width:720px){#betaUserBar{top:14px;right:76px;bottom:auto;padding:6px 7px;gap:5px;font-size:10px}#betaUserBar button{width:30px;height:30px;font-size:14px}.usuariosBetaForm,.usuariosBetaRow{grid-template-columns:1fr}}
+    `;
+    document.head.appendChild(st);
+  }
+
+  function getSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null}}
+  function setSession(u){localStorage.setItem(SESSION_KEY,JSON.stringify({usuario:u.usuario,rol:u.rol}))}
+  function clearSession(){localStorage.removeItem(SESSION_KEY)}
+  function isAdmin(){const u=getSession();return u&&u.usuario===ADMIN_USER&&u.rol==='admin'}
+
+  function getFirestoreRef(){
+    try{
+      if(window.firebaseDbStandecor) return window.firebaseDbStandecor.collection('standecor').doc('usuarios_beta');
+      if(window.firebase && firebase.apps && firebase.apps.length) return firebase.firestore().collection('standecor').doc('usuarios_beta');
+    }catch(e){console.warn('Usuarios beta sin Firebase todavía',e)}
+    return null;
+  }
+
+  function usuariosDefault(){return [{usuario:ADMIN_USER,password:ADMIN_PASS,rol:'admin',creado:new Date().toISOString()}]}
+
+  async function cargarUsuariosBeta(){
+    usuariosRef=getFirestoreRef();
+    if(!usuariosRef){usuariosBeta=usuariosDefault();return usuariosBeta}
+    const snap=await usuariosRef.get();
+    if(!snap.exists || !Array.isArray((snap.data()||{}).usuarios)){
+      usuariosBeta=usuariosDefault();
+      await usuariosRef.set({usuarios:usuariosBeta,actualizado:Date.now()},{merge:true});
+      return usuariosBeta;
+    }
+    usuariosBeta=snap.data().usuarios||usuariosDefault();
+    if(!usuariosBeta.some(u=>u.usuario===ADMIN_USER)){
+      usuariosBeta.unshift(usuariosDefault()[0]);
+      await guardarUsuariosBeta();
+    }
+    return usuariosBeta;
+  }
+
+  async function guardarUsuariosBeta(){
+    usuariosRef=getFirestoreRef();
+    if(usuariosRef) await usuariosRef.set({usuarios:usuariosBeta,actualizado:Date.now()},{merge:true});
+  }
+
+  function mostrarLoginBeta(){
+    injectUsuariosBetaCSS();
+    if(document.getElementById('loginBetaOverlay'))return;
+    const d=document.createElement('div');
+    d.id='loginBetaOverlay';
+    d.innerHTML=`<div class="loginBetaCard">
+      <div class="loginBetaLogo">STANDECOR</div>
+      <div class="loginBetaSub">Acceso interno</div>
+      <input id="loginBetaUser" placeholder="Usuario" autocomplete="username">
+      <input id="loginBetaPass" type="password" placeholder="Contraseña" autocomplete="current-password">
+      <button type="button" id="loginBetaBtn">Entrar</button>
+      <div id="loginBetaError"></div>
+      <div style="margin-top:10px;font-size:11px;color:#64748b">Creado por IsraelM</div>
+    </div>`;
+    document.body.appendChild(d);
+    document.getElementById('loginBetaBtn').onclick=loginBeta;
+    document.getElementById('loginBetaPass').addEventListener('keydown',e=>{if(e.key==='Enter')loginBeta()});
+    setTimeout(()=>document.getElementById('loginBetaUser')?.focus(),50);
+  }
+
+  async function loginBeta(){
+    await cargarUsuariosBeta();
+    const usuario=(document.getElementById('loginBetaUser')?.value||'').trim();
+    const pass=document.getElementById('loginBetaPass')?.value||'';
+    const u=usuariosBeta.find(x=>x.usuario===usuario&&x.password===pass);
+    if(!u){document.getElementById('loginBetaError').textContent='Usuario o contraseña incorrectos';return}
+    setSession(u);
+    document.getElementById('loginBetaOverlay')?.remove();
+    aplicarBetaPermisos();
+  }
+
+  function aplicarBetaPermisos(){
+    const u=getSession();
+    document.body.classList.toggle('beta-viewer',Boolean(u&&u.rol!=='admin'));
+    let bar=document.getElementById('betaUserBar');
+    if(!bar){bar=document.createElement('div');bar.id='betaUserBar';bar.className='no-print';document.body.appendChild(bar)}
+    if(!u){bar.remove();return}
+    bar.innerHTML=`<span>${u.usuario} · ${u.rol==='admin'?'ADMIN':'VISOR'}</span>${u.rol==='admin'?'<button type="button" id="betaUsuariosBtn" title="Usuarios"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg></button>':''}<button type="button" id="betaSalirBtn" title="Salir"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>`;
+    const ub=document.getElementById('betaUsuariosBtn');if(ub)ub.onclick=abrirUsuariosBeta;
+    document.getElementById('betaSalirBtn').onclick=()=>{clearSession();aplicarBetaPermisos();mostrarLoginBeta()};
+  }
+
+  async function abrirUsuariosBeta(){
+    if(!isAdmin())return;
+    await cargarUsuariosBeta();
+    injectUsuariosBetaCSS();
+    let p=document.getElementById('usuariosBetaPanel');
+    if(!p){p=document.createElement('div');p.id='usuariosBetaPanel';document.body.appendChild(p)}
+    p.style.display='flex';
+    renderUsuariosBeta();
+  }
+
+  function renderUsuariosBeta(){
+    const p=document.getElementById('usuariosBetaPanel');
+    if(!p)return;
+    p.innerHTML=`<div class="usuariosBetaModal">
+      <h2>Usuarios · Beta</h2>
+      <div class="usuariosBetaForm">
+        <div><label>Usuario</label><input id="betaNuevoUser" placeholder="Ej: oficina"></div>
+        <div><label>Contraseña</label><input id="betaNuevoPass" placeholder="Contraseña"></div>
+        <div><label>Rol</label><select id="betaNuevoRol"><option value="visor">Visor</option><option value="admin">Admin</option></select></div>
+        <button type="button" id="betaCrearUser">Crear</button>
+      </div>
+      <div>${usuariosBeta.map(u=>`<div class="usuariosBetaRow"><strong>${esc(u.usuario)}</strong><span>${esc(u.rol)}</span>${u.usuario===ADMIN_USER?'<em>Admin principal</em>':`<button type="button" class="usuariosBetaDelete" data-user="${esc(u.usuario)}">Borrar</button>`}</div>`).join('')}</div>
+      <div class="usuariosBetaActions"><button type="button" class="light" id="betaCerrarUsuarios">Cerrar</button></div>
+    </div>`;
+    document.getElementById('betaCrearUser').onclick=crearUsuarioBeta;
+    document.getElementById('betaCerrarUsuarios').onclick=()=>p.style.display='none';
+    p.querySelectorAll('[data-user]').forEach(b=>b.onclick=()=>borrarUsuarioBeta(b.getAttribute('data-user')));
+  }
+
+  async function crearUsuarioBeta(){
+    const usuario=(document.getElementById('betaNuevoUser')?.value||'').trim();
+    const password=document.getElementById('betaNuevoPass')?.value||'';
+    const rol=document.getElementById('betaNuevoRol')?.value||'visor';
+    if(!usuario||!password){alert('Introduce usuario y contraseña.');return}
+    if(usuariosBeta.some(u=>u.usuario===usuario)){alert('Ese usuario ya existe.');return}
+    usuariosBeta.push({usuario,password,rol,creado:new Date().toISOString()});
+    await guardarUsuariosBeta();
+    renderUsuariosBeta();
+  }
+
+  async function borrarUsuarioBeta(usuario){
+    if(usuario===ADMIN_USER)return;
+    if(!confirm('¿Borrar usuario '+usuario+'?'))return;
+    usuariosBeta=usuariosBeta.filter(u=>u.usuario!==usuario);
+    await guardarUsuariosBeta();
+    renderUsuariosBeta();
+  }
+
+  async function bootUsuariosBeta(){
+    injectUsuariosBetaCSS();
+    let intentos=0;
+    const espera=setInterval(async()=>{
+      intentos++;
+      if(getFirestoreRef()||intentos>10){
+        clearInterval(espera);
+        await cargarUsuariosBeta();
+        aplicarBetaPermisos();
+        if(!getSession())mostrarLoginBeta();
+      }
+    },400);
+  }
+
+  window.addEventListener('load',()=>setTimeout(bootUsuariosBeta,800));
+})();
+</script>
 </html>
