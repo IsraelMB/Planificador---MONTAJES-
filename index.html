@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- BETA LIMPIEZA JS SEGURA v2: elimina solo funciones duplicadas confirmadas -->
+<!-- Versión optimizada: limpieza de duplicados JS y login beta aislado -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
@@ -2036,137 +2038,7 @@ body.user-viewer button[onclick^="toggleTerminado"]{display:none!important}
   <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></symbol>
   <symbol id="i-clear" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="m8 6 8 15"/><path d="M16 6 8 21"/></symbol>
 </svg>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
-/* ===== LOGIN INTERNO BÁSICO STANDECOR ===== */
-const LOGIN_STORAGE_STANDECOR='standecor_usuario_activo';
-let usuarioActivoStandecor=null;
-
-function asegurarUsuariosStandecor(){
-  if(!db.usuariosInternos || !Array.isArray(db.usuariosInternos)) db.usuariosInternos=[];
-  if(!db.usuariosInternos.some(u=>u.usuario==='IsraelM')){
-    db.usuariosInternos.push({usuario:'IsraelM',password:'1234',rol:'admin',creado:new Date().toISOString()});
-    try{save()}catch(e){}
-  }
-}
-
-function esAdminStandecor(){return usuarioActivoStandecor && usuarioActivoStandecor.rol==='admin'}
-
-function mostrarLoginStandecor(){
-  if(document.getElementById('loginOverlayStandecor'))return;
-  const div=document.createElement('div');
-  div.id='loginOverlayStandecor';
-  div.innerHTML=`<div class="login-card-standecor">
-    <div class="login-logo-standecor">STANDECOR</div>
-    <div class="login-sub-standecor">Planificador de montajes</div>
-    <input id="loginUserStandecor" placeholder="Usuario" autocomplete="username">
-    <input id="loginPassStandecor" type="password" placeholder="Contraseña" autocomplete="current-password">
-    <button type="button" onclick="entrarStandecor()">Entrar</button>
-    <div class="login-error-standecor" id="loginErrorStandecor"></div>
-  </div>`;
-  document.body.appendChild(div);
-  setTimeout(()=>document.getElementById('loginUserStandecor')?.focus(),50);
-}
-
-function entrarStandecor(){
-  asegurarUsuariosStandecor();
-  const usuario=(document.getElementById('loginUserStandecor')?.value||'').trim();
-  const password=document.getElementById('loginPassStandecor')?.value||'';
-  const u=db.usuariosInternos.find(x=>x.usuario===usuario && x.password===password);
-  if(!u){
-    const err=document.getElementById('loginErrorStandecor');
-    if(err)err.textContent='Usuario o contraseña incorrectos';
-    return;
-  }
-  usuarioActivoStandecor={usuario:u.usuario,rol:u.rol};
-  localStorage.setItem(LOGIN_STORAGE_STANDECOR,JSON.stringify(usuarioActivoStandecor));
-  document.getElementById('loginOverlayStandecor')?.remove();
-  aplicarPermisosStandecor();
-}
-
-function cerrarSesionStandecor(){
-  localStorage.removeItem(LOGIN_STORAGE_STANDECOR);
-  usuarioActivoStandecor=null;
-  aplicarPermisosStandecor();
-  mostrarLoginStandecor();
-}
-
-function aplicarPermisosStandecor(){
-  document.body.classList.toggle('user-viewer',Boolean(usuarioActivoStandecor && usuarioActivoStandecor.rol!=='admin'));
-  let box=document.getElementById('userSessionStandecor');
-  const zona=document.querySelector('.topbar .no-print')||document.querySelector('header')||document.body;
-  if(!box){
-    box=document.createElement('div');
-    box.id='userSessionStandecor';
-    box.className='user-session-box no-print';
-    zona.appendChild(box);
-  }
-  if(usuarioActivoStandecor){
-    box.innerHTML=`<span>${usuarioActivoStandecor.usuario} · ${usuarioActivoStandecor.rol==='admin'?'ADMIN':'VISOR'}</span>${esAdminStandecor()?'<button type="button" class="user-admin-btn" onclick="abrirUsuariosStandecor()">Usuarios</button>':''}<button type="button" onclick="cerrarSesionStandecor()">Salir</button>`;
-  }else{
-    box.innerHTML='';
-  }
-}
-
-function abrirUsuariosStandecor(){
-  if(!esAdminStandecor())return;
-  renderUsuariosStandecor();
-  let panel=document.getElementById('usuariosPanelStandecor');
-  if(!panel){
-    panel=document.createElement('div');
-    panel.id='usuariosPanelStandecor';
-    document.body.appendChild(panel);
-  }
-  panel.style.display='flex';
-}
-
-function cerrarUsuariosStandecor(){const p=document.getElementById('usuariosPanelStandecor');if(p)p.style.display='none'}
-
-function renderUsuariosStandecor(){
-  asegurarUsuariosStandecor();
-  let panel=document.getElementById('usuariosPanelStandecor');
-  if(!panel){panel=document.createElement('div');panel.id='usuariosPanelStandecor';document.body.appendChild(panel)}
-  panel.innerHTML=`<div class="usuarios-modal">
-    <h2>Usuarios</h2>
-    <div class="usuarios-grid">
-      <div><label>Usuario</label><input id="nuevoUsuarioStandecor" placeholder="Usuario"></div>
-      <div><label>Contraseña</label><input id="nuevoPassStandecor" placeholder="Contraseña"></div>
-      <div><label>Rol</label><select id="nuevoRolStandecor"><option value="visor">Visor</option><option value="admin">Admin</option></select></div>
-      <button type="button" onclick="crearUsuarioStandecor()">Crear</button>
-    </div>
-    <div class="usuarios-list">${db.usuariosInternos.map(u=>`<div class="usuario-row"><strong>${esc(u.usuario)}</strong><span class="usuario-role">${esc(u.rol)}</span>${u.usuario==='IsraelM'?'<span class="muted">Admin principal</span>':`<button type="button" class="usuario-delete" onclick="borrarUsuarioStandecor('${esc(u.usuario)}')">Borrar</button>`}</div>`).join('')}</div>
-    <div style="display:flex;justify-content:flex-end;margin-top:14px"><button type="button" class="light" onclick="cerrarUsuariosStandecor()">Cerrar</button></div>
-  </div>`;
-}
-
-function crearUsuarioStandecor(){
-  asegurarUsuariosStandecor();
-  const usuario=(document.getElementById('nuevoUsuarioStandecor')?.value||'').trim();
-  const password=document.getElementById('nuevoPassStandecor')?.value||'';
-  const rol=document.getElementById('nuevoRolStandecor')?.value||'visor';
-  if(!usuario||!password){alert('Introduce usuario y contraseña.');return}
-  if(db.usuariosInternos.some(u=>u.usuario===usuario)){alert('Ese usuario ya existe.');return}
-  db.usuariosInternos.push({usuario,password,rol,creado:new Date().toISOString()});
-  save();
-  renderUsuariosStandecor();
-}
-
-function borrarUsuarioStandecor(usuario){
-  if(usuario==='IsraelM')return;
-  if(!confirm('¿Borrar usuario '+usuario+'?'))return;
-  db.usuariosInternos=db.usuariosInternos.filter(u=>u.usuario!==usuario);
-  save();
-  renderUsuariosStandecor();
-}
-
-function iniciarLoginInternoStandecor(){
-  asegurarUsuariosStandecor();
-  try{usuarioActivoStandecor=JSON.parse(localStorage.getItem(LOGIN_STORAGE_STANDECOR)||'null')}catch(e){usuarioActivoStandecor=null}
-  aplicarPermisosStandecor();
-  if(!usuarioActivoStandecor)mostrarLoginStandecor();
-}
-
-document.addEventListener('DOMContentLoaded',()=>setTimeout(iniciarLoginInternoStandecor,400));
-</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script>
 const firebaseConfigStandecor = {
@@ -2217,8 +2089,7 @@ function save(){
 }function normal(s){return String(s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'')}function fmt(d){if(!d)return'';let a=d.split('-');return a.length===3?`${a[2]}/${a[1]}/${a[0]}`:d}function rango(a,b){return a&&b?`${fmt(a)} - ${fmt(b)}`:a?fmt(a):b?fmt(b):''}function trabajador(id){return db.trabajadores.find(t=>t.id===id)}function colla(id){return db.collas.find(c=>c.id===id)}function overlaps(a1,a2,b1,b2){if(!a1||!a2||!b1||!b2)return false;return a1<=b2&&b1<=a2}
 function showTab(tab,btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));byId('tab-'+tab).classList.add('active');btn.classList.add('active');renderAll()}
 function renderSelects(){byId('colla').innerHTML='<option value="">Sin colla</option>'+db.collas.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('')}
-function getSeleccionados(){return Array.from(document.querySelectorAll('#workerPicker input:checked')).map(x=>x.value)}
-function renderWorkerPicker(){const q=normal(byId('buscarAsignar').value);const selected=getSeleccionados();byId('workerPicker').innerHTML=db.trabajadores.filter(t=>!q||normal(t.nombre).includes(q)).sort((a,b)=>a.nombre.localeCompare(b.nombre)).map(t=>{let block=t.tipo!=='Sale a montaje'||t.estado!=='Disponible';return`<label class="worker-option ${block?'blocked':''}"><input type="checkbox" value="${t.id}" ${selected.includes(t.id)?'checked':''} ${block?'disabled':''} onchange="actualizarSeleccionPersonal()"><span><span class="worker-name">${esc(t.nombre)}</span><span class="worker-meta">${esc(t.rol)} · ${esc(t.tipo)} · ${esc(t.estado)}</span></span></label>`}).join('')||'<p class="muted">No hay trabajadores.</p>'}
+/* función duplicada eliminada en limpieza segura: getSeleccionados */
 function getEventoForm(){
   const seleccion=getSeleccionados();
   const idActual=byId('eventoId').value.trim();
@@ -2240,46 +2111,7 @@ function getEventoForm(){
     observaciones:byId('observaciones').value.trim()
   };
 }
-function cabezaDe(ev){
-  if(ev.cabezaPrincipalId){
-    const elegido=trabajador(ev.cabezaPrincipalId);
-    if(elegido && (ev.ayudantes||[]).includes(elegido.id)) return elegido;
-  }
-  return (ev.ayudantes||[]).map(id=>trabajador(id)).find(t=>t&&t.rol==='Cabeza de equipo')||null;
-}
-
-function actualizarSeleccionPersonal(){
-  renderSeleccionPreview();
-  validarFormulario();
-}
-
-function quitarTrabajadorSeleccionado(id){
-  const ch=document.querySelector(`#workerPicker input[value="${id}"]`);
-  if(ch) ch.checked=false;
-  actualizarSeleccionPersonal();
-}
-
-function renderSeleccionPreview(){
-  const cont=byId('seleccionPreview');
-  if(!cont)return;
-  const ids=getSeleccionados();
-  const personas=ids.map(id=>trabajador(id)).filter(Boolean);
-  if(!personas.length){
-    cont.innerHTML='<div class="selected-preview-title">Personal seleccionado</div><p class="muted">Todavía no hay trabajadores seleccionados.</p>';
-    return;
-  }
-  const cabezas=personas.filter(t=>t.rol==='Cabeza de equipo');
-  let selector='';
-  if(cabezas.length>1){
-    const actual=byId('cabezaPrincipal')?.value || cabezas[0].id;
-    selector=`<div class="main-head-box"><label>Cabeza principal del montaje</label><select id="cabezaPrincipal" onchange="validarFormulario()">${cabezas.map(t=>`<option value="${t.id}" ${t.id===actual?'selected':''}>${esc(t.nombre)}</option>`).join('')}</select></div>`;
-  }else if(cabezas.length===1){
-    selector=`<input type="hidden" id="cabezaPrincipal" value="${cabezas[0].id}">`;
-  }else{
-    selector='<input type="hidden" id="cabezaPrincipal" value="">';
-  }
-  cont.innerHTML=`<div class="selected-preview-title">Personal seleccionado (${personas.length})</div><div class="selected-list">${personas.map(t=>`<span class="selected-chip ${t.rol==='Cabeza de equipo'?'head':''}">${esc(t.nombre)}<button type="button" onclick="quitarTrabajadorSeleccionado('${t.id}')">×</button></span>`).join('')}</div>${selector}`;
-}
+/* función duplicada eliminada en limpieza segura: renderSeleccionPreview */
 function validarEvento(ev,ignorarId){
   let avisos=[];
 
@@ -2494,86 +2326,6 @@ function textoCollas(ev){
   return lista.map(x=>{const c=colla(x.collaId);return c?`${c.nombre}${x.cantidad?' · '+x.cantidad+' PERSONAS':''}`:''}).filter(Boolean);
 }
 
-function renderEventos(){
-  const rows=eventosFiltrados().map(ev=>{
-    const cab=cabezaDe(ev);
-    const ayudas=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
-    const avisos=avisosVisibles(ev);
-    let trabajoHtml='';
-    if(ev.montajeInicio||ev.montajeFin)trabajoHtml+=`<span class="badge blue">MONTAJE · ${esc(rango(ev.montajeInicio,ev.montajeFin))}</span>`;
-    if(ev.desmontajeInicio||ev.desmontajeFin)trabajoHtml+=`<span class="badge red">DESMONTAJE · ${esc(rango(ev.desmontajeInicio,ev.desmontajeFin))}</span>`;
-    let personalHtml='';
-    if(cab)personalHtml+=`<span class="badge green">${esc(cab.nombre)}</span>`;
-    ayudas.filter(t=>!cab||t.id!==cab.id).forEach(t=>personalHtml+=`<span class="badge gray">${esc(t.nombre)}</span>`);
-    const collaHtml=textoCollas(ev).map(t=>`<span class="badge blue">${esc(t)}</span>`).join('');
-    const avisosHtml=avisos.length?avisos.map(a=>`<span class="badge red dismissable-alert">⚠️ ${esc(a)} <button type="button" class="dismiss-alert-btn" onclick="event.stopPropagation();ocultarAviso('${ev.id}',decodeURIComponent('${encodeURIComponent(a)}'))">×</button></span>`).join(''):'<span class="badge green">OK</span>';
-    return `<tr><td><span class="feria-tag">${esc(ev.feria)}</span></td><td>${esc(ev.lugar)}</td><td>${esc(ev.stand)}</td><td>${trabajoHtml}</td><td><div class="industrial-list">${personalHtml}</div></td><td>${collaHtml}</td><td>${avisosHtml}</td><td class="no-print"><div class="row-actions"><button class="small action-btn" title="Imprimir este trabajo" onclick="imprimirEvento('${ev.id}')"><svg class="ico"><use href="#i-print"></use></svg></button><button class="small action-btn" title="Editar" onclick="editarEvento('${ev.id}')"><svg class="ico"><use href="#i-edit"></use></svg></button><button class="small action-btn delete" title="Eliminar" onclick="borrarEvento('${ev.id}')"><svg class="ico"><use href="#i-trash"></use></svg></button></div></td></tr>`;
-  }).join('');
-  byId('tablaEventos').innerHTML=rows||'<tr><td colspan="8" class="muted">No hay montajes creados.</td></tr>';
-  renderPrint();
-}
-
-function renderPrint(eventosPersonalizados){
-  const eventos=eventosPersonalizados||eventosFiltrados();
-  const montajes=eventos.filter(e=>e.montajeInicio||e.montajeFin);
-  const desmontajes=eventos.filter(e=>e.desmontajeInicio||e.desmontajeFin);
-
-  function lineasVacias(cantidad){
-    let html='';
-    for(let i=0;i<cantidad;i++) html+='<div class="print-simple-line">&nbsp;</div>';
-    return html;
-  }
-
-  function card(ev,tipo){
-    const cab=cabezaDe(ev);
-    const todos=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
-    const ayudas=todos.filter(t=>!cab||t.id!==cab.id);
-    const fecha=tipo==='m'?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
-    const titulo=tipo==='m'?'MONTAJE':'DESMONTAJE';
-    const collas=textoCollas(ev);
-
-    let personal='';
-    if(cab) personal+=`<div class="print-simple-name head">${esc(cab.nombre)}</div>`;
-    ayudas.forEach(t=>personal+=`<div class="print-simple-name">${esc(t.nombre)}</div>`);
-    personal+=lineasVacias(Math.max(6,10-todos.length));
-
-    let collaLines='';
-    collas.forEach(c=>collaLines+=`<div class="print-simple-name head">${esc(c)}</div>`);
-    collaLines+=lineasVacias(Math.max(7,10-collas.length));
-
-    const maxLineas=Math.max(todos.length,collas.length);
-    const tieneObs=Boolean((ev.observaciones||'').trim());
-    const compactClass=(maxLineas>16?' ultra':(maxLineas>10?' many':''))+(tieneObs?' has-obs':'');
-
-    return `<div class="print-simple-card${compactClass}">
-      <div class="print-simple-title">${titulo}</div>
-      <div class="print-simple-row top">
-        <div><span>FERIA:</span> <b>${esc(ev.feria||'')}</b></div>
-        <div><span>LUGAR:</span> <b>${esc(ev.lugar||'')}</b></div>
-      </div>
-      <div class="print-simple-row center"><span>FECHA:</span> <b>${esc(fecha||'')}</b></div>
-      <div class="print-simple-stand">${esc(ev.stand||'STAND')}</div>
-      <div class="print-simple-heads"><div>PERSONAL</div><div>COLLA</div></div>
-      <div class="print-simple-body">
-        <div class="print-simple-col">${personal}</div>
-        <div class="print-simple-col">${collaLines}</div>
-      </div>
-      ${(ev.observaciones||'').trim() ? `
-        <div class="print-simple-obs">
-          <div class="print-simple-obs-title">OBSERVACIONES</div>
-          <div class="print-simple-obs-text">${esc(ev.observaciones)}</div>
-        </div>
-      ` : ''}
-    </div>`;
-  }
-
-  let html='';
-  if(montajes.length) html+=montajes.map(e=>card(e,'m')).join('');
-  if(desmontajes.length) html+=desmontajes.map(e=>card(e,'d')).join('');
-  if(!montajes.length&&!desmontajes.length) html='<div class="print-empty">SIN PLANIFICACIÓN PARA IMPRIMIR</div>';
-  byId('printPlanificacion').innerHTML=html;
-}
-
 function renderCalendario(){
   const nombresMeses=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
   const diasSemana=['LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES','SÁBADO','DOMINGO'];
@@ -2660,37 +2412,10 @@ function renderAvisos(){
   }));
   byId('avisosGenerales').innerHTML=a.join('')||'<div class="ok">No hay avisos.</div>';
 }
-function imprimirCalendario(){
-  renderCalendario();
-  document.body.classList.add('print-calendar');
-  setTimeout(()=>{
-    activarModoImpresionSimple();
-  setTimeout(()=>{
-    window.print();
-    setTimeout(desactivarModoImpresionSimple,500);
-  },120);
-    setTimeout(()=>document.body.classList.remove('print-calendar'),300);
-  },80);
-}
 function activarModoImpresionSimple(){document.body.classList.add('print-simple-mode')}
 function desactivarModoImpresionSimple(){document.body.classList.remove('print-simple-mode')}
 
-function imprimirEvento(id){
-  const ev=db.eventos.find(e=>e.id===id);
-  if(!ev)return;
-  renderPrint([ev]);
-  setTimeout(()=>{window.print();renderPrint();},80);
-}
-function imprimirCalendario(){
-  renderCalendario();
-  document.body.classList.remove('print-simple-mode');
-  document.body.classList.add('print-calendar');
-  setTimeout(()=>{
-    window.print();
-    setTimeout(()=>document.body.classList.remove('print-calendar'),500);
-  },120);
-}
-
+/* función duplicada eliminada en limpieza segura: imprimirEvento */
 function imprimirFeria(id){
   const ev=db.eventos.find(e=>e.id===id);
   if(!ev)return;
@@ -2778,12 +2503,6 @@ function cabezaDe(ev){
   return (ev.ayudantes||[]).map(id=>trabajador(id)).find(t=>t&&t.rol==='Cabeza de equipo')||null;
 }
 
-function quitarTrabajadorSeleccionado(id){
-  const ch=document.querySelector(`#workerPicker input[value="${id}"]`);
-  if(ch) ch.checked=false;
-  actualizarSeleccionPersonal();
-}
-
 function renderSeleccionPreview(){
   const cont=ensureSeleccionPreview();
   if(!cont)return;
@@ -2807,11 +2526,6 @@ function renderSeleccionPreview(){
   }
 
   cont.innerHTML=`<div class="selected-preview-title">Personal seleccionado (${personas.length})</div><div class="selected-list">${personas.map(t=>`<span class="selected-chip ${t.rol==='Cabeza de equipo'?'head':''}">${esc(t.nombre)}<button type="button" onclick="quitarTrabajadorSeleccionado('${t.id}')">×</button></span>`).join('')}</div>${selector}`;
-}
-
-function actualizarSeleccionPersonal(){
-  renderSeleccionPreview();
-  validarFormulario();
 }
 
 const renderWorkerPickerOriginal=renderWorkerPicker;
@@ -2879,115 +2593,7 @@ function ensurePlanAccordion(){
   return cont;
 }
 
-function renderEventos(){
-  const cont=ensurePlanAccordion();
-  const eventos=eventosFiltrados();
-
-  const html=eventos.map(ev=>{
-    const cab=cabezaDe(ev);
-    const ayudas=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
-    const avisos=avisosVisibles(ev);
-    const collas=textoCollas(ev);
-    const tieneMontaje=ev.montajeInicio||ev.montajeFin;
-    const tipo=tieneMontaje?'m':'d';
-    const tipoTxt=tieneMontaje?'MONTAJE':'DESMONTAJE';
-    const fecha=tieneMontaje?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
-
-    let personalHtml='';
-    if(cab)personalHtml+=`<span class="badge green">${esc(cab.nombre)}</span>`;
-    ayudas.filter(t=>!cab||t.id!==cab.id).forEach(t=>personalHtml+=`<span class="badge gray">${esc(t.nombre)}</span>`);
-    if(!personalHtml)personalHtml='<p class="muted">Sin personal seleccionado.</p>';
-
-    const collaHtml=collas.length?collas.map(t=>`<span class="badge blue">${esc(t)}</span>`).join(''):'<p class="muted">Sin colla.</p>';
-    const avisosHtml=avisos.length?avisos.map(a=>`<span class="badge red">⚠️ ${esc(a)}</span>`).join(''):'<span class="badge green">OK</span>';
-    const obs=ev.observaciones?esc(ev.observaciones):'<span class="muted">Sin observaciones.</span>';
-
-    return `<div class="plan-folder" id="folder_${ev.id}">
-      <button type="button" class="plan-folder-head" onclick="togglePlanDetalle('${ev.id}')">
-        <span class="folder-arrow">›</span>
-        <span class="folder-main"><span class="folder-title-line"><span class="folder-feria">${esc(ev.feria||'SIN FERIA')}</span><span class="folder-sub">${esc(ev.lugar||'SIN LUGAR')} · ${esc(ev.stand||'SIN STAND')}</span></span></span>
-        <span class="folder-pill ${tipo}">${tipoTxt}</span>
-        <span class="folder-date">${esc(fecha||'SIN FECHA')}</span>
-        <span class="folder-count">${ayudas.length} pers. · ${collas.length} colla${collas.length===1?'':'s'}${avisos.length?' · ⚠ '+avisos.length:''}</span>
-      </button>
-      <div class="plan-folder-body">
-        <div class="folder-detail-grid compact">
-          <div class="folder-detail-box"><div class="folder-detail-title">Personal</div><div class="industrial-list">${personalHtml}</div></div>
-          <div class="folder-detail-box"><div class="folder-detail-title">Collas</div><div class="industrial-list">${collaHtml}</div></div>
-          <div class="folder-detail-box avisos-box"><div class="folder-detail-title">Avisos</div><div class="industrial-list">${avisosHtml}</div></div>
-          <div class="folder-detail-box observaciones-box"><div class="folder-detail-title">Observaciones</div>${obs}</div>
-        </div>
-        <div class="folder-actions no-print">
-          <button class="small action-btn" title="Imprimir este trabajo" onclick="imprimirEvento('${ev.id}')"><svg class="ico"><use href="#i-print"></use></svg></button>
-          <button class="small action-btn" title="Editar" onclick="editarEvento('${ev.id}')"><svg class="ico"><use href="#i-edit"></use></svg></button>
-          <button class="small action-btn delete" title="Eliminar" onclick="borrarEvento('${ev.id}')"><svg class="ico"><use href="#i-trash"></use></svg></button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-
-  cont.innerHTML=html||'<p class="muted">No hay montajes creados.</p>';
-  const tabla=byId('tablaEventos');
-  if(tabla)tabla.innerHTML='';
-  renderPrint();
-}
-
-
 /* ===== CORRECCIÓN ACCIONES PLANIFICACIÓN: SOLO 3 BOTONES ===== */
-function renderEventos(){
-  const cont=ensurePlanAccordion();
-  const eventos=eventosFiltrados();
-
-  const html=eventos.map(ev=>{
-    const cab=cabezaDe(ev);
-    const ayudas=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
-    const avisos=avisosVisibles(ev);
-    const collas=textoCollas(ev);
-    const tieneMontaje=ev.montajeInicio||ev.montajeFin;
-    const tipo=tieneMontaje?'m':'d';
-    const tipoTxt=tieneMontaje?'MONTAJE':'DESMONTAJE';
-    const fecha=tieneMontaje?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
-
-    let personalHtml='';
-    if(cab)personalHtml+=`<span class="badge green">${esc(cab.nombre)}</span>`;
-    ayudas.filter(t=>!cab||t.id!==cab.id).forEach(t=>personalHtml+=`<span class="badge gray">${esc(t.nombre)}</span>`);
-    if(!personalHtml)personalHtml='<p class="muted">Sin personal seleccionado.</p>';
-
-    const collaHtml=collas.length?collas.map(t=>`<span class="badge blue">${esc(t)}</span>`).join(''):'<p class="muted">Sin colla.</p>';
-    const avisosHtml=avisos.length?avisos.map(a=>`<span class="badge red">⚠️ ${esc(a)}</span>`).join(''):'<span class="badge green">OK</span>';
-    const obs=ev.observaciones?esc(ev.observaciones):'<span class="muted">Sin observaciones.</span>';
-
-    return `<div class="plan-folder" id="folder_${ev.id}">
-      <button type="button" class="plan-folder-head" onclick="togglePlanDetalle('${ev.id}')">
-        <span class="folder-arrow">›</span>
-        <span class="folder-main"><span class="folder-title-line"><span class="folder-feria">${esc(ev.feria||'SIN FERIA')}</span><span class="folder-sub">${esc(ev.lugar||'SIN LUGAR')} · ${esc(ev.stand||'SIN STAND')}</span></span></span>
-        <span class="folder-pill ${tipo}">${tipoTxt}</span>
-        <span class="folder-date">${esc(fecha||'SIN FECHA')}</span>
-        <span class="folder-count">${ayudas.length} pers. · ${collas.length} colla${collas.length===1?'':'s'}${avisos.length?' · ⚠ '+avisos.length:''}</span>
-      </button>
-      <div class="plan-folder-body">
-        <div class="folder-detail-grid compact">
-          <div class="folder-detail-box"><div class="folder-detail-title">Personal</div><div class="industrial-list">${personalHtml}</div></div>
-          <div class="folder-detail-box"><div class="folder-detail-title">Collas</div><div class="industrial-list">${collaHtml}</div></div>
-          <div class="folder-detail-box avisos-box"><div class="folder-detail-title">Avisos</div><div class="industrial-list">${avisosHtml}</div></div>
-          <div class="folder-detail-box observaciones-box"><div class="folder-detail-title">Observaciones</div>${obs}</div>
-        </div>
-        <div class="folder-actions no-print">
-          <button class="small action-btn" title="Imprimir este trabajo" onclick="imprimirEvento('${ev.id}')"><svg class="ico"><use href="#i-print"></use></svg></button>
-          <button class="small action-btn" title="Editar" onclick="editarEvento('${ev.id}')"><svg class="ico"><use href="#i-edit"></use></svg></button>
-          <button class="small action-btn delete" title="Eliminar" onclick="borrarEvento('${ev.id}')"><svg class="ico"><use href="#i-trash"></use></svg></button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-
-  cont.innerHTML=html||'<p class="muted">No hay montajes creados.</p>';
-  const tabla=byId('tablaEventos');
-  if(tabla)tabla.innerHTML='';
-  renderPrint();
-}
-
-
 /* ===== FUNCIONES DE IMPRESIÓN CORREGIDAS ===== */
 function imprimirEvento(id){
   const ev=db.eventos.find(e=>e.id===id);
@@ -3097,62 +2703,6 @@ function quitarTrabajadorSeleccionado(id){
 
 
 /* ===== IMPRESIÓN FINAL CON OBSERVACIONES FUNCIONALES ===== */
-function renderPrint(eventosPersonalizados){
-  const eventos=eventosPersonalizados||eventosFiltrados();
-  const montajes=eventos.filter(e=>e.montajeInicio||e.montajeFin);
-  const desmontajes=eventos.filter(e=>e.desmontajeInicio||e.desmontajeFin);
-
-  function lineasVacias(cantidad){
-    let html='';
-    for(let i=0;i<cantidad;i++) html+='<div class="print-simple-line">&nbsp;</div>';
-    return html;
-  }
-
-  function card(ev,tipo){
-    const cab=cabezaDe(ev);
-    const todos=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
-    const ayudas=todos.filter(t=>!cab||t.id!==cab.id);
-    const fecha=tipo==='m'?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
-    const titulo=tipo==='m'?'MONTAJE':'DESMONTAJE';
-    const collas=textoCollas(ev);
-    const obs=(ev.observaciones||'').trim();
-    const maxLineas=Math.max(todos.length,collas.length);
-    const compactClass=(maxLineas>16?' ultra':(maxLineas>10?' many':''))+(obs?' has-obs':'');
-
-    let personal='';
-    if(cab) personal+=`<div class="print-simple-name head">${esc(cab.nombre)}</div>`;
-    ayudas.forEach(t=>personal+=`<div class="print-simple-name">${esc(t.nombre)}</div>`);
-    personal+=lineasVacias(Math.max(3,10-todos.length));
-
-    let collaLines='';
-    collas.forEach(c=>collaLines+=`<div class="print-simple-name head">${esc(c)}</div>`);
-    collaLines+=lineasVacias(Math.max(3,10-collas.length));
-
-    return `<div class="print-simple-card${compactClass}">
-      <div class="print-simple-title">${titulo}</div>
-      <div class="print-simple-row top">
-        <div><span>FERIA:</span> <b>${esc(ev.feria||'')}</b></div>
-        <div><span>LUGAR:</span> <b>${esc(ev.lugar||'')}</b></div>
-      </div>
-      <div class="print-simple-row center"><span>FECHA:</span> <b>${esc(fecha||'')}</b></div>
-      <div class="print-simple-stand">${esc(ev.stand||'STAND')}</div>
-      <div class="print-simple-heads"><div>PERSONAL</div><div>COLLA</div></div>
-      <div class="print-simple-body">
-        <div class="print-simple-col">${personal}</div>
-        <div class="print-simple-col">${collaLines}</div>
-      </div>
-      ${obs?`<div class="print-simple-obs"><div class="print-simple-obs-title">OBSERVACIONES</div><div class="print-simple-obs-text">${esc(obs)}</div></div>`:''}
-    </div>`;
-  }
-
-  let html='';
-  if(montajes.length) html+=montajes.map(e=>card(e,'m')).join('');
-  if(desmontajes.length) html+=desmontajes.map(e=>card(e,'d')).join('');
-  if(!montajes.length&&!desmontajes.length) html='<div class="print-empty">SIN PLANIFICACIÓN PARA IMPRIMIR</div>';
-  byId('printPlanificacion').innerHTML=html;
-}
-
-
 /* ===== TERMINADOS EN PLANIFICACIÓN ===== */
 function toggleTerminadoEvento(id){
   const ev=db.eventos.find(e=>e.id===id);
@@ -3332,119 +2882,7 @@ function iniciarFirebaseStandecor(){
 document.addEventListener('DOMContentLoaded',()=>{try{byId('mesCalendario').value=new Date().toISOString().slice(0,7);renderAll();iniciarFirebaseStandecor()}catch(err){console.error('Error al iniciar:',err);alert('Hay un error en el código. Revisa la consola del navegador.')}});
 
 /* ===== ÚLTIMA VERSIÓN REAL DE IMPRESIÓN CON OBSERVACIONES ===== */
-function renderPrint(eventosPersonalizados){
-  const eventos=eventosPersonalizados||eventosFiltrados();
-  const montajes=eventos.filter(e=>e.montajeInicio||e.montajeFin);
-  const desmontajes=eventos.filter(e=>e.desmontajeInicio||e.desmontajeFin);
-
-  function lineasVacias(cantidad){
-    let html='';
-    for(let i=0;i<cantidad;i++) html+='<div class="print-simple-line">&nbsp;</div>';
-    return html;
-  }
-
-  function card(ev,tipo){
-    const cab=cabezaDe(ev);
-    const todos=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
-    const ayudas=todos.filter(t=>!cab||t.id!==cab.id);
-    const fecha=tipo==='m'?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
-    const titulo=tipo==='m'?'MONTAJE':'DESMONTAJE';
-    const collas=textoCollas(ev);
-    const obs=(ev.observaciones||'').trim();
-    const maxLineas=Math.max(todos.length,collas.length);
-    const compactClass=(maxLineas>16?' ultra':(maxLineas>10?' many':''))+(obs?' has-obs':'');
-
-    let personal='';
-    if(cab) personal+=`<div class="print-simple-name head">${esc(cab.nombre)}</div>`;
-    ayudas.forEach(t=>personal+=`<div class="print-simple-name">${esc(t.nombre)}</div>`);
-    personal+=lineasVacias(Math.max(3,10-todos.length));
-
-    let collaLines='';
-    collas.forEach(c=>collaLines+=`<div class="print-simple-name head">${esc(c)}</div>`);
-    collaLines+=lineasVacias(Math.max(3,10-collas.length));
-
-    return `<div class="print-simple-card${compactClass}">
-      <div class="print-simple-title">${titulo}</div>
-      <div class="print-simple-row top">
-        <div><span>FERIA:</span> <b>${esc(ev.feria||'')}</b></div>
-        <div><span>LUGAR:</span> <b>${esc(ev.lugar||'')}</b></div>
-      </div>
-      <div class="print-simple-row center"><span>FECHA:</span> <b>${esc(fecha||'')}</b></div>
-      <div class="print-simple-stand">${esc(ev.stand||'STAND')}</div>
-      <div class="print-simple-heads"><div>PERSONAL</div><div>COLLA</div></div>
-      <div class="print-simple-body">
-        <div class="print-simple-col">${personal}</div>
-        <div class="print-simple-col">${collaLines}</div>
-      </div>
-      ${obs?`<div class="print-simple-obs"><div class="print-simple-obs-title">OBSERVACIONES</div><div class="print-simple-obs-text">${esc(obs)}</div></div>`:''}
-    </div>`;
-  }
-
-  let html='';
-  if(montajes.length) html+=montajes.map(e=>card(e,'m')).join('');
-  if(desmontajes.length) html+=desmontajes.map(e=>card(e,'d')).join('');
-  if(!montajes.length&&!desmontajes.length) html='<div class="print-empty">SIN PLANIFICACIÓN PARA IMPRIMIR</div>';
-  byId('printPlanificacion').innerHTML=html;
-}
-
 /* ===== IMPRESIÓN: OBSERVACIONES DEBAJO DE COLLA ===== */
-function renderPrint(eventosPersonalizados){
-  const eventos=eventosPersonalizados||eventosFiltrados();
-  const montajes=eventos.filter(e=>e.montajeInicio||e.montajeFin);
-  const desmontajes=eventos.filter(e=>e.desmontajeInicio||e.desmontajeFin);
-
-  function lineasVacias(cantidad){
-    let html='';
-    for(let i=0;i<cantidad;i++) html+='<div class="print-simple-line">&nbsp;</div>';
-    return html;
-  }
-
-  function card(ev,tipo){
-    const cab=cabezaDe(ev);
-    const todos=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
-    const ayudas=todos.filter(t=>!cab||t.id!==cab.id);
-    const fecha=tipo==='m'?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
-    const titulo=tipo==='m'?'MONTAJE':'DESMONTAJE';
-    const collas=textoCollas(ev);
-    const obs=(ev.observaciones||'').trim();
-    const maxLineas=Math.max(todos.length,collas.length);
-    const compactClass=(maxLineas>16?' ultra':(maxLineas>10?' many':''))+(obs?' has-obs obs-right':'');
-
-    let personal='';
-    if(cab) personal+=`<div class="print-simple-name head">${esc(cab.nombre)}</div>`;
-    ayudas.forEach(t=>personal+=`<div class="print-simple-name">${esc(t.nombre)}</div>`);
-    personal+=lineasVacias(Math.max(6,18-todos.length));
-
-    let collaLines='';
-    collas.forEach(c=>collaLines+=`<div class="print-simple-name head">${esc(c)}</div>`);
-    collaLines+=lineasVacias(Math.max(4,8-collas.length));
-
-    return `<div class="print-simple-card${compactClass}">
-      <div class="print-simple-title">${titulo}</div>
-      <div class="print-simple-row top">
-        <div><span>FERIA:</span> <b>${esc(ev.feria||'')}</b></div>
-        <div><span>LUGAR:</span> <b>${esc(ev.lugar||'')}</b></div>
-      </div>
-      <div class="print-simple-row center"><span>FECHA:</span> <b>${esc(fecha||'')}</b></div>
-      <div class="print-simple-stand">${esc(ev.stand||'STAND')}</div>
-      <div class="print-simple-heads"><div>PERSONAL</div><div>COLLA</div></div>
-      <div class="print-simple-body print-body-obs-right">
-        <div class="print-simple-col print-personal-col">${personal}</div>
-        <div class="print-simple-col print-right-col">
-          <div class="print-colla-lines">${collaLines}</div>
-          ${obs?`<div class="print-simple-obs right-obs"><div class="print-simple-obs-title">OBSERVACIONES</div><div class="print-simple-obs-text">${esc(obs)}</div></div>`:''}
-        </div>
-      </div>
-    </div>`;
-  }
-
-  let html='';
-  if(montajes.length) html+=montajes.map(e=>card(e,'m')).join('');
-  if(desmontajes.length) html+=desmontajes.map(e=>card(e,'d')).join('');
-  if(!montajes.length&&!desmontajes.length) html='<div class="print-empty">SIN PLANIFICACIÓN PARA IMPRIMIR</div>';
-  byId('printPlanificacion').innerHTML=html;
-}
-
 /* ===== RENDERPRINT FINAL APROBADO ===== */
 function renderPrint(eventosPersonalizados){
   const eventos=eventosPersonalizados||eventosFiltrados();
@@ -3503,280 +2941,9 @@ function renderPrint(eventosPersonalizados){
   byId('printPlanificacion').innerHTML=html;
 }
 </script>
-<script>
-/* ===== ARRANQUE FORZADO LOGIN INTERNO ===== */
-(function(){
-  function bootLoginStandecor(){
-    try{
-      if(typeof iniciarLoginInternoStandecor==='function'){
-        iniciarLoginInternoStandecor();
-      }else{
-        console.warn('Login interno todavía no disponible');
-      }
-    }catch(e){
-      console.error('Error iniciando login interno:',e);
-    }
-  }
-  window.addEventListener('load',()=>setTimeout(bootLoginStandecor,900));
-  setTimeout(bootLoginStandecor,1800);
-})();
-</script>
-<script>
-/* ===== LOGIN INTERNO STANDECOR - ARRANQUE AUTÓNOMO ===== */
-(function(){
-  const LOGIN_KEY='standecor_usuario_activo';
-  const ADMIN_USER='IsraelM';
-  const ADMIN_PASS='1234';
 
-  function cssLogin(){
-    if(document.getElementById('loginInternoCSSFinal'))return;
-    const st=document.createElement('style');
-    st.id='loginInternoCSSFinal';
-    st.textContent=`
-      #loginOverlayStandecorFinal{position:fixed;inset:0;z-index:2147483647;background:linear-gradient(135deg,#0B5F86,#14A4E3);display:flex;align-items:center;justify-content:center;padding:20px}
-      .login-card-final{width:min(420px,94vw);background:#fff;border-radius:24px;padding:28px;box-shadow:0 24px 70px rgba(0,0,0,.28);text-align:center}
-      .login-card-final h1{color:#0B5F86!important;font-size:30px!important;margin:0 0 4px!important;letter-spacing:1px!important}
-      .login-card-final p{margin:0 0 20px;color:#64748b;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:1px}
-      .login-card-final input{width:100%;box-sizing:border-box;margin-bottom:10px;text-transform:none!important}
-      .login-card-final button{width:100%;justify-content:center}
-      #loginErrorFinal{min-height:18px;color:#b42318;font-size:12px;font-weight:900;margin-top:8px}
-      #usuarioBarraFinal{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.26);color:white;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900}
-      #usuarioBarraFinal button{padding:5px 8px;border-radius:999px;font-size:10px;background:rgba(255,255,255,.92);color:#0B5F86;box-shadow:none}
-      #usuariosPanelFinal{position:fixed;inset:0;z-index:2147483646;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;padding:18px}
-      .usuarios-modal-final{width:min(760px,96vw);max-height:88vh;overflow:auto;background:#fff;border-radius:22px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.25)}
-      .usuarios-modal-final h2{margin-top:0;color:#0B5F86}.usuarios-form-final{display:grid;grid-template-columns:1fr 1fr 140px auto;gap:8px;align-items:end;margin-bottom:14px}.usuario-row-final{display:grid;grid-template-columns:1fr 120px auto;gap:8px;align-items:center;border:1px solid #dbe7ef;border-radius:14px;padding:10px;background:#f8fcff;margin-bottom:8px}.usuario-row-final span{font-size:11px;font-weight:900;color:#0B5F86;text-transform:uppercase}
-      body.user-viewer .folder-actions button:not([title*="Imprimir"]),body.user-viewer .span-4,body.user-viewer .delete,body.user-viewer .finish-btn{display:none!important}
-      @media(max-width:720px){.usuarios-form-final,.usuario-row-final{grid-template-columns:1fr}#usuarioBarraFinal{font-size:10px}}
-    `;
-    document.head.appendChild(st);
-  }
 
-  function asegurarDB(){
-    if(!window.db)return false;
-    if(!Array.isArray(window.db.usuariosInternos)) window.db.usuariosInternos=[];
-    if(!window.db.usuariosInternos.some(u=>u.usuario===ADMIN_USER)){
-      window.db.usuariosInternos.push({usuario:ADMIN_USER,password:ADMIN_PASS,rol:'admin',creado:new Date().toISOString()});
-      try{ if(typeof window.save==='function') window.save(); }catch(e){}
-    }
-    return true;
-  }
 
-  function usuarioActivo(){try{return JSON.parse(localStorage.getItem(LOGIN_KEY)||'null')}catch(e){return null}}
-  function setUsuario(u){localStorage.setItem(LOGIN_KEY,JSON.stringify({usuario:u.usuario,rol:u.rol}))}
-  function esAdmin(){const u=usuarioActivo();return u&&u.rol==='admin'}
-
-  function mostrarLogin(){
-    cssLogin();
-    if(document.getElementById('loginOverlayStandecorFinal'))return;
-    const d=document.createElement('div');
-    d.id='loginOverlayStandecorFinal';
-    d.innerHTML=`<div class="login-card-final"><h1>STANDECOR</h1><p>Planificador de montajes</p><input id="loginUserFinal" placeholder="Usuario"><input id="loginPassFinal" type="password" placeholder="Contraseña"><button type="button" id="loginBtnFinal">Entrar</button><div id="loginErrorFinal"></div></div>`;
-    document.body.appendChild(d);
-    document.getElementById('loginBtnFinal').onclick=entrar;
-    document.getElementById('loginPassFinal').addEventListener('keydown',e=>{if(e.key==='Enter')entrar()});
-    setTimeout(()=>document.getElementById('loginUserFinal')?.focus(),50);
-  }
-
-  function entrar(){
-    if(!asegurarDB())return;
-    const usuario=(document.getElementById('loginUserFinal')?.value||'').trim();
-    const pass=document.getElementById('loginPassFinal')?.value||'';
-    const u=window.db.usuariosInternos.find(x=>x.usuario===usuario&&x.password===pass);
-    if(!u){document.getElementById('loginErrorFinal').textContent='Usuario o contraseña incorrectos';return}
-    setUsuario(u);
-    document.getElementById('loginOverlayStandecorFinal')?.remove();
-    aplicarPermisos();
-  }
-
-  function salir(){localStorage.removeItem(LOGIN_KEY);aplicarPermisos();mostrarLogin()}
-
-  function aplicarPermisos(){
-    const u=usuarioActivo();
-    document.body.classList.toggle('user-viewer',!!(u&&u.rol!=='admin'));
-    let box=document.getElementById('usuarioBarraFinal');
-    const zona=document.querySelector('.topbar .no-print')||document.querySelector('header')||document.body;
-    if(!box){box=document.createElement('div');box.id='usuarioBarraFinal';box.className='no-print';zona.appendChild(box)}
-    if(!u){box.innerHTML='';return}
-    box.innerHTML=`<span>${u.usuario} · ${u.rol==='admin'?'ADMIN':'VISOR'}</span>${u.rol==='admin'?'<button type="button" id="btnUsuariosFinal">Usuarios</button>':''}<button type="button" id="btnSalirFinal">Salir</button>`;
-    const bu=document.getElementById('btnUsuariosFinal');if(bu)bu.onclick=abrirUsuarios;
-    document.getElementById('btnSalirFinal').onclick=salir;
-  }
-
-  function abrirUsuarios(){
-    if(!esAdmin()||!asegurarDB())return;
-    cssLogin();
-    let p=document.getElementById('usuariosPanelFinal');
-    if(!p){p=document.createElement('div');p.id='usuariosPanelFinal';document.body.appendChild(p)}
-    p.style.display='flex';
-    renderUsuarios();
-  }
-
-  function renderUsuarios(){
-    const p=document.getElementById('usuariosPanelFinal');
-    p.innerHTML=`<div class="usuarios-modal-final"><h2>Usuarios</h2><div class="usuarios-form-final"><div><label>Usuario</label><input id="nuevoUserFinal"></div><div><label>Contraseña</label><input id="nuevoPassFinal"></div><div><label>Rol</label><select id="nuevoRolFinal"><option value="visor">Visor</option><option value="admin">Admin</option></select></div><button type="button" id="crearUserFinal">Crear</button></div><div>${window.db.usuariosInternos.map(u=>`<div class="usuario-row-final"><strong>${u.usuario}</strong><span>${u.rol}</span>${u.usuario===ADMIN_USER?'<em>Admin principal</em>':`<button type="button" data-del-user="${u.usuario}">Borrar</button>`}</div>`).join('')}</div><div style="display:flex;justify-content:flex-end;margin-top:14px"><button type="button" id="cerrarUsersFinal">Cerrar</button></div></div>`;
-    document.getElementById('crearUserFinal').onclick=crearUsuario;
-    document.getElementById('cerrarUsersFinal').onclick=()=>p.style.display='none';
-    p.querySelectorAll('[data-del-user]').forEach(b=>b.onclick=()=>borrarUsuario(b.getAttribute('data-del-user')));
-  }
-
-  function crearUsuario(){
-    const usuario=(document.getElementById('nuevoUserFinal').value||'').trim();
-    const password=document.getElementById('nuevoPassFinal').value||'';
-    const rol=document.getElementById('nuevoRolFinal').value||'visor';
-    if(!usuario||!password){alert('Introduce usuario y contraseña.');return}
-    if(window.db.usuariosInternos.some(u=>u.usuario===usuario)){alert('Ese usuario ya existe.');return}
-    window.db.usuariosInternos.push({usuario,password,rol,creado:new Date().toISOString()});
-    if(typeof window.save==='function')window.save();
-    renderUsuarios();
-  }
-
-  function borrarUsuario(usuario){
-    if(usuario===ADMIN_USER)return;
-    if(!confirm('¿Borrar usuario '+usuario+'?'))return;
-    window.db.usuariosInternos=window.db.usuariosInternos.filter(u=>u.usuario!==usuario);
-    if(typeof window.save==='function')window.save();
-    renderUsuarios();
-  }
-
-  function boot(){
-    cssLogin();
-    if(!asegurarDB()){setTimeout(boot,400);return}
-    aplicarPermisos();
-    if(!usuarioActivo())mostrarLogin();
-  }
-
-  window.addEventListener('load',()=>setTimeout(boot,300));
-  setTimeout(boot,1200);
-})();
-</script>
-<script>
-/* ===== PANEL USUARIOS ADMIN - CORRECCIÓN FINAL ===== */
-(function(){
-  const LOGIN_KEY='standecor_usuario_activo';
-  const ADMIN_USER='IsraelM';
-  const ADMIN_PASS='1234';
-
-  function getUserActivoPanel(){
-    try{return JSON.parse(localStorage.getItem(LOGIN_KEY)||'null')}catch(e){return null}
-  }
-
-  function esAdminPanel(){
-    const u=getUserActivoPanel();
-    return u && u.usuario===ADMIN_USER && u.rol==='admin';
-  }
-
-  function asegurarUsuariosPanel(){
-    if(!window.db)return false;
-    if(!Array.isArray(db.usuariosInternos))db.usuariosInternos=[];
-    if(!db.usuariosInternos.some(u=>u.usuario===ADMIN_USER)){
-      db.usuariosInternos.push({usuario:ADMIN_USER,password:ADMIN_PASS,rol:'admin',creado:new Date().toISOString()});
-      try{if(typeof save==='function')save()}catch(e){}
-    }
-    return true;
-  }
-
-  function cssUsuariosPanel(){
-    if(document.getElementById('usuariosAdminFixCSS'))return;
-    const st=document.createElement('style');
-    st.id='usuariosAdminFixCSS';
-    st.textContent=`
-      #btnUsuariosAdminFix{position:fixed;right:18px;bottom:18px;z-index:99990;background:linear-gradient(135deg,#0B5F86,#14A4E3);color:white;border:0;border-radius:999px;padding:12px 16px;font-weight:900;box-shadow:0 10px 28px rgba(15,23,42,.25);display:none;align-items:center;gap:8px}
-      #usuariosAdminFixPanel{position:fixed;inset:0;z-index:99991;background:rgba(15,23,42,.58);display:none;align-items:center;justify-content:center;padding:18px}
-      .usuarios-admin-fix-modal{width:min(780px,96vw);max-height:88vh;overflow:auto;background:white;border-radius:22px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.25)}
-      .usuarios-admin-fix-modal h2{margin:0 0 14px;color:#0B5F86}
-      .usuarios-admin-fix-form{display:grid;grid-template-columns:1fr 1fr 150px auto;gap:8px;align-items:end;margin-bottom:16px}
-      .usuarios-admin-fix-list{display:flex;flex-direction:column;gap:8px}
-      .usuarios-admin-fix-row{display:grid;grid-template-columns:1fr 120px auto;gap:8px;align-items:center;border:1px solid #dbe7ef;border-radius:14px;background:#f8fcff;padding:10px}
-      .usuarios-admin-fix-row strong{color:#0f172a}.usuarios-admin-fix-row span{font-size:11px;font-weight:900;color:#0B5F86;text-transform:uppercase}
-      .usuarios-admin-fix-delete{background:#fff1f1!important;color:#b42318!important;border:1px solid #ffcaca!important}
-      .usuarios-admin-fix-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
-      @media(max-width:720px){.usuarios-admin-fix-form,.usuarios-admin-fix-row{grid-template-columns:1fr}#btnUsuariosAdminFix{right:12px;bottom:12px;padding:10px 13px}}
-    `;
-    document.head.appendChild(st);
-  }
-
-  function crearBotonUsuariosPanel(){
-    cssUsuariosPanel();
-    let btn=document.getElementById('btnUsuariosAdminFix');
-    if(!btn){
-      btn=document.createElement('button');
-      btn.id='btnUsuariosAdminFix';
-      btn.type='button';
-      btn.innerHTML='👤 Usuarios';
-      btn.onclick=abrirUsuariosPanelFix;
-      document.body.appendChild(btn);
-    }
-    btn.style.display=esAdminPanel()?'flex':'none';
-  }
-
-  function abrirUsuariosPanelFix(){
-    if(!asegurarUsuariosPanel()||!esAdminPanel())return;
-    cssUsuariosPanel();
-    let panel=document.getElementById('usuariosAdminFixPanel');
-    if(!panel){
-      panel=document.createElement('div');
-      panel.id='usuariosAdminFixPanel';
-      document.body.appendChild(panel);
-    }
-    panel.style.display='flex';
-    renderUsuariosPanelFix();
-  }
-
-  function cerrarUsuariosPanelFix(){
-    const panel=document.getElementById('usuariosAdminFixPanel');
-    if(panel)panel.style.display='none';
-  }
-
-  function renderUsuariosPanelFix(){
-    const panel=document.getElementById('usuariosAdminFixPanel');
-    if(!panel)return;
-    asegurarUsuariosPanel();
-    panel.innerHTML=`<div class="usuarios-admin-fix-modal">
-      <h2>Gestión de usuarios</h2>
-      <div class="usuarios-admin-fix-form">
-        <div><label>Usuario</label><input id="fixNuevoUsuario" placeholder="Ej: oficina"></div>
-        <div><label>Contraseña</label><input id="fixNuevaPass" placeholder="Contraseña"></div>
-        <div><label>Rol</label><select id="fixNuevoRol"><option value="visor">Visor</option><option value="admin">Admin</option></select></div>
-        <button type="button" onclick="crearUsuarioPanelFix()">Crear</button>
-      </div>
-      <div class="usuarios-admin-fix-list">
-        ${db.usuariosInternos.map(u=>`<div class="usuarios-admin-fix-row"><strong>${esc(u.usuario)}</strong><span>${esc(u.rol)}</span>${u.usuario===ADMIN_USER?'<em>Admin principal</em>':`<button type="button" class="usuarios-admin-fix-delete" onclick="borrarUsuarioPanelFix('${esc(u.usuario)}')">Borrar</button>`}</div>`).join('')}
-      </div>
-      <div class="usuarios-admin-fix-actions"><button type="button" class="light" onclick="cerrarUsuariosPanelFix()">Cerrar</button></div>
-    </div>`;
-  }
-
-  window.crearUsuarioPanelFix=function(){
-    if(!asegurarUsuariosPanel()||!esAdminPanel())return;
-    const usuario=(document.getElementById('fixNuevoUsuario')?.value||'').trim();
-    const password=document.getElementById('fixNuevaPass')?.value||'';
-    const rol=document.getElementById('fixNuevoRol')?.value||'visor';
-    if(!usuario||!password){alert('Introduce usuario y contraseña.');return}
-    if(db.usuariosInternos.some(u=>u.usuario===usuario)){alert('Ese usuario ya existe.');return}
-    db.usuariosInternos.push({usuario,password,rol,creado:new Date().toISOString()});
-    if(typeof save==='function')save();
-    renderUsuariosPanelFix();
-  };
-
-  window.borrarUsuarioPanelFix=function(usuario){
-    if(usuario===ADMIN_USER)return;
-    if(!confirm('¿Borrar usuario '+usuario+'?'))return;
-    db.usuariosInternos=db.usuariosInternos.filter(u=>u.usuario!==usuario);
-    if(typeof save==='function')save();
-    renderUsuariosPanelFix();
-  };
-
-  window.cerrarUsuariosPanelFix=cerrarUsuariosPanelFix;
-
-  function bootUsuariosPanel(){
-    if(!asegurarUsuariosPanel()){setTimeout(bootUsuariosPanel,500);return}
-    crearBotonUsuariosPanel();
-  }
-
-  window.addEventListener('load',()=>setTimeout(bootUsuariosPanel,800));
-  setInterval(crearBotonUsuariosPanel,2000);
-})();
-</script>
 <script>
 /* =========================================================
    BETA USUARIOS STANDECOR - AISLADA DE LOS DATOS PRINCIPALES
@@ -3838,7 +3005,7 @@ function renderPrint(eventosPersonalizados){
     return null;
   }
 
-  function usuariosDefault(){return [{usuario:ADMIN_USER,password:ADMIN_PASS,rol:'admin',creado:new Date().toISOString()}]}
+  function usuariosDefault(){return [{usuario:ADMIN_USER,password:ADMIN_PASS,rol:'admin',activo:true,creado:new Date().toISOString()}]}
 
   async function cargarUsuariosBeta(){
     usuariosRef=getFirestoreRef();
@@ -3849,7 +3016,7 @@ function renderPrint(eventosPersonalizados){
       await usuariosRef.set({usuarios:usuariosBeta,actualizado:Date.now()},{merge:true});
       return usuariosBeta;
     }
-    usuariosBeta=snap.data().usuarios||usuariosDefault();
+    usuariosBeta=(snap.data().usuarios||usuariosDefault()).map(u=>({activo:true,...u}));
     if(!usuariosBeta.some(u=>u.usuario===ADMIN_USER)){
       usuariosBeta.unshift(usuariosDefault()[0]);
       await guardarUsuariosBeta();
@@ -3888,6 +3055,10 @@ function renderPrint(eventosPersonalizados){
     const pass=document.getElementById('loginBetaPass')?.value||'';
     const u=usuariosBeta.find(x=>x.usuario===usuario&&x.password===pass);
     if(!u){document.getElementById('loginBetaError').textContent='Usuario o contraseña incorrectos';return}
+    if(u.activo===false){
+      document.getElementById('loginBetaError').textContent='Usuario desactivado. Contacta con el administrador.';
+      return;
+    }
     setSession(u);
     document.getElementById('loginBetaOverlay')?.remove();
     aplicarBetaPermisos();
@@ -3960,6 +3131,18 @@ function renderPrint(eventosPersonalizados){
       if(getFirestoreRef()||intentos>10){
         clearInterval(espera);
         await cargarUsuariosBeta();
+        const ses=getSession();
+        if(ses){
+          const usuarioActual=usuariosBeta.find(x=>x.usuario===ses.usuario);
+          if(!usuarioActual || usuarioActual.activo===false){
+            clearSession();
+            aplicarBetaPermisos();
+            mostrarLoginBeta();
+            const err=document.getElementById('loginBetaError');
+            if(err)err.textContent='Usuario desactivado. Contacta con el administrador.';
+            return;
+          }
+        }
         aplicarBetaPermisos();
         if(!getSession())mostrarLoginBeta();
       }
@@ -3967,6 +3150,682 @@ function renderPrint(eventosPersonalizados){
   }
 
   window.addEventListener('load',()=>setTimeout(bootUsuariosBeta,800));
+})();
+</script>
+
+<script>
+/* =========================================================
+   MEJORA SEGURA: OPTIMIZACIÓN VISUAL + USUARIOS AVANZADOS
+   - Crear usuarios desde Admin
+   - Editar contraseña
+   - Activar / desactivar usuarios
+   - Registrar creador y última modificación de cada montaje
+   - No toca la estructura principal de Firebase de montajes
+========================================================= */
+(function(){
+  const SESSION_KEY='standecor_beta_user_session';
+  const ADMIN_USER='IsraelM';
+
+  function usuarioSesionActual(){
+    try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null}
+  }
+
+  function nombreUsuarioActual(){
+    const u=usuarioSesionActual();
+    return u && u.usuario ? u.usuario : 'SIN USUARIO';
+  }
+
+  function esAdminActual(){
+    const u=usuarioSesionActual();
+    return Boolean(u && u.rol==='admin');
+  }
+
+  function getUsuariosDocRefMejora(){
+    if(!window.firebase || !firebase.apps || !firebase.apps.length) return null;
+    return firebase.firestore().collection('standecor').doc('usuarios_beta');
+  }
+
+  async function cargarUsuariosMejora(){
+    const ref=getUsuariosDocRefMejora();
+    if(!ref){
+      return [{usuario:ADMIN_USER,password:'1234',rol:'admin',activo:true,creado:new Date().toISOString()}];
+    }
+    const snap=await ref.get();
+    let usuarios=[];
+    if(snap.exists && Array.isArray((snap.data()||{}).usuarios)) usuarios=snap.data().usuarios;
+    if(!usuarios.some(u=>u.usuario===ADMIN_USER)){
+      usuarios.unshift({usuario:ADMIN_USER,password:'1234',rol:'admin',activo:true,creado:new Date().toISOString()});
+      await ref.set({usuarios,actualizado:Date.now()},{merge:true});
+    }
+    usuarios=usuarios.map(u=>({activo:true,...u}));
+    return usuarios;
+  }
+
+  async function guardarUsuariosMejora(usuarios){
+    const ref=getUsuariosDocRefMejora();
+    if(!ref) return;
+    await ref.set({usuarios,actualizado:Date.now()},{merge:true});
+  }
+
+  function injectMejorasCSS(){
+    if(document.getElementById('mejorasVisualUsuariosCSS'))return;
+    const st=document.createElement('style');
+    st.id='mejorasVisualUsuariosCSS';
+    st.textContent=`
+      /* ===== OPTIMIZACIÓN VISUAL SUAVE ===== */
+      main{padding-top:18px!important}
+      .card{border-radius:20px!important}
+      .filters{align-items:end!important;gap:10px!important}
+      .filters input,.filters select{height:40px!important}
+      .pdf-mensual-btn{height:40px!important;border-radius:13px!important}
+      .plan-accordion{gap:11px!important}
+      .plan-folder{border-radius:17px!important}
+      .plan-folder-head{min-height:54px!important}
+      .folder-pill{min-width:150px!important}
+      .folder-date{white-space:nowrap!important}
+      .folder-count{line-height:1.25!important}
+      .folder-detail-box{border-radius:14px!important}
+      .action-btn{box-shadow:0 3px 10px rgba(15,23,42,.08)!important}
+      input,select,textarea{border-radius:12px!important}
+      .worker-option{border-radius:12px!important}
+      #betaUserBar{top:24px!important;right:148px!important}
+
+      /* ===== PANEL USUARIOS AVANZADO ===== */
+      #usuariosAvanzadoPanel{position:fixed;inset:0;z-index:2147483601;background:rgba(15,23,42,.60);display:none;align-items:center;justify-content:center;padding:18px}
+      .usuarios-avanzado-modal{width:min(920px,96vw);max-height:88vh;overflow:auto;background:white;border-radius:24px;padding:22px;box-shadow:0 24px 80px rgba(0,0,0,.30)}
+      .usuarios-avanzado-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+      .usuarios-avanzado-head h2{margin:0;color:#0B5F86}
+      .usuarios-avanzado-form{display:grid;grid-template-columns:1fr 1fr 150px auto;gap:9px;align-items:end;margin-bottom:18px;padding:12px;border:1px solid #dbe7ef;border-radius:18px;background:#f8fcff}
+      .usuarios-avanzado-list{display:flex;flex-direction:column;gap:9px}
+      .usuario-avanzado-row{display:grid;grid-template-columns:1.1fr 1fr 120px 110px 1.25fr;gap:9px;align-items:end;border:1px solid #dbe7ef;border-radius:16px;background:#fff;padding:11px}
+      .usuario-inline-field label{margin:0 0 4px!important;font-size:10px!important;text-transform:uppercase;color:#64748b!important;letter-spacing:.5px}
+      .usuario-inline-field input,.usuario-inline-field select{height:36px!important;border-radius:12px!important;font-size:12px!important;padding:7px 9px!important;text-transform:none!important}
+      .usuario-inline-field input[readonly],.usuario-inline-field select:disabled{background:#f1f5f9!important;color:#64748b!important;cursor:not-allowed!important}
+      .usuario-avanzado-row strong{color:#0B5F86;font-size:13px;text-transform:uppercase}
+      .usuario-rol-pill,.usuario-estado-pill{display:inline-flex;align-items:center;justify-content:center;width:max-content;min-width:82px;border-radius:999px;padding:6px 10px;font-size:10.5px;font-weight:900;text-transform:uppercase}
+      .usuario-rol-pill{background:#eef7ff;color:#0B5F86;border:1px solid #bde7fb}
+      .usuario-estado-pill.activo{background:#eefaf0;color:#207a35;border:1px solid #bfe7c7}
+      .usuario-estado-pill.inactivo{background:#fff1f1;color:#b42318;border:1px solid #ffcaca}
+      .usuario-avanzado-actions{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap}
+      .usuario-avanzado-actions button{padding:7px 10px!important;border-radius:12px!important;font-size:11px!important;box-shadow:none!important}
+      .btn-edit-user{background:#eef7ff!important;color:#0B5F86!important;border:1px solid #bde7fb!important}
+      .btn-pass{background:#f8fcff!important;color:#0B5F86!important;border:1px solid #dbe7ef!important}
+      .btn-delete-user{background:#fff1f1!important;color:#b42318!important;border:1px solid #ffcaca!important}
+      .btn-toggle-user{background:#f8fafc!important;color:#475569!important;border:1px solid #dbe7ef!important}
+      .btn-toggle-user.off{background:#fff1f1!important;color:#b42318!important;border-color:#ffcaca!important}
+      .creator-badge{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:6px 9px;border-radius:999px;background:#eef7ff;color:#0B5F86;border:1px solid #bde7fb;font-size:10.5px;font-weight:900;text-transform:uppercase}
+
+      @media(max-width:1100px){
+        main{padding:14px!important}
+        .grid{gap:12px!important}
+        .plan-folder-head{grid-template-columns:32px 1fr!important;align-items:start!important}
+        .folder-pill,.folder-date,.folder-count{grid-column:2!important;text-align:left!important;justify-content:flex-start!important}
+        .folder-pill{min-width:0!important;width:max-content!important}
+        #betaUserBar{right:112px!important;top:18px!important}
+      }
+
+      @media(max-width:720px){
+        header{min-height:72px!important}
+        nav{top:72px!important;padding:8px 10px!important}
+        main{padding:10px!important}
+        .card{border-radius:16px!important;padding:12px!important}
+        .filters{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+        .pdf-mensual-btn{width:100%!important;justify-content:center!important}
+        .plan-folder-head{padding:10px!important;min-height:auto!important}
+        .folder-feria{font-size:13px!important}
+        .folder-sub,.folder-date,.folder-count{font-size:10.5px!important}
+        .folder-detail-grid{grid-template-columns:1fr!important}
+        #betaUserBar{right:76px!important;top:14px!important;max-width:calc(100vw - 96px);overflow:hidden}
+        #betaUserBar span{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .usuarios-avanzado-form,.usuario-avanzado-row{grid-template-columns:1fr!important}
+        .usuario-avanzado-actions{justify-content:flex-start!important}
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
+  async function abrirUsuariosAvanzado(){
+    if(!esAdminActual())return;
+    injectMejorasCSS();
+    let panel=document.getElementById('usuariosAvanzadoPanel');
+    if(!panel){
+      panel=document.createElement('div');
+      panel.id='usuariosAvanzadoPanel';
+      document.body.appendChild(panel);
+    }
+    panel.style.display='flex';
+    await renderUsuariosAvanzado();
+  }
+
+  async function renderUsuariosAvanzado(){
+    const panel=document.getElementById('usuariosAvanzadoPanel');
+    if(!panel)return;
+    const usuarios=await cargarUsuariosMejora();
+    panel.innerHTML=`<div class="usuarios-avanzado-modal">
+      <div class="usuarios-avanzado-head">
+        <h2>Gestión de usuarios</h2>
+        <button type="button" class="light" id="cerrarUsuariosAvanzado">Cerrar</button>
+      </div>
+      <div class="usuarios-avanzado-form">
+        <div><label>Usuario</label><input id="nuevoUsuarioAvanzado" placeholder="Ej: oficina"></div>
+        <div><label>Contraseña</label><input id="nuevaPassAvanzado" placeholder="Contraseña"></div>
+        <div><label>Rol</label><select id="nuevoRolAvanzado"><option value="visor">Visor</option><option value="admin">Admin</option></select></div>
+        <button type="button" id="crearUsuarioAvanzado">Crear</button>
+      </div>
+      <div class="usuarios-avanzado-list">
+        ${usuarios.map(u=>`<div class="usuario-avanzado-row">
+          <div class="usuario-inline-field"><label>Usuario</label><input data-user-name="${esc(u.usuario)}" value="${esc(u.usuario)}" ${u.usuario===ADMIN_USER?'readonly':''}></div>
+          <div class="usuario-inline-field"><label>Contraseña</label><input data-user-pass="${esc(u.usuario)}" placeholder="Nueva contraseña" type="text"></div>
+          <div class="usuario-inline-field"><label>Rol</label><select data-user-rol="${esc(u.usuario)}" ${u.usuario===ADMIN_USER?'disabled':''}><option value="visor" ${(u.rol||'visor')==='visor'?'selected':''}>Visor</option><option value="admin" ${(u.rol||'visor')==='admin'?'selected':''}>Admin</option></select></div>
+          <div class="usuario-inline-field"><label>Estado</label><span class="usuario-estado-pill ${u.activo!==false?'activo':'inactivo'}">${u.activo!==false?'Activo':'Inactivo'}</span></div>
+          <div class="usuario-avanzado-actions">
+            <button type="button" class="btn-edit-user" data-save-user="${esc(u.usuario)}">Guardar</button>
+            ${u.usuario===ADMIN_USER?'<span class="muted">Admin principal</span>':`<button type="button" class="btn-toggle-user ${u.activo!==false?'off':''}" data-toggle-user="${esc(u.usuario)}">${u.activo!==false?'Desactivar':'Activar'}</button><button type="button" class="btn-delete-user" data-delete-user="${esc(u.usuario)}">Borrar</button>`}
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+    document.getElementById('cerrarUsuariosAvanzado').onclick=()=>panel.style.display='none';
+    document.getElementById('crearUsuarioAvanzado').onclick=crearUsuarioAvanzado;
+    panel.querySelectorAll('[data-save-user]').forEach(b=>b.onclick=()=>guardarUsuarioInlineAvanzado(b.getAttribute('data-save-user')));
+    panel.querySelectorAll('[data-toggle-user]').forEach(b=>b.onclick=()=>toggleUsuarioActivo(b.getAttribute('data-toggle-user')));
+    panel.querySelectorAll('[data-delete-user]').forEach(b=>b.onclick=()=>borrarUsuarioAvanzado(b.getAttribute('data-delete-user')));
+  }
+
+  async function crearUsuarioAvanzado(){
+    const usuario=(document.getElementById('nuevoUsuarioAvanzado')?.value||'').trim();
+    const password=document.getElementById('nuevaPassAvanzado')?.value||'';
+    const rol=document.getElementById('nuevoRolAvanzado')?.value||'visor';
+    if(!usuario||!password){alert('Introduce usuario y contraseña.');return}
+    const usuarios=await cargarUsuariosMejora();
+    if(usuarios.some(u=>normal(u.usuario)===normal(usuario))){alert('Ese usuario ya existe.');return}
+    usuarios.push({usuario,password,rol,activo:true,creado:new Date().toISOString(),creadoPor:nombreUsuarioActual()});
+    await guardarUsuariosMejora(usuarios);
+    await renderUsuariosAvanzado();
+  }
+
+  async function guardarUsuarioInlineAvanzado(usuario){
+    const usuarios=await cargarUsuariosMejora();
+    const u=usuarios.find(x=>x.usuario===usuario);
+    if(!u)return;
+
+    const inputNombre=document.querySelector(`[data-user-name="${CSS.escape(usuario)}"]`);
+    const inputPass=document.querySelector(`[data-user-pass="${CSS.escape(usuario)}"]`);
+    const selectRol=document.querySelector(`[data-user-rol="${CSS.escape(usuario)}"]`);
+
+    const nuevoUsuario=(inputNombre?.value||'').trim();
+    const nuevaPass=(inputPass?.value||'').trim();
+    const nuevoRol=(selectRol?.value||u.rol||'visor').trim().toLowerCase()==='admin'?'admin':'visor';
+
+    if(!nuevoUsuario){alert('El usuario no puede estar vacío.');return}
+    if(usuario!==ADMIN_USER && normal(nuevoUsuario)!==normal(usuario) && usuarios.some(x=>normal(x.usuario)===normal(nuevoUsuario))){
+      alert('Ese usuario ya existe.');
+      return;
+    }
+
+    if(usuario!==ADMIN_USER) u.usuario=nuevoUsuario;
+    if(usuario!==ADMIN_USER) u.rol=nuevoRol;
+    if(nuevaPass) u.password=nuevaPass;
+
+    u.modificadoPor=nombreUsuarioActual();
+    u.modificado=new Date().toISOString();
+
+    await guardarUsuariosMejora(usuarios);
+
+    const ses=usuarioSesionActual();
+    if(ses && ses.usuario===usuario){
+      localStorage.setItem(SESSION_KEY,JSON.stringify({usuario:u.usuario,rol:u.rol}));
+      aplicarBetaPermisos();
+    }
+
+    await renderUsuariosAvanzado();
+  }
+
+  async function editarUsuarioAvanzado(usuario){
+    if(usuario===ADMIN_USER){alert('El admin principal no se puede renombrar desde aquí.');return}
+    const usuarios=await cargarUsuariosMejora();
+    const u=usuarios.find(x=>x.usuario===usuario);
+    if(!u)return;
+    const nuevoUsuario=prompt('Nuevo nombre de usuario:', u.usuario);
+    if(nuevoUsuario===null)return;
+    const limpio=nuevoUsuario.trim();
+    if(!limpio){alert('El usuario no puede estar vacío.');return}
+    if(normal(limpio)!==normal(u.usuario) && usuarios.some(x=>normal(x.usuario)===normal(limpio))){alert('Ese usuario ya existe.');return}
+    const nuevoRol=prompt('Rol del usuario: admin o visor', u.rol||'visor');
+    if(nuevoRol===null)return;
+    const rolLimpio=String(nuevoRol||'visor').trim().toLowerCase()==='admin'?'admin':'visor';
+    const nuevaPass=prompt('Nueva contraseña (deja vacío para mantener la actual):','');
+    if(nuevaPass===null)return;
+    u.usuario=limpio;
+    u.rol=rolLimpio;
+    if(nuevaPass.trim()) u.password=nuevaPass;
+    u.modificadoPor=nombreUsuarioActual();
+    u.modificado=new Date().toISOString();
+    await guardarUsuariosMejora(usuarios);
+    await renderUsuariosAvanzado();
+  }
+
+  async function borrarUsuarioAvanzado(usuario){
+    if(usuario===ADMIN_USER)return;
+    if(!confirm('¿Borrar definitivamente el usuario '+usuario+'?'))return;
+    let usuarios=await cargarUsuariosMejora();
+    usuarios=usuarios.filter(u=>u.usuario!==usuario);
+    await guardarUsuariosMejora(usuarios);
+    await renderUsuariosAvanzado();
+  }
+
+  async function cambiarPasswordUsuario(usuario){
+    const nueva=prompt('Nueva contraseña para '+usuario+':');
+    if(nueva===null)return;
+    if(!nueva.trim()){alert('La contraseña no puede estar vacía.');return}
+    const usuarios=await cargarUsuariosMejora();
+    const u=usuarios.find(x=>x.usuario===usuario);
+    if(!u)return;
+    u.password=nueva;
+    u.modificadoPor=nombreUsuarioActual();
+    u.modificado=new Date().toISOString();
+    await guardarUsuariosMejora(usuarios);
+    alert('Contraseña actualizada.');
+    await renderUsuariosAvanzado();
+  }
+
+  async function toggleUsuarioActivo(usuario){
+    if(usuario===ADMIN_USER)return;
+    const usuarios=await cargarUsuariosMejora();
+    const u=usuarios.find(x=>x.usuario===usuario);
+    if(!u)return;
+    u.activo = u.activo===false ? true : false;
+    u.modificadoPor=nombreUsuarioActual();
+    u.modificado=new Date().toISOString();
+    await guardarUsuariosMejora(usuarios);
+    await renderUsuariosAvanzado();
+  }
+
+  async function revisarUsuarioActivo(){
+    const ses=usuarioSesionActual();
+    if(!ses || ses.usuario===ADMIN_USER)return;
+    try{
+      const usuarios=await cargarUsuariosMejora();
+      const u=usuarios.find(x=>x.usuario===ses.usuario);
+      if(!u || u.activo===false){
+        localStorage.removeItem(SESSION_KEY);
+        location.reload();
+      }
+    }catch(e){}
+  }
+
+  function instalarPanelUsuariosAvanzado(){
+    injectMejorasCSS();
+    const btn=document.getElementById('betaUsuariosBtn');
+    if(btn && btn.dataset.avanzado!=='1'){
+      btn.dataset.avanzado='1';
+      btn.onclick=abrirUsuariosAvanzado;
+    }
+  }
+
+  /* ===== Registrar creador / modificador en cada montaje ===== */
+  if(typeof window.guardarEvento==='function'){
+    const guardarEventoOriginalMejora=window.guardarEvento;
+    window.guardarEvento=function(){
+      let ev=getEventoForm();
+      let i=db.eventos.findIndex(e=>e.id===ev.id);
+      const usuario=nombreUsuarioActual();
+      const ahora=new Date().toISOString();
+
+      if(i>=0){
+        ev.creadoPor=db.eventos[i].creadoPor||usuario;
+        ev.creadoEn=db.eventos[i].creadoEn||db.eventos[i].creado||ahora;
+        ev.modificadoPor=usuario;
+        ev.modificadoEn=ahora;
+        ev.terminado=db.eventos[i].terminado||false;
+        db.eventos[i]=ev;
+      }else{
+        ev.creadoPor=usuario;
+        ev.creadoEn=ahora;
+        ev.modificadoPor=usuario;
+        ev.modificadoEn=ahora;
+        db.eventos.push(ev);
+      }
+
+      save();
+      limpiarFormulario();
+      renderAll();
+    };
+  }
+
+  /* ===== Mostrar creador en detalle de planificación ===== */
+  if(typeof window.renderEventos==='function'){
+    window.renderEventos=function(){
+      const cont=ensurePlanAccordion();
+      const eventos=eventosFiltrados();
+      const activos=eventos.filter(e=>!e.terminado);
+      const terminados=eventos.filter(e=>e.terminado);
+
+      function metaUsuario(ev){
+        const creado=ev.creadoPor?`<span class="creator-badge">Creado por ${esc(ev.creadoPor)}</span>`:'';
+        const mod=ev.modificadoPor&&ev.modificadoPor!==ev.creadoPor?` <span class="creator-badge">Modificado por ${esc(ev.modificadoPor)}</span>`:'';
+        return creado+mod;
+      }
+
+      function carpeta(ev,terminado=false){
+        const cab=cabezaDe(ev);
+        const ayudas=(ev.ayudantes||[]).map(id=>trabajador(id)).filter(Boolean);
+        const avisos=avisosVisibles?avisosVisibles(ev):validarEvento(ev,ev.id);
+        const collas=textoCollas(ev);
+        const tieneMontaje=ev.montajeInicio||ev.montajeFin;
+        const tipo=tieneMontaje?'m':'d';
+        const tipoTxt=tieneMontaje?'MONTAJE':'DESMONTAJE';
+        const fecha=tieneMontaje?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
+
+        let personalHtml='';
+        if(cab)personalHtml+=`<span class="badge green">${esc(cab.nombre)}</span>`;
+        ayudas.filter(t=>!cab||t.id!==cab.id).forEach(t=>personalHtml+=`<span class="badge gray">${esc(t.nombre)}</span>`);
+        if(!personalHtml)personalHtml='<p class="muted">Sin personal seleccionado.</p>';
+
+        const collaHtml=collas.length?collas.map(t=>`<span class="badge blue">${esc(t)}</span>`).join(''):'<p class="muted">Sin colla.</p>';
+        const avisosHtml=avisos.length?avisos.map(a=>`<span class="badge red dismissable-alert">⚠️ ${esc(a)} <button type="button" class="dismiss-alert-btn" onclick="event.stopPropagation();ocultarAviso('${ev.id}',decodeURIComponent('${encodeURIComponent(a)}'))">×</button></span>`).join(''):'<span class="badge green">OK</span>';
+        const obs=ev.observaciones?esc(ev.observaciones):'<span class="muted">Sin observaciones.</span>';
+        const meta=metaUsuario(ev);
+
+        return `<div class="plan-folder ${terminado?'finished':''}" id="folder_${ev.id}">
+          <button type="button" class="plan-folder-head" onclick="togglePlanDetalle('${ev.id}')">
+            <span class="folder-arrow">›</span>
+            <span class="folder-main"><span class="folder-title-line"><span class="folder-feria">${esc(ev.feria||'SIN FERIA')}</span><span class="folder-sub">${esc(ev.lugar||'SIN LUGAR')} · ${esc(ev.stand||'SIN STAND')}</span></span></span>
+            <span class="folder-pill ${tipo}">${tipoTxt}</span>
+            <span class="folder-date">${esc(fecha||'SIN FECHA')}</span>
+            <span class="folder-count">${terminado?'✅ TERMINADO · ':''}${ayudas.length} pers. · ${collas.length} colla${collas.length===1?'':'s'}${avisos.length?' · ⚠ '+avisos.length:''}</span>
+          </button>
+          <div class="plan-folder-body">
+            <div class="folder-detail-grid compact">
+              <div class="folder-detail-box"><div class="folder-detail-title">Personal</div><div class="industrial-list">${personalHtml}</div></div>
+              <div class="folder-detail-box"><div class="folder-detail-title">Collas</div><div class="industrial-list">${collaHtml}</div></div>
+              <div class="folder-detail-box avisos-box"><div class="folder-detail-title">Avisos</div><div class="industrial-list">${avisosHtml}</div></div>
+              <div class="folder-detail-box observaciones-box"><div class="folder-detail-title">Observaciones</div>${obs}${meta?`<div>${meta}</div>`:''}</div>
+            </div>
+            <div class="folder-actions no-print">
+              <button class="small action-btn finish-btn" title="${terminado?'Volver a activos':'Marcar terminado'}" onclick="event.stopPropagation();toggleTerminadoEvento('${ev.id}')">${terminado?'↩':'✓'}</button>
+              <button class="small action-btn" title="Imprimir este trabajo" onclick="imprimirEvento('${ev.id}')"><svg class="ico"><use href="#i-print"></use></svg></button>
+              <button class="small action-btn" title="Editar" onclick="editarEvento('${ev.id}')"><svg class="ico"><use href="#i-edit"></use></svg></button>
+              <button class="small action-btn delete" title="Eliminar" onclick="borrarEvento('${ev.id}')"><svg class="ico"><use href="#i-trash"></use></svg></button>
+            </div>
+          </div>
+        </div>`;
+      }
+
+      let html=activos.map(e=>carpeta(e,false)).join('')||'<p class="muted">No hay montajes activos.</p>';
+      html+=`<div class="terminados-panel no-print">
+        <button type="button" class="terminados-head" onclick="toggleTerminadosLista()"><span id="terminadosArrow">›</span> TERMINADOS (${terminados.length})</button>
+        <div id="terminadosList" class="terminados-list" style="display:none">${terminados.map(e=>carpeta(e,true)).join('')||'<p class="muted">No hay trabajos terminados.</p>'}</div>
+      </div>`;
+
+      cont.innerHTML=html;
+      const tabla=byId('tablaEventos');
+      if(tabla)tabla.innerHTML='';
+      renderPrint();
+    };
+  }
+
+  window.addEventListener('load',()=>{
+    injectMejorasCSS();
+    instalarPanelUsuariosAvanzado();
+    setTimeout(()=>{try{renderAll()}catch(e){}},700);
+  });
+  setInterval(instalarPanelUsuariosAvanzado,1200);
+  setTimeout(revisarUsuarioActivo,900);
+  setInterval(revisarUsuarioActivo,3000);
+})();
+</script>
+
+
+<script>
+/* =========================================================
+   GESTIÓN DE USUARIOS LIMPIA - SOLO ISRAELM ADMIN
+   Panel simple: Editar / Activar-Desactivar / X borrar
+   Sin prompts: edición dentro de modal propio
+========================================================= */
+(function(){
+  const SESSION_KEY='standecor_beta_user_session';
+  const ADMIN_USER='IsraelM';
+
+  function sesionActual(){
+    try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null}
+  }
+  function normalTxt(v){return String(v||'').trim().toUpperCase()}
+  function esIsraelAdmin(){
+    const s=sesionActual();
+    return !!(s && normalTxt(s.usuario)===normalTxt(ADMIN_USER) && String(s.rol||'').toLowerCase()==='admin');
+  }
+  function escLocal(s){
+    if(typeof esc==='function')return esc(s);
+    return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function refUsuarios(){
+    try{
+      if(window.firebase && firebase.apps && firebase.apps.length){
+        return firebase.firestore().collection('standecor').doc('usuarios_beta');
+      }
+    }catch(e){}
+    return null;
+  }
+  async function cargarUsuarios(){
+    const ref=refUsuarios();
+    if(!ref)return [{usuario:ADMIN_USER,password:'1234',rol:'admin',activo:true}];
+    const snap=await ref.get();
+    let usuarios=[];
+    if(snap.exists && Array.isArray((snap.data()||{}).usuarios)) usuarios=snap.data().usuarios;
+    usuarios=usuarios.map(u=>({activo:true,rol:'visor',...u}));
+    if(!usuarios.some(u=>normalTxt(u.usuario)===normalTxt(ADMIN_USER))){
+      usuarios.unshift({usuario:ADMIN_USER,password:'1234',rol:'admin',activo:true,creado:new Date().toISOString()});
+      await guardarUsuarios(usuarios);
+    }
+    return usuarios;
+  }
+  async function guardarUsuarios(usuarios){
+    const ref=refUsuarios();
+    if(ref) await ref.set({usuarios,actualizado:Date.now()},{merge:true});
+  }
+
+  function injectCSS(){
+    if(document.getElementById('usuariosLimpioIsraelCSS'))return;
+    const st=document.createElement('style');
+    st.id='usuariosLimpioIsraelCSS';
+    st.textContent=`
+      #usuariosLimpioPanel{position:fixed;inset:0;z-index:2147483620;background:rgba(15,23,42,.58);display:none;align-items:center;justify-content:center;padding:18px}
+      .usuarios-limpio-modal{width:min(860px,96vw);max-height:88vh;overflow:auto;background:#fff;border-radius:24px;padding:22px;box-shadow:0 24px 80px rgba(0,0,0,.30)}
+      .usuarios-limpio-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
+      .usuarios-limpio-head h2{margin:0;color:#0B5F86;font-size:22px}
+      .usuarios-limpio-form{display:grid;grid-template-columns:1fr 1fr 130px auto;gap:9px;align-items:end;padding:12px;border:1px solid #dbe7ef;border-radius:18px;background:#f8fcff;margin-bottom:16px}
+      .usuarios-limpio-form label{margin:0 0 4px!important;font-size:11px!important;text-transform:uppercase;color:#475569!important;letter-spacing:.4px}
+      .usuarios-limpio-form input,.usuarios-limpio-form select{height:38px!important;border-radius:12px!important;text-transform:none!important}
+      .usuarios-limpio-list{display:flex;flex-direction:column;gap:9px}
+      .usuario-limpio-row{display:grid;grid-template-columns:1fr 95px 105px auto;gap:10px;align-items:center;border:1px solid #dbe7ef;border-radius:16px;background:white;padding:12px}
+      .usuario-limpio-name{font-weight:900;color:#0B5F86;text-transform:uppercase;letter-spacing:.2px}
+      .usuario-limpio-pill{display:inline-flex;align-items:center;justify-content:center;min-width:82px;border-radius:999px;padding:6px 10px;font-size:10.5px;font-weight:900;text-transform:uppercase}
+      .usuario-limpio-pill.rol{background:#eef7ff;color:#0B5F86;border:1px solid #bde7fb}
+      .usuario-limpio-pill.activo{background:#eefaf0;color:#207a35;border:1px solid #bfe7c7}
+      .usuario-limpio-pill.inactivo{background:#fff1f1;color:#b42318;border:1px solid #ffcaca}
+      .usuario-limpio-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+      .usuario-limpio-actions button{height:32px!important;padding:6px 10px!important;border-radius:11px!important;font-size:11px!important;box-shadow:none!important}
+      .btn-user-edit{background:#eef7ff!important;color:#0B5F86!important;border:1px solid #bde7fb!important}
+      .btn-user-toggle{background:#f8fafc!important;color:#475569!important;border:1px solid #dbe7ef!important}
+      .btn-user-toggle.off{background:#fff1f1!important;color:#b42318!important;border-color:#ffcaca!important}
+      .btn-user-delete{width:32px!important;padding:0!important;background:#fff1f1!important;color:#b42318!important;border:1px solid #ffcaca!important;font-size:16px!important;font-weight:900!important;justify-content:center!important}
+      .admin-principal-note{font-size:12px;color:#64748b;font-weight:800}
+      #editarUsuarioLimpioPanel{position:fixed;inset:0;z-index:2147483621;background:rgba(15,23,42,.62);display:none;align-items:center;justify-content:center;padding:18px}
+      .editar-usuario-card{width:min(430px,94vw);background:white;border-radius:22px;padding:22px;box-shadow:0 24px 80px rgba(0,0,0,.32)}
+      .editar-usuario-card h3{margin:0 0 14px;color:#0B5F86;font-size:20px}
+      .editar-usuario-card label{font-size:11px;text-transform:uppercase;color:#475569;letter-spacing:.45px}
+      .editar-usuario-card input,.editar-usuario-card select{height:40px!important;border-radius:12px!important;margin-bottom:8px;text-transform:none!important}
+      .editar-usuario-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+      @media(max-width:720px){.usuarios-limpio-form,.usuario-limpio-row{grid-template-columns:1fr}.usuario-limpio-actions{justify-content:flex-start}.usuarios-limpio-modal{padding:18px}}
+    `;
+    document.head.appendChild(st);
+  }
+
+  async function abrirPanel(){
+    if(!esIsraelAdmin())return;
+    injectCSS();
+    let p=document.getElementById('usuariosLimpioPanel');
+    if(!p){p=document.createElement('div');p.id='usuariosLimpioPanel';document.body.appendChild(p)}
+    p.style.display='flex';
+    await renderPanel();
+  }
+
+  async function renderPanel(){
+    const p=document.getElementById('usuariosLimpioPanel');
+    if(!p)return;
+    const usuarios=await cargarUsuarios();
+    p.innerHTML=`<div class="usuarios-limpio-modal">
+      <div class="usuarios-limpio-head"><h2>Gestión de usuarios</h2><button type="button" class="light" id="cerrarUsuariosLimpio">Cerrar</button></div>
+      <div class="usuarios-limpio-form">
+        <div><label>Usuario</label><input id="nuevoUsuarioLimpio" placeholder="Ej: oficina"></div>
+        <div><label>Contraseña</label><input id="nuevaPassLimpio" placeholder="Contraseña"></div>
+        <div><label>Rol</label><select id="nuevoRolLimpio"><option value="visor">Visor</option><option value="admin">Admin</option></select></div>
+        <button type="button" id="crearUsuarioLimpio">Crear</button>
+      </div>
+      <div class="usuarios-limpio-list">
+        ${usuarios.map(u=>filaUsuario(u)).join('')}
+      </div>
+    </div>`;
+    document.getElementById('cerrarUsuariosLimpio').onclick=()=>p.style.display='none';
+    document.getElementById('crearUsuarioLimpio').onclick=crearUsuario;
+    p.querySelectorAll('[data-edit-user]').forEach(b=>b.onclick=()=>abrirEditar(b.getAttribute('data-edit-user')));
+    p.querySelectorAll('[data-toggle-user]').forEach(b=>b.onclick=()=>toggleActivo(b.getAttribute('data-toggle-user')));
+    p.querySelectorAll('[data-delete-user]').forEach(b=>b.onclick=()=>borrarUsuario(b.getAttribute('data-delete-user')));
+  }
+
+  function filaUsuario(u){
+    const isAdminPrincipal=normalTxt(u.usuario)===normalTxt(ADMIN_USER);
+    const activo=u.activo!==false;
+    return `<div class="usuario-limpio-row">
+      <div class="usuario-limpio-name">${escLocal(u.usuario)}</div>
+      <div><span class="usuario-limpio-pill rol">${escLocal((u.rol||'visor').toUpperCase())}</span></div>
+      <div><span class="usuario-limpio-pill ${activo?'activo':'inactivo'}">${activo?'Activo':'Inactivo'}</span></div>
+      <div class="usuario-limpio-actions">
+        ${isAdminPrincipal?'<span class="admin-principal-note">Admin principal</span>':''}
+        <button type="button" class="btn-user-edit" data-edit-user="${escLocal(u.usuario)}">Editar</button>
+        ${isAdminPrincipal?'':`<button type="button" class="btn-user-toggle ${activo?'off':''}" data-toggle-user="${escLocal(u.usuario)}">${activo?'Desactivar':'Activar'}</button><button type="button" class="btn-user-delete" title="Borrar" data-delete-user="${escLocal(u.usuario)}">×</button>`}
+      </div>
+    </div>`;
+  }
+
+  async function crearUsuario(){
+    const usuario=(document.getElementById('nuevoUsuarioLimpio')?.value||'').trim();
+    const password=document.getElementById('nuevaPassLimpio')?.value||'';
+    const rol=document.getElementById('nuevoRolLimpio')?.value||'visor';
+    if(!usuario||!password){alert('Introduce usuario y contraseña.');return}
+    const usuarios=await cargarUsuarios();
+    if(usuarios.some(u=>normalTxt(u.usuario)===normalTxt(usuario))){alert('Ese usuario ya existe.');return}
+    usuarios.push({usuario,password,rol,activo:true,creado:new Date().toISOString(),creadoPor:ADMIN_USER});
+    await guardarUsuarios(usuarios);
+    await renderPanel();
+  }
+
+  async function abrirEditar(usuario){
+    if(!esIsraelAdmin())return;
+    injectCSS();
+    const usuarios=await cargarUsuarios();
+    const u=usuarios.find(x=>x.usuario===usuario);
+    if(!u)return;
+    const isAdminPrincipal=normalTxt(u.usuario)===normalTxt(ADMIN_USER);
+    let p=document.getElementById('editarUsuarioLimpioPanel');
+    if(!p){p=document.createElement('div');p.id='editarUsuarioLimpioPanel';document.body.appendChild(p)}
+    p.style.display='flex';
+    p.innerHTML=`<div class="editar-usuario-card">
+      <h3>Editar usuario</h3>
+      <label>Usuario</label>
+      <input id="editUsuarioLimpio" value="${escLocal(u.usuario)}" ${isAdminPrincipal?'readonly':''}>
+      <label>Contraseña</label>
+      <input id="editPassLimpio" type="text" placeholder="Nueva contraseña">
+      <label>Rol</label>
+      <select id="editRolLimpio" ${isAdminPrincipal?'disabled':''}>
+        <option value="visor" ${(u.rol||'visor')==='visor'?'selected':''}>Visor</option>
+        <option value="admin" ${(u.rol||'visor')==='admin'?'selected':''}>Admin</option>
+      </select>
+      <div class="editar-usuario-actions"><button type="button" class="light" id="cancelarEditUsuario">Cancelar</button><button type="button" id="guardarEditUsuario">Guardar</button></div>
+    </div>`;
+    document.getElementById('cancelarEditUsuario').onclick=()=>p.style.display='none';
+    document.getElementById('guardarEditUsuario').onclick=()=>guardarEditar(usuario);
+  }
+
+  async function guardarEditar(usuarioOriginal){
+    const usuarios=await cargarUsuarios();
+    const u=usuarios.find(x=>x.usuario===usuarioOriginal);
+    if(!u)return;
+    const isAdminPrincipal=normalTxt(u.usuario)===normalTxt(ADMIN_USER);
+    const nuevoUsuario=(document.getElementById('editUsuarioLimpio')?.value||'').trim();
+    const nuevaPass=(document.getElementById('editPassLimpio')?.value||'').trim();
+    const nuevoRol=(document.getElementById('editRolLimpio')?.value||u.rol||'visor')==='admin'?'admin':'visor';
+    if(!nuevoUsuario){alert('El usuario no puede estar vacío.');return}
+    if(!isAdminPrincipal && normalTxt(nuevoUsuario)!==normalTxt(usuarioOriginal) && usuarios.some(x=>normalTxt(x.usuario)===normalTxt(nuevoUsuario))){
+      alert('Ese usuario ya existe.');return;
+    }
+    if(!isAdminPrincipal){u.usuario=nuevoUsuario;u.rol=nuevoRol;}
+    if(nuevaPass)u.password=nuevaPass;
+    u.modificado=new Date().toISOString();
+    u.modificadoPor=ADMIN_USER;
+    await guardarUsuarios(usuarios);
+    const edit=document.getElementById('editarUsuarioLimpioPanel');
+    if(edit)edit.style.display='none';
+    await renderPanel();
+  }
+
+  async function toggleActivo(usuario){
+    const usuarios=await cargarUsuarios();
+    const u=usuarios.find(x=>x.usuario===usuario);
+    if(!u || normalTxt(u.usuario)===normalTxt(ADMIN_USER))return;
+    u.activo=u.activo===false?true:false;
+    u.modificado=new Date().toISOString();
+    u.modificadoPor=ADMIN_USER;
+    await guardarUsuarios(usuarios);
+    await renderPanel();
+  }
+
+  async function borrarUsuario(usuario){
+    if(normalTxt(usuario)===normalTxt(ADMIN_USER))return;
+    if(!confirm('¿Borrar definitivamente el usuario '+usuario+'?'))return;
+    let usuarios=await cargarUsuarios();
+    usuarios=usuarios.filter(u=>u.usuario!==usuario);
+    await guardarUsuarios(usuarios);
+    await renderPanel();
+  }
+
+  async function comprobarSesionActiva(){
+    const s=sesionActual();
+    if(!s)return;
+    try{
+      const usuarios=await cargarUsuarios();
+      const u=usuarios.find(x=>normalTxt(x.usuario)===normalTxt(s.usuario));
+      if(!u || u.activo===false){
+        localStorage.removeItem(SESSION_KEY);
+        location.reload();
+      }
+    }catch(e){}
+  }
+
+  function controlarBotonUsuarios(){
+    injectCSS();
+    const btn=document.getElementById('betaUsuariosBtn');
+    if(btn){
+      if(!esIsraelAdmin()){
+        btn.style.display='none';
+        btn.onclick=null;
+      }else{
+        btn.style.display='inline-flex';
+        btn.dataset.avanzado='1';
+        btn.onclick=abrirPanel;
+      }
+    }
+    const panelViejo=document.getElementById('usuariosAvanzadoPanel');
+    if(panelViejo && !esIsraelAdmin())panelViejo.style.display='none';
+  }
+
+  window.addEventListener('load',()=>{
+    controlarBotonUsuarios();
+    comprobarSesionActiva();
+  });
+  setInterval(controlarBotonUsuarios,500);
+  setInterval(comprobarSesionActiva,2500);
 })();
 </script>
 </html>
