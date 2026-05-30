@@ -2021,82 +2021,6 @@ body.user-viewer button[onclick^="toggleTerminado"]{display:none!important}
     font-size:7.5px;
   }
 }
-
-/* ===== AJUSTE MÓVIL HEADER: USUARIO + COPIA SEGURIDAD ===== */
-@media (max-width:720px){
-
-  /* Mantiene el logo limpio en móvil, sin sombra cuadrada */
-  .standecor-text-logo{
-    box-shadow:none!important;
-    filter:none!important;
-    overflow:hidden!important;
-  }
-  .standecor-text-logo::before,
-  .standecor-text-logo::after{
-    box-shadow:none!important;
-  }
-
-  /* Usuario arriba a la derecha, un poco más compacto */
-  #betaUserBar{
-    transform:scale(.88)!important;
-    transform-origin:top right!important;
-  }
-
-  /* Botones de copia/importar más pequeños en móvil */
-  .topbar .no-print .top-icon-btn,
-  .top-icon-btn,
-  #btnExportar,
-  #btnImportar,
-  #btnBackup,
-  #btnRestore,
-  #exportBtn,
-  #importBtn{
-    width:34px!important;
-    height:34px!important;
-    min-width:34px!important;
-    min-height:34px!important;
-    border-radius:11px!important;
-    padding:0!important;
-  }
-
-  .topbar .no-print .top-icon-btn .ico,
-  .top-icon-btn .ico{
-    width:16px!important;
-    height:16px!important;
-  }
-
-  /* Baja ligeramente los botones de copia para que el usuario quede arriba */
-  .topbar .no-print{
-    margin-top:10px!important;
-  }
-}
-
-@media (max-width:430px){
-  #betaUserBar{
-    transform:scale(.84)!important;
-    transform-origin:top right!important;
-  }
-
-  .topbar .no-print .top-icon-btn,
-  .top-icon-btn,
-  #btnExportar,
-  #btnImportar,
-  #btnBackup,
-  #btnRestore,
-  #exportBtn,
-  #importBtn{
-    width:32px!important;
-    height:32px!important;
-    min-width:32px!important;
-    min-height:32px!important;
-    border-radius:10px!important;
-  }
-
-  .topbar .no-print{
-    margin-top:12px!important;
-  }
-}
-
 </style>
 <svg width="0" height="0" style="position:absolute;display:none" aria-hidden="true">
   <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/><path d="M18 12h.01"/></symbol>
@@ -3932,12 +3856,12 @@ function renderPrint(eventosPersonalizados){
         #betaUserBar{
           position:fixed!important;
           top:18px!important;
-          right:84px!important;
+          right:58px!important;
           z-index:99980!important;
           max-width:none!important;
           width:auto!important;
-          padding:5px!important;
-          gap:5px!important;
+          padding:4px!important;
+          gap:4px!important;
           border-radius:999px!important;
           background:rgba(11,95,134,.72)!important;
           backdrop-filter:blur(8px)!important;
@@ -3950,13 +3874,32 @@ function renderPrint(eventosPersonalizados){
           display:none!important;
         }
         #betaUserBar button{
-          width:31px!important;
-          height:31px!important;
-          min-width:31px!important;
+          width:29px!important;
+          height:29px!important;
+          min-width:29px!important;
           padding:0!important;
           border-radius:999px!important;
         }
         #betaUserBar svg{
+          width:14px!important;
+          height:14px!important;
+        }
+
+        /* Botones de copia/importar más pequeños y discretos en móvil */
+        .topbar .no-print{
+          right:-84px!important;
+          top:58%!important;
+          gap:5px!important;
+        }
+        .top-icon-btn{
+          width:30px!important;
+          height:30px!important;
+          min-width:30px!important;
+          border-radius:10px!important;
+          padding:0!important;
+        }
+        .top-icon-btn .ico,
+        .top-icon-btn svg{
           width:15px!important;
           height:15px!important;
         }
@@ -3965,14 +3908,30 @@ function renderPrint(eventosPersonalizados){
       @media(max-width:430px){
         #betaUserBar{
           top:17px!important;
-          right:78px!important;
+          right:50px!important;
           padding:4px!important;
           gap:4px!important;
         }
         #betaUserBar button{
-          width:29px!important;
-          height:29px!important;
-          min-width:29px!important;
+          width:27px!important;
+          height:27px!important;
+          min-width:27px!important;
+        }
+        .topbar .no-print{
+          right:-78px!important;
+          top:60%!important;
+          gap:4px!important;
+        }
+        .top-icon-btn{
+          width:28px!important;
+          height:28px!important;
+          min-width:28px!important;
+          border-radius:9px!important;
+        }
+        .top-icon-btn .ico,
+        .top-icon-btn svg{
+          width:14px!important;
+          height:14px!important;
         }
         .standecor-text-logo{
           box-shadow:none!important;
