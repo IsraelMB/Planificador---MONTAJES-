@@ -3828,4 +3828,88 @@ function renderPrint(eventosPersonalizados){
   setInterval(comprobarSesionActiva,2500);
 })();
 </script>
+
+<script>
+/* ===== FIX MÓVIL HEADER: LOGO + PASTILLA USUARIO ===== */
+(function(){
+  function injectMobileHeaderFix(){
+    if(document.getElementById('mobileHeaderFixStandecor')) return;
+    const st=document.createElement('style');
+    st.id='mobileHeaderFixStandecor';
+    st.textContent=`
+      @media(max-width:720px){
+        /* Quita la sombra cuadrada del logo solo en móvil */
+        .standecor-text-logo{
+          box-shadow:none!important;
+          filter:none!important;
+          overflow:hidden!important;
+          isolation:isolate!important;
+          background:linear-gradient(135deg,#25b5ff 0%,#1598e6 100%)!important;
+        }
+        .standecor-text-logo::before,
+        .standecor-text-logo::after{
+          display:none!important;
+          content:none!important;
+        }
+
+        /* Compacta usuario en móvil para que no pise el título */
+        #betaUserBar{
+          position:fixed!important;
+          top:18px!important;
+          right:84px!important;
+          z-index:99980!important;
+          max-width:none!important;
+          width:auto!important;
+          padding:5px!important;
+          gap:5px!important;
+          border-radius:999px!important;
+          background:rgba(11,95,134,.72)!important;
+          backdrop-filter:blur(8px)!important;
+          -webkit-backdrop-filter:blur(8px)!important;
+          box-shadow:none!important;
+          border:1px solid rgba(255,255,255,.18)!important;
+          overflow:visible!important;
+        }
+        #betaUserBar span{
+          display:none!important;
+        }
+        #betaUserBar button{
+          width:31px!important;
+          height:31px!important;
+          min-width:31px!important;
+          padding:0!important;
+          border-radius:999px!important;
+        }
+        #betaUserBar svg{
+          width:15px!important;
+          height:15px!important;
+        }
+      }
+
+      @media(max-width:430px){
+        #betaUserBar{
+          top:17px!important;
+          right:78px!important;
+          padding:4px!important;
+          gap:4px!important;
+        }
+        #betaUserBar button{
+          width:29px!important;
+          height:29px!important;
+          min-width:29px!important;
+        }
+        .standecor-text-logo{
+          box-shadow:none!important;
+        }
+      }
+    `;
+    document.head.appendChild(st);
+  }
+  window.addEventListener('load', injectMobileHeaderFix);
+  document.addEventListener('DOMContentLoaded', injectMobileHeaderFix);
+  setTimeout(injectMobileHeaderFix, 300);
+  setTimeout(injectMobileHeaderFix, 1200);
+})();
+</script>
+
 </html>
