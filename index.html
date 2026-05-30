@@ -3830,171 +3830,85 @@ function renderPrint(eventosPersonalizados){
 </script>
 
 <script>
-/* ===== FIX MÓVIL HEADER V2: USUARIO ENCIMA DE COPIA / IMPORTAR ===== */
+/* ===== FIX MÓVIL HEADER: LOGO + PASTILLA USUARIO ===== */
 (function(){
-  function injectMobileHeaderFixV2(){
-    const old=document.getElementById('mobileHeaderFixStandecor');
-    if(old) old.remove();
-    if(document.getElementById('mobileHeaderFixStandecorV2')) return;
+  function injectMobileHeaderFix(){
+    if(document.getElementById('mobileHeaderFixStandecor')) return;
     const st=document.createElement('style');
-    st.id='mobileHeaderFixStandecorV2';
+    st.id='mobileHeaderFixStandecor';
     st.textContent=`
       @media(max-width:720px){
-        /* Header móvil en dos alturas limpias */
-        header{
-          min-height:126px!important;
-          padding:10px 10px 12px 10px!important;
-          overflow:visible!important;
-        }
-
-        .topbar{
-          position:relative!important;
-          min-height:104px!important;
-          display:block!important;
-          overflow:visible!important;
-        }
-
-        .brand-area{
-          width:calc(100vw - 182px)!important;
-          max-width:calc(100vw - 182px)!important;
-          min-width:0!important;
-          display:flex!important;
-          align-items:center!important;
-          gap:10px!important;
-          overflow:visible!important;
-        }
-
-        .brand-title{
-          min-width:0!important;
-          max-width:calc(100vw - 300px)!important;
-          height:58px!important;
-          overflow:hidden!important;
-        }
-
-        .brand-badge{
-          min-width:0!important;
-          max-width:100%!important;
-          overflow:hidden!important;
-        }
-
-        h1{
-          white-space:nowrap!important;
-          overflow:hidden!important;
-          text-overflow:ellipsis!important;
-          font-size:12px!important;
-          line-height:1.05!important;
-          letter-spacing:.35px!important;
-        }
-
-        .brand-by{font-size:7px!important;letter-spacing:1.3px!important}
-        .brand-badge::after{width:100%!important;max-width:150px!important}
-
-        /* Logo sin sombra cuadrada */
+        /* Quita la sombra cuadrada del logo solo en móvil */
         .standecor-text-logo{
           box-shadow:none!important;
           filter:none!important;
           overflow:hidden!important;
           isolation:isolate!important;
           background:linear-gradient(135deg,#25b5ff 0%,#1598e6 100%)!important;
-          width:102px!important;
-          min-width:102px!important;
-          height:62px!important;
-          border-radius:18px!important;
         }
         .standecor-text-logo::before,
         .standecor-text-logo::after{
           display:none!important;
           content:none!important;
         }
-        .standecor-text-logo .logo-main{font-size:18px!important;font-weight:400!important;letter-spacing:-.8px!important}
-        .standecor-text-logo .logo-dotcom{right:13px!important;bottom:13px!important;font-size:8px!important}
 
-        /* Usuario arriba a la derecha */
+        /* Compacta usuario en móvil para que no pise el título */
         #betaUserBar{
-          position:absolute!important;
-          top:0!important;
-          right:0!important;
+          position:fixed!important;
+          top:18px!important;
+          right:84px!important;
           z-index:99980!important;
+          max-width:none!important;
           width:auto!important;
-          max-width:168px!important;
-          padding:5px 6px 5px 10px!important;
+          padding:5px!important;
           gap:5px!important;
           border-radius:999px!important;
-          background:rgba(11,95,134,.76)!important;
+          background:rgba(11,95,134,.72)!important;
           backdrop-filter:blur(8px)!important;
           -webkit-backdrop-filter:blur(8px)!important;
           box-shadow:none!important;
-          border:1px solid rgba(255,255,255,.20)!important;
-          overflow:hidden!important;
+          border:1px solid rgba(255,255,255,.18)!important;
+          overflow:visible!important;
         }
         #betaUserBar span{
-          display:inline-block!important;
-          max-width:74px!important;
-          overflow:hidden!important;
-          text-overflow:ellipsis!important;
-          white-space:nowrap!important;
-          font-size:9px!important;
-          line-height:1!important;
+          display:none!important;
         }
         #betaUserBar button{
-          width:28px!important;
-          height:28px!important;
-          min-width:28px!important;
+          width:31px!important;
+          height:31px!important;
+          min-width:31px!important;
           padding:0!important;
           border-radius:999px!important;
         }
-        #betaUserBar svg{width:14px!important;height:14px!important}
-
-        /* Copia / importar justo debajo del usuario */
-        .topbar .no-print{
-          position:absolute!important;
-          top:44px!important;
-          right:0!important;
-          width:auto!important;
-          display:flex!important;
-          justify-content:flex-end!important;
-          align-items:center!important;
-          gap:7px!important;
-          transform:none!important;
-          margin:0!important;
-        }
-        .top-icon-btn{
-          width:38px!important;
-          height:38px!important;
-          min-width:38px!important;
-          border-radius:13px!important;
-        }
-
-        nav{
-          top:126px!important;
+        #betaUserBar svg{
+          width:15px!important;
+          height:15px!important;
         }
       }
 
       @media(max-width:430px){
-        header{min-height:122px!important;padding:9px 8px 10px 8px!important}
-        .topbar{min-height:102px!important}
-        .brand-area{width:calc(100vw - 176px)!important;max-width:calc(100vw - 176px)!important;gap:8px!important}
-        .standecor-text-logo{width:96px!important;min-width:96px!important;height:58px!important;border-radius:17px!important}
-        .standecor-text-logo .logo-main{font-size:17px!important}
-        .standecor-text-logo .logo-dotcom{right:12px!important;bottom:12px!important;font-size:7.5px!important}
-        .brand-title{max-width:calc(100vw - 280px)!important;height:54px!important}
-        h1{font-size:10.5px!important;letter-spacing:.2px!important}
-        .brand-by{font-size:6.5px!important}
-
-        #betaUserBar{max-width:158px!important;padding:4px 5px 4px 8px!important;gap:4px!important}
-        #betaUserBar span{max-width:68px!important;font-size:8.5px!important}
-        #betaUserBar button{width:27px!important;height:27px!important;min-width:27px!important}
-        .topbar .no-print{top:42px!important;gap:6px!important}
-        .top-icon-btn{width:36px!important;height:36px!important;min-width:36px!important;border-radius:12px!important}
-        nav{top:122px!important}
+        #betaUserBar{
+          top:17px!important;
+          right:78px!important;
+          padding:4px!important;
+          gap:4px!important;
+        }
+        #betaUserBar button{
+          width:29px!important;
+          height:29px!important;
+          min-width:29px!important;
+        }
+        .standecor-text-logo{
+          box-shadow:none!important;
+        }
       }
     `;
     document.head.appendChild(st);
   }
-  window.addEventListener('load', injectMobileHeaderFixV2);
-  document.addEventListener('DOMContentLoaded', injectMobileHeaderFixV2);
-  setTimeout(injectMobileHeaderFixV2, 300);
-  setTimeout(injectMobileHeaderFixV2, 1200);
+  window.addEventListener('load', injectMobileHeaderFix);
+  document.addEventListener('DOMContentLoaded', injectMobileHeaderFix);
+  setTimeout(injectMobileHeaderFix, 300);
+  setTimeout(injectMobileHeaderFix, 1200);
 })();
 </script>
 
