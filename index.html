@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- FIX CALENDARIO: al abrir muestra siempre el mes actual real -->
 <!-- LIMPIEZA D8 SEGURA: continuidad desde D7, sin cambios funcionales -->
 <!-- LIMPIEZA D7 SEGURA: continuidad desde D6, sin cambios funcionales -->
 <!-- LIMPIEZA D4 SEGURA: revisión conservadora, sin cambios funcionales -->
@@ -2244,7 +2245,23 @@ function save(){
     }
   }
 }function normal(s){return String(s||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'')}function fmt(d){if(!d)return'';let a=d.split('-');return a.length===3?`${a[2]}/${a[1]}/${a[0]}`:d}function rango(a,b){return a&&b?`${fmt(a)} - ${fmt(b)}`:a?fmt(a):b?fmt(b):''}function trabajador(id){return db.trabajadores.find(t=>t.id===id)}function colla(id){return db.collas.find(c=>c.id===id)}function overlaps(a1,a2,b1,b2){if(!a1||!a2||!b1||!b2)return false;return a1<=b2&&b1<=a2}
-function showTab(tab,btn){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));byId('tab-'+tab).classList.add('active');btn.classList.add('active');renderAll()}
+function mesActualCalendario(){
+  const hoy=new Date();
+  return hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0');
+}
+function showTab(tab,btn){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+  byId('tab-'+tab).classList.add('active');
+  btn.classList.add('active');
+
+  /* Al abrir calendario, mostrar siempre el mes actual real */
+  if(tab==='calendario' && byId('mesCalendario')){
+    byId('mesCalendario').value=mesActualCalendario();
+  }
+
+  renderAll();
+}
 function renderSelects(){byId('colla').innerHTML='<option value="">Sin colla</option>'+db.collas.map(c=>`<option value="${c.id}">${esc(c.nombre)}</option>`).join('')}
 /* función duplicada eliminada en limpieza segura: getSeleccionados */
 function getEventoForm(){
@@ -2486,7 +2503,7 @@ function textoCollas(ev){
 function renderCalendario(){
   const nombresMeses=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
   const diasSemana=['LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES','SÁBADO','DOMINGO'];
-  let mes=byId('mesCalendario').value||new Date().toISOString().slice(0,7);byId('mesCalendario').value=mes;
+  let mes=byId('mesCalendario').value||mesActualCalendario();byId('mesCalendario').value=mes;
   let[y,m]=mes.split('-').map(Number);let last=new Date(y,m,0).getDate();byId('calendarPrintMonth').textContent=nombresMeses[m-1]+' '+y;
   let html=`<div class="calendar-weekdays">${diasSemana.map((d,i)=>`<div class="weekday-head ${i>=5?'weekend-head':''}">${d}</div>`).join('')}</div><div class="calendar-grid">`;
   let huecosInicio=(new Date(y,m-1,1).getDay()+6)%7;for(let h=0;h<huecosInicio;h++)html+='<div class="day-box empty-day"></div>';
