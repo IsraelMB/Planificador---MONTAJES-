@@ -3830,18 +3830,15 @@ function renderPrint(eventosPersonalizados){
 </script>
 
 <script>
-/* ===== OPTIMIZACIÓN VISUAL MÓVIL STANDECOR ===== */
+/* ===== FIX MÓVIL HEADER: LOGO + PASTILLA USUARIO ===== */
 (function(){
-  function injectMobileVisualPolish(){
-    const old=document.getElementById('mobileHeaderFixStandecor');
-    if(old) old.remove();
-    if(document.getElementById('mobileVisualPolishStandecor')) return;
-
+  function injectMobileHeaderFix(){
+    if(document.getElementById('mobileHeaderFixStandecor')) return;
     const st=document.createElement('style');
-    st.id='mobileVisualPolishStandecor';
+    st.id='mobileHeaderFixStandecor';
     st.textContent=`
       @media(max-width:720px){
-        /* Logo limpio, sin sombra cuadrada */
+        /* Quita la sombra cuadrada del logo solo en móvil */
         .standecor-text-logo{
           box-shadow:none!important;
           filter:none!important;
@@ -3855,185 +3852,110 @@ function renderPrint(eventosPersonalizados){
           content:none!important;
         }
 
-        /* Cabecera móvil más respirada */
-        header{
-          min-height:76px!important;
-          padding:9px 90px 9px 8px!important;
-        }
-        .topbar{
-          position:relative!important;
-          min-height:52px!important;
-        }
-        .brand-area{
-          gap:8px!important;
-          overflow:hidden!important;
-          padding-right:4px!important;
-        }
-        .brand-title{height:44px!important;min-width:0!important}
-        h1{
-          font-size:10.8px!important;
-          letter-spacing:.18px!important;
-          line-height:1.05!important;
-          white-space:normal!important;
-          overflow:visible!important;
-          text-overflow:clip!important;
-          max-width:128px!important;
-        }
-        .brand-by{font-size:6.8px!important;letter-spacing:.85px!important}
-        .brand-badge::after{width:92px!important;max-width:100%!important}
-
-        /* Cápsula de usuario completamente a la derecha y arriba */
+        /* Compacta usuario en móvil para que no pise el título */
         #betaUserBar{
           position:fixed!important;
-          top:8px!important;
-          right:7px!important;
+          top:18px!important;
+          right:58px!important;
           z-index:99980!important;
           max-width:none!important;
           width:auto!important;
           padding:4px!important;
           gap:4px!important;
           border-radius:999px!important;
-          background:rgba(11,95,134,.76)!important;
+          background:rgba(11,95,134,.72)!important;
           backdrop-filter:blur(8px)!important;
           -webkit-backdrop-filter:blur(8px)!important;
           box-shadow:none!important;
-          border:1px solid rgba(255,255,255,.22)!important;
+          border:1px solid rgba(255,255,255,.18)!important;
           overflow:visible!important;
-          transform:none!important;
         }
-        #betaUserBar span{display:none!important}
+        #betaUserBar span{
+          display:none!important;
+        }
         #betaUserBar button{
-          width:27px!important;
-          height:27px!important;
-          min-width:27px!important;
+          width:29px!important;
+          height:29px!important;
+          min-width:29px!important;
           padding:0!important;
           border-radius:999px!important;
         }
         #betaUserBar svg{
-          width:13px!important;
-          height:13px!important;
+          width:14px!important;
+          height:14px!important;
         }
 
-        /* Copia/importar debajo de usuario, más pequeños */
+        /* Botones de copia/importar más pequeños y discretos en móvil */
         .topbar .no-print{
-          position:fixed!important;
-          top:44px!important;
-          right:8px!important;
-          width:auto!important;
-          display:flex!important;
-          justify-content:flex-end!important;
-          align-items:center!important;
+          right:-84px!important;
+          top:58%!important;
           gap:5px!important;
-          transform:none!important;
-          z-index:99970!important;
+        }
+        .top-icon-btn{
+          width:30px!important;
+          height:30px!important;
+          min-width:30px!important;
+          border-radius:10px!important;
+          padding:0!important;
+        }
+        .top-icon-btn .ico,
+        .top-icon-btn svg{
+          width:15px!important;
+          height:15px!important;
+        }
+      }
+
+      @media(max-width:430px){
+        #betaUserBar{
+          top:17px!important;
+          right:50px!important;
+          padding:4px!important;
+          gap:4px!important;
+        }
+        #betaUserBar button{
+          width:27px!important;
+          height:27px!important;
+          min-width:27px!important;
+        }
+        .topbar .no-print{
+          right:-78px!important;
+          top:60%!important;
+          gap:4px!important;
         }
         .top-icon-btn{
           width:28px!important;
           height:28px!important;
           min-width:28px!important;
           border-radius:9px!important;
-          padding:0!important;
         }
         .top-icon-btn .ico,
         .top-icon-btn svg{
           width:14px!important;
           height:14px!important;
         }
-
-        /* Navegación móvil más compacta */
-        nav{
-          top:76px!important;
-          padding:7px 8px!important;
-          gap:6px!important;
-          overflow-x:auto!important;
-          flex-wrap:nowrap!important;
-          -webkit-overflow-scrolling:touch!important;
+        .standecor-text-logo{
+          box-shadow:none!important;
         }
-        .tab-btn{
-          padding:7px 9px!important;
-          font-size:10.8px!important;
-          border-radius:10px!important;
-          min-width:max-content!important;
+        #btnExportar,
+        #btnImportar{
+          width:34px!important;
+          height:34px!important;
+          min-width:34px!important;
+          min-height:34px!important;
         }
-        .tab-btn .ico{width:13px!important;height:13px!important}
-
-        /* Contenido móvil más limpio */
-        main{padding:9px!important}
-        .card{padding:11px!important;border-radius:15px!important}
-        h2{font-size:17px!important;margin-bottom:10px!important}
-        h3{font-size:14px!important}
-        label{font-size:11px!important;margin-top:7px!important}
-        input,select,textarea{
-          font-size:15px!important;
-          padding:9px!important;
-          border-radius:11px!important;
+        #btnExportar svg,
+        #btnImportar svg{
+          width:15px!important;
+          height:15px!important;
         }
-        textarea{min-height:64px!important}
-        .actions{gap:7px!important}
-        .actions button{
-          min-height:38px!important;
-          padding:9px 11px!important;
-          border-radius:12px!important;
-          font-size:12px!important;
-        }
-        .filters{gap:7px!important}
-
-        /* Listas y tarjetas más cómodas */
-        .badge{font-size:10.5px!important;min-height:29px!important;padding:6px 8px!important}
-        .worker-picker{max-height:230px!important;padding:8px!important;gap:6px!important}
-        .worker-option{padding:7px!important;border-radius:10px!important}
-        .selected-preview{padding:8px!important;border-radius:12px!important}
-        .selected-chip{font-size:10.5px!important;padding:6px 8px!important}
-      }
-
-      @media(max-width:430px){
-        header{
-          min-height:72px!important;
-          padding:8px 84px 8px 7px!important;
-        }
-        h1{font-size:10.2px!important;max-width:112px!important}
-        .brand-by{font-size:6.5px!important}
-        .brand-badge::after{width:84px!important}
-
-        #betaUserBar{
-          top:7px!important;
-          right:6px!important;
-          padding:3px!important;
-          gap:3px!important;
-        }
-        #betaUserBar button{
-          width:26px!important;
-          height:26px!important;
-          min-width:26px!important;
-        }
-        #betaUserBar svg{width:12.5px!important;height:12.5px!important}
-
-        .topbar .no-print{
-          top:41px!important;
-          right:7px!important;
-          gap:4px!important;
-        }
-        .top-icon-btn{
-          width:26px!important;
-          height:26px!important;
-          min-width:26px!important;
-          border-radius:8px!important;
-        }
-        .top-icon-btn .ico,
-        .top-icon-btn svg{
-          width:13px!important;
-          height:13px!important;
-        }
-        nav{top:72px!important}
       }
     `;
     document.head.appendChild(st);
   }
-
-  window.addEventListener('load', injectMobileVisualPolish);
-  document.addEventListener('DOMContentLoaded', injectMobileVisualPolish);
-  setTimeout(injectMobileVisualPolish, 300);
-  setTimeout(injectMobileVisualPolish, 1200);
+  window.addEventListener('load', injectMobileHeaderFix);
+  document.addEventListener('DOMContentLoaded', injectMobileHeaderFix);
+  setTimeout(injectMobileHeaderFix, 300);
+  setTimeout(injectMobileHeaderFix, 1200);
 })();
 </script>
 
