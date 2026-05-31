@@ -2050,6 +2050,159 @@ const firebaseConfigStandecor = {
   appId: "1:19044791240:web:adecbf30a304d9184f06fd"
 };
 </script>
+
+
+<!-- ===== BETA A: OPTIMIZACIÓN VISUAL MÓVIL FORMULARIO - SOLO CSS ===== -->
+<style id="standecorMobileFormVisualA">
+@media (max-width:720px){
+  /* Ajuste suave: solo mejora visual del formulario en móvil. No toca datos, JS ni Firebase. */
+  main{
+    padding:10px 8px 18px!important;
+  }
+
+  #tab-planificacion .grid{
+    gap:10px!important;
+  }
+
+  #tab-planificacion .card{
+    border-radius:22px!important;
+    padding:18px 14px!important;
+    box-shadow:0 8px 22px rgba(15,23,42,.06)!important;
+  }
+
+  #tab-planificacion h2{
+    font-size:24px!important;
+    line-height:1.08!important;
+    margin-bottom:16px!important;
+    letter-spacing:-.5px!important;
+  }
+
+  #tab-planificacion h3{
+    font-size:20px!important;
+    line-height:1.15!important;
+    margin:20px 0 10px!important;
+    color:var(--azul-oscuro)!important;
+  }
+
+  #tab-planificacion label{
+    font-size:14px!important;
+    line-height:1.1!important;
+    margin:12px 0 7px!important;
+    color:#334155!important;
+    letter-spacing:-.1px!important;
+  }
+
+  #tab-planificacion input,
+  #tab-planificacion select,
+  #tab-planificacion textarea{
+    min-height:48px!important;
+    border-radius:17px!important;
+    padding:12px 14px!important;
+    font-size:16px!important;
+    border-color:#d7e2ec!important;
+    background:#fff!important;
+  }
+
+  #tab-planificacion textarea{
+    min-height:88px!important;
+  }
+
+  #tab-planificacion .form-row{
+    grid-template-columns:1fr!important;
+    gap:0!important;
+  }
+
+  #tab-planificacion .actions{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:9px!important;
+    margin-top:14px!important;
+  }
+
+  #tab-planificacion .actions button{
+    width:100%!important;
+    min-height:46px!important;
+    justify-content:center!important;
+    border-radius:15px!important;
+    font-size:14px!important;
+  }
+
+  #tab-planificacion .worker-picker{
+    max-height:245px!important;
+    border-radius:16px!important;
+    padding:8px!important;
+    gap:8px!important;
+    background:#f8fcff!important;
+  }
+
+  #tab-planificacion .worker-option{
+    border-radius:14px!important;
+    padding:10px!important;
+    align-items:center!important;
+    gap:10px!important;
+    box-shadow:0 2px 7px rgba(15,23,42,.04)!important;
+  }
+
+  #tab-planificacion .worker-option input{
+    min-height:auto!important;
+    width:auto!important;
+    padding:0!important;
+  }
+
+  #tab-planificacion .worker-name{
+    font-size:12px!important;
+    line-height:1.15!important;
+  }
+
+  #tab-planificacion .worker-meta{
+    font-size:10.5px!important;
+    line-height:1.2!important;
+  }
+
+  #tab-planificacion .selected-preview{
+    border-radius:16px!important;
+    padding:10px!important;
+  }
+
+  #tab-planificacion .selected-chip{
+    border-radius:999px!important;
+    padding:7px 9px!important;
+  }
+
+  /* Lista de planificación en móvil: un poco más compacta y limpia */
+  #planAccordion,
+  .plan-accordion{
+    gap:8px!important;
+  }
+
+  .plan-folder-head{
+    border-radius:16px!important;
+  }
+}
+
+@media (max-width:430px){
+  #tab-planificacion .card{
+    padding:16px 13px!important;
+    border-radius:21px!important;
+  }
+
+  #tab-planificacion h2{
+    font-size:23px!important;
+  }
+
+  #tab-planificacion h3{
+    font-size:19px!important;
+  }
+
+  #tab-planificacion input,
+  #tab-planificacion select,
+  #tab-planificacion textarea{
+    min-height:47px!important;
+    border-radius:16px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="toastAlert" class="toast-alert"></div>
