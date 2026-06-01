@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- FIX FIREBASE: protección anti-borrado al cambiar usuario/ordenador -->
 <!-- FIX CALENDARIO: al abrir muestra siempre el mes actual real -->
 <!-- LIMPIEZA D8 SEGURA: continuidad desde D7, sin cambios funcionales -->
 <!-- LIMPIEZA D7 SEGURA: continuidad desde D6, sin cambios funcionales -->
@@ -3004,11 +3005,22 @@ function imprimirMesPDF(){
 }
 
 
-/* ===== FIREBASE SYNC BETA ===== */
+/* ===== FIREBASE SYNC BETA - PROTECCIÓN ANTI-BORRADO ===== */
 let firebaseDbStandecor=null;
 let firebaseReadyStandecor=false;
 let firebaseTimerStandecor=null;
+let firebaseCargaInicialCompletada=false;
 window.aplicandoDatosFirebase=false;
+
+function datosTrabajoStandecor(d){
+  if(!d)return 0;
+  return (Array.isArray(d.eventos)?d.eventos.length:0) +
+         (Array.isArray(d.collas)?d.collas.length:0);
+}
+
+function esBaseVaciaStandecor(d){
+  return datosTrabajoStandecor(d)===0;
+}
 
 function iniciarFirebaseStandecor(){
   try{
@@ -3019,25 +3031,22 @@ function iniciarFirebaseStandecor(){
 
     const ref=firebaseDbStandecor.collection('standecor').doc('planificador');
 
-    ref.onSnapshot((snap)=>{
-      if(!snap.exists)return;
-      const data=snap.data()||{};
-      if(!data.db)return;
-
-      const localTime=Number(db.actualizadoFirebase||0);
-      const remoteTime=Number(data.actualizadoFirebase||0);
-      if(remoteTime && remoteTime<=localTime)return;
-
-      window.aplicandoDatosFirebase=true;
-      db=data.db;
-      db.actualizadoFirebase=remoteTime||Date.now();
-      localStorage.setItem(STORAGE,JSON.stringify(db));
-      renderAll();
-      window.aplicandoDatosFirebase=false;
-    });
-
     window.guardarFirebaseStandecor=function(){
       if(!firebaseReadyStandecor || !firebaseDbStandecor)return;
+
+      /* Seguridad: no guardar hasta que Firebase haya cargado primero */
+      if(!firebaseCargaInicialCompletada){
+        console.warn('Guardado bloqueado: esperando carga inicial de Firebase.');
+        return;
+      }
+
+      /* Seguridad: evitar que un navegador vacío borre la base compartida */
+      if(esBaseVaciaStandecor(db)){
+        console.warn('Guardado bloqueado: base local vacía. Se evita sobrescribir Firebase.');
+        alert('Protección activada: no se guardó una base vacía para evitar borrar los datos compartidos.');
+        return;
+      }
+
       clearTimeout(firebaseTimerStandecor);
       firebaseTimerStandecor=setTimeout(()=>{
         try{
@@ -3047,13 +3056,60 @@ function iniciarFirebaseStandecor(){
       },700);
     };
 
-    window.guardarFirebaseStandecor();
+    ref.onSnapshot((snap)=>{
+      if(!snap.exists){
+        firebaseCargaInicialCompletada=true;
+        if(!esBaseVaciaStandecor(db)){
+          window.guardarFirebaseStandecor();
+        }
+        return;
+      }
+
+      const data=snap.data()||{};
+      if(!data.db){
+        firebaseCargaInicialCompletada=true;
+        return;
+      }
+
+      const remoteDb=data.db;
+      const localTime=Number(db.actualizadoFirebase||0);
+      const remoteTime=Number(data.actualizadoFirebase||remoteDb.actualizadoFirebase||0);
+
+      /*
+        Si llega una base remota vacía, NO la aplicamos sobre una base local con datos.
+        Esto evita el borrado masivo accidental al cambiar de usuario/ordenador.
+      */
+      if(esBaseVaciaStandecor(remoteDb) && !esBaseVaciaStandecor(db)){
+        firebaseCargaInicialCompletada=true;
+        console.warn('Firebase trae base vacía; se conserva la base local con datos.');
+        return;
+      }
+
+      if(remoteTime && remoteTime<=localTime){
+        firebaseCargaInicialCompletada=true;
+        return;
+      }
+
+      window.aplicandoDatosFirebase=true;
+      db=remoteDb;
+      db.trabajadores=db.trabajadores||[];
+      db.collas=db.collas||[];
+      db.eventos=db.eventos||[];
+      db.actualizadoFirebase=remoteTime||Date.now();
+      localStorage.setItem(STORAGE,JSON.stringify(db));
+      renderAll();
+      window.aplicandoDatosFirebase=false;
+      firebaseCargaInicialCompletada=true;
+    });
+
+    /* Ya no se guarda automáticamente al arrancar.
+       Primero se espera a recibir Firebase para no pisar datos con localStorage vacío. */
   }catch(e){
     console.warn('Firebase no iniciado. La app sigue con localStorage.',e);
   }
 }
 
-document.addEventListener('DOMContentLoaded',()=>{try{byId('mesCalendario').value=new Date().toISOString().slice(0,7);renderAll();iniciarFirebaseStandecor()}catch(err){console.error('Error al iniciar:',err);alert('Hay un error en el código. Revisa la consola del navegador.')}});
+document.addEventListener('DOMContentLoaded',()=>{try{byId('mesCalendario').value=mesActualCalendario();renderAll();iniciarFirebaseStandecor()}catch(err){console.error('Error al iniciar:',err);alert('Hay un error en el código. Revisa la consola del navegador.')}});
 
 /* ===== ÚLTIMA VERSIÓN REAL DE IMPRESIÓN CON OBSERVACIONES ===== */
 /* ===== IMPRESIÓN: OBSERVACIONES DEBAJO DE COLLA ===== */
