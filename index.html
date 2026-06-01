@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- FIX TERMINADOS: las ferias terminadas liberan personal en disponibilidad y conflictos -->
 <!-- FIX FIREBASE: protección anti-borrado al cambiar usuario/ordenador -->
 <!-- FIX CALENDARIO: al abrir muestra siempre el mes actual real -->
 <!-- LIMPIEZA D8 SEGURA: continuidad desde D7, sin cambios funcionales -->
@@ -2308,7 +2309,7 @@ function validarEvento(ev,ignorarId){
 
   if(!cabezaDe(ev)) avisos.push('No hay ningún cabeza de equipo seleccionado.');
 
-  db.eventos.filter(x=>x.id!==ignorarId).forEach(o=>{
+  db.eventos.filter(x=>x.id!==ignorarId && !x.terminado).forEach(o=>{
     let comunes=ids.filter(id=>(o.ayudantes||[]).includes(id));
     if(!comunes.length) return;
 
@@ -2508,7 +2509,7 @@ function renderCalendario(){
   let[y,m]=mes.split('-').map(Number);let last=new Date(y,m,0).getDate();byId('calendarPrintMonth').textContent=nombresMeses[m-1]+' '+y;
   let html=`<div class="calendar-weekdays">${diasSemana.map((d,i)=>`<div class="weekday-head ${i>=5?'weekend-head':''}">${d}</div>`).join('')}</div><div class="calendar-grid">`;
   let huecosInicio=(new Date(y,m-1,1).getDay()+6)%7;for(let h=0;h<huecosInicio;h++)html+='<div class="day-box empty-day"></div>';
-  for(let d=1;d<=last;d++){const f=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const fechaObj=new Date(y,m-1,d);const esFinde=fechaObj.getDay()===0||fechaObj.getDay()===6;const mo=db.eventos.filter(e=>e.montajeInicio&&e.montajeFin&&f>=e.montajeInicio&&f<=e.montajeFin);const de=db.eventos.filter(e=>e.desmontajeInicio&&e.desmontajeFin&&f>=e.desmontajeInicio&&f<=e.desmontajeFin);const todosDia=[...mo,...de];const feriasLugaresUnicos=[...new Set(todosDia.map(e=>normal((e.feria||'')+'|'+(e.lugar||''))))].filter(Boolean);const haySolape=feriasLugaresUnicos.length>1;html+=`<div class="day-box ${esFinde?'weekend':''} ${haySolape?'overlap-day':''}"><div class="day-num">${d}</div>${haySolape?'<div class="day-tag">SOLAPE</div>':''}${mo.map(e=>`<div class="event-mini montaje-mini">MONTAJE<br>${esc(e.feria)}<br>${esc(e.lugar||'')}<br>${esc(e.stand)}</div>`).join('')}${de.map(e=>`<div class="event-mini desmontaje-mini">DESMONTAJE<br>${esc(e.feria)}<br>${esc(e.lugar||'')}<br>${esc(e.stand)}</div>`).join('')}</div>`}html+='</div>';byId('calendario').innerHTML=html;
+  for(let d=1;d<=last;d++){const f=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const fechaObj=new Date(y,m-1,d);const esFinde=fechaObj.getDay()===0||fechaObj.getDay()===6;const eventosActivos=db.eventos.filter(e=>!e.terminado);const mo=eventosActivos.filter(e=>e.montajeInicio&&e.montajeFin&&f>=e.montajeInicio&&f<=e.montajeFin);const de=eventosActivos.filter(e=>e.desmontajeInicio&&e.desmontajeFin&&f>=e.desmontajeInicio&&f<=e.desmontajeFin);const todosDia=[...mo,...de];const feriasLugaresUnicos=[...new Set(todosDia.map(e=>normal((e.feria||'')+'|'+(e.lugar||''))))].filter(Boolean);const haySolape=feriasLugaresUnicos.length>1;html+=`<div class="day-box ${esFinde?'weekend':''} ${haySolape?'overlap-day':''}"><div class="day-num">${d}</div>${haySolape?'<div class="day-tag">SOLAPE</div>':''}${mo.map(e=>`<div class="event-mini montaje-mini">MONTAJE<br>${esc(e.feria)}<br>${esc(e.lugar||'')}<br>${esc(e.stand)}</div>`).join('')}${de.map(e=>`<div class="event-mini desmontaje-mini">DESMONTAJE<br>${esc(e.feria)}<br>${esc(e.lugar||'')}<br>${esc(e.stand)}</div>`).join('')}</div>`}html+='</div>';byId('calendario').innerHTML=html;
 }
 
 function guardarTrabajador(){const id=byId('trabajadorId').value||'t'+Date.now();const t={id,nombre:byId('trabNombre').value.trim(),rol:byId('trabRol').value,tipo:byId('trabTipo').value,estado:byId('trabEstado').value,observaciones:byId('trabObs').value.trim()};if(!t.nombre)return alert('Falta nombre');const i=db.trabajadores.findIndex(x=>x.id===id);if(i>=0)db.trabajadores[i]=t;else db.trabajadores.push(t);save();limpiarTrabajador();renderAll()}
@@ -2525,6 +2526,7 @@ function renderCollas(){byId('tablaCollas').innerHTML=db.collas.map(c=>`<tr><td>
 function estaOcupadoTrabajador(trabajadorId, desde, hasta){
   if(!desde || !hasta) return null;
   for(const ev of db.eventos){
+    if(ev.terminado) continue;
     if(!(ev.ayudantes||[]).includes(trabajadorId)) continue;
     const choqueMontaje = overlaps(desde,hasta,ev.montajeInicio,ev.montajeFin);
     const choqueDesmontaje = overlaps(desde,hasta,ev.desmontajeInicio,ev.desmontajeFin);
@@ -2582,7 +2584,7 @@ function renderDisponibles(){
 
 function renderAvisos(){
   let a=[];
-  db.eventos.forEach(e=>avisosVisibles(e).forEach(x=>{
+  db.eventos.filter(e=>!e.terminado).forEach(e=>avisosVisibles(e).forEach(x=>{
     a.push(`<div class="alerta dismissable-alert"><span>${esc(e.feria)} / ${esc(e.stand)}: ${esc(x)}</span><button type="button" class="dismiss-alert-btn" onclick="ocultarAviso('${e.id}',decodeURIComponent('${encodeURIComponent(x)}'))">×</button></div>`);
   }));
   byId('avisosGenerales').innerHTML=a.join('')||'<div class="ok">No hay avisos.</div>';
@@ -2885,6 +2887,9 @@ function toggleTerminadoEvento(id){
   ev.terminado=!ev.terminado;
   save();
   renderAll();
+  if(ev.terminado){
+    mostrarAvisoCentral('Trabajo marcado como TERMINADO. El personal asignado queda liberado para nuevas fechas.');
+  }
 }
 
 function toggleTerminadosLista(){
