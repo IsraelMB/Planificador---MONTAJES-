@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- MEJORA: importar/exportar plantilla trabajadores XLSX -->
+<!-- FIX FINAL USUARIOS: Admin principal ve contraseñas actuales -->
 <!-- FIX: contraseñas visibles admin y calendario imprime en 1 página -->
 <!-- MEJORAS: contraseñas admin visibles, contador trabajadores, nuevos roles, footer y texto creado por -->
 <!-- FIX TERMINADOS: las ferias terminadas liberan personal en disponibilidad y conflictos -->
@@ -2105,6 +2107,56 @@ body.user-viewer button[onclick^="toggleTerminado"]{display:none!important}
   overflow-wrap:anywhere;
 }
 
+
+/* ===== FIX FINAL: CONTRASEÑAS EN LISTA DE USUARIOS ===== */
+.usuario-limpio-pass{
+  font-size:12px;
+  font-weight:900;
+  color:#0B5F86;
+  background:#eef7ff;
+  border:1px solid #bde7fb;
+  border-radius:999px;
+  padding:6px 10px;
+  text-transform:none;
+  overflow-wrap:anywhere;
+}
+.usuario-limpio-pass::before{
+  content:'Clave: ';
+  color:#64748b;
+  font-weight:800;
+}
+@media(max-width:720px){
+  .usuario-limpio-pass{
+    display:inline-flex;
+    width:max-content;
+    max-width:100%;
+  }
+}
+
+
+/* ===== IMPORTAR / EXPORTAR PLANTILLA TRABAJADORES ===== */
+.plantilla-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:end;
+}
+.plantilla-actions button{
+  height:38px;
+  white-space:nowrap;
+}
+@media(max-width:720px){
+  .plantilla-actions{
+    width:100%;
+    display:grid;
+    grid-template-columns:1fr;
+  }
+  .plantilla-actions button{
+    width:100%;
+    justify-content:center;
+  }
+}
+
 </style>
 <svg width="0" height="0" style="position:absolute;display:none" aria-hidden="true">
   <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/><path d="M18 12h.01"/></symbol>
@@ -2287,6 +2339,7 @@ const firebaseConfigStandecor = {
 }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 <div id="toastAlert" class="toast-alert"></div>
@@ -2295,7 +2348,15 @@ const firebaseConfigStandecor = {
 <main>
 <section id="tab-planificacion" class="tab active"><div class="grid"><div class="card span-4 no-print"><h2>Nuevo montaje / desmontaje</h2><input type="hidden" id="eventoId"><label>Feria</label><input list="feriasList" autocomplete="off" oninput="autocompletarLugar()" id="feria" oninput="mayus(this)" placeholder="FERIA"><div class="form-row"><div><label>Ciudad / país</label><input list="lugaresList" autocomplete="off" id="lugar" oninput="mayus(this)"></div><div><label>Stand / cliente</label><input list="standsList" autocomplete="off" id="stand" oninput="mayus(this)"></div></div><h3>Montaje</h3><div class="form-row"><div><label>Inicio montaje</label><input type="date" id="montajeInicio"></div><div><label>Final montaje</label><input type="date" id="montajeFin"></div></div><h3>Desmontaje</h3><div class="form-row"><div><label>Inicio desmontaje</label><input type="date" id="desmontajeInicio"></div><div><label>Final desmontaje</label><input type="date" id="desmontajeFin"></div></div><div class="form-row"><div><label>Colla externa</label><select id="colla"></select></div><div><label>Cantidad colla</label><input id="cantidadColla" type="number" min="1" placeholder="Ej: 4"></div></div><div id="extraCollas"></div><div class="actions"><button class="secondary" onclick="agregarCollaExtra()" type="button">+ Añadir otra colla</button></div><label>Buscar trabajadores</label><input id="buscarAsignar" oninput="renderWorkerPicker();mayus(this)" placeholder="BUSCAR"><div id="workerPicker" class="worker-picker"></div><div id="seleccionPreview" class="selected-preview"></div><label>Observaciones</label><textarea id="observaciones" oninput="mayus(this)"></textarea><div id="formAvisos"></div><div class="actions"><button class="success" onclick="guardarEvento()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarFormulario()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2>Planificación</h2><div class="filters no-print"><div><label>Buscar</label><input id="buscarPlan" oninput="mayus(this);renderAll()"></div><div><label>Desde</label><input type="date" id="filtroDesde" onchange="renderAll()"></div><div><label>Hasta</label><input type="date" id="filtroHasta" onchange="renderAll()"></div><div><label>&nbsp;</label><button type="button" class="small pdf-mensual-btn" title="Imprimir trabajos del mes / Guardar como PDF" onclick="imprimirMesPDF()"><svg class="ico"><use href="#i-print"></use></svg> PDF mensual</button></div></div><div class="table-wrap pantalla-planificacion"><table><thead><tr><th>Feria</th><th>Lugar</th><th>Stand / cliente</th><th>Trabajo</th><th>Personal</th><th>Colla</th><th>Avisos</th><th class="no-print">Acciones</th></tr></thead><tbody id="tablaEventos"></tbody></table></div><div id="printPlanificacion" class="print-board"></div></div></div></section>
 <section id="tab-calendario" class="tab"><div class="card"><div class="section-head no-print"><h2>Calendario mensual</h2><button class="small action-btn" title="Imprimir calendario" onclick="imprimirCalendario()"><svg class="ico"><use href="#i-print"></use></svg></button></div><div class="filters"><div><label>Mes</label><input type="month" id="mesCalendario" onchange="renderCalendario()"></div></div><div id="calendario"></div><div class="calendar-print-month" id="calendarPrintMonth"></div></div></section>
-<section id="tab-trabajadores" class="tab"><div class="grid"><div class="card span-4"><h2>Trabajador</h2><input type="hidden" id="trabajadorId"><label>Nombre</label><input id="trabNombre" oninput="mayus(this)"><label>Rol</label><select id="trabRol"><option>Cabeza de equipo</option><option>Ayudante</option><option>Montador</option><option>Encargado</option><option>Maquinista</option><option>Logística</option><option>Transportista</option><option>CNC</option></select><label>Tipo</label><select id="trabTipo"><option>Sale a montaje</option><option>Taller</option><option>Oficina técnica</option></select><label>Estado</label><select id="trabEstado"><option>Disponible</option><option>Enfermo</option><option>Castigado</option><option>Baja temporal</option><option>No puede salir</option></select><label>Observaciones</label><textarea id="trabObs" oninput="mayus(this)"></textarea><div class="actions"><button class="success" onclick="guardarTrabajador()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarTrabajador()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2 class="trabajadores-head">Base de trabajadores <span id="contadorTrabajadores" class="contador-trabajadores">0 trabajadores</span></h2><div class="filters"><div><label>Buscar</label><input id="buscarTrab" oninput="mayus(this);renderTrabajadores()"></div></div><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Tipo</th><th>Estado</th><th>Obs.</th><th>Acciones</th></tr></thead><tbody id="tablaTrabajadores"></tbody></table></div></div></div></section>
+<section id="tab-trabajadores" class="tab"><div class="grid"><div class="card span-4"><h2>Trabajador</h2><input type="hidden" id="trabajadorId"><label>Nombre</label><input id="trabNombre" oninput="mayus(this)"><label>Rol</label><select id="trabRol"><option>Cabeza de equipo</option><option>Ayudante</option><option>Montador</option><option>Encargado</option><option>Maquinista</option><option>Logística</option><option>Transportista</option><option>CNC</option></select><label>Tipo</label><select id="trabTipo"><option>Sale a montaje</option><option>Taller</option><option>Oficina técnica</option></select><label>Estado</label><select id="trabEstado"><option>Disponible</option><option>Enfermo</option><option>Castigado</option><option>Baja temporal</option><option>No puede salir</option></select><label>Observaciones</label><textarea id="trabObs" oninput="mayus(this)"></textarea><div class="actions"><button class="success" onclick="guardarTrabajador()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarTrabajador()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2 class="trabajadores-head">Base de trabajadores <span id="contadorTrabajadores" class="contador-trabajadores">0 trabajadores</span></h2><div class="filters">
+  <div><label>Buscar</label><input id="buscarTrab" oninput="mayus(this);renderTrabajadores()"></div>
+  <div class="plantilla-actions no-print">
+    <label>&nbsp;</label>
+    <button type="button" class="small" onclick="exportarPlantillaTrabajadoresXLSX()">📊 Exportar plantilla</button>
+    <button type="button" class="small secondary" onclick="document.getElementById('importPlantillaTrabajadores').click()">📥 Importar plantilla</button>
+    <input id="importPlantillaTrabajadores" type="file" accept=".xlsx,.xls" style="display:none" onchange="importarPlantillaTrabajadoresXLSX(event)">
+  </div>
+</div><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Tipo</th><th>Estado</th><th>Obs.</th><th>Acciones</th></tr></thead><tbody id="tablaTrabajadores"></tbody></table></div></div></div></section>
 <section id="tab-collas" class="tab"><div class="grid"><div class="card span-4"><h2>Colla</h2><input type="hidden" id="collaId"><label>Nombre</label><input id="collaNombre" oninput="mayus(this)"><label>Responsable</label><input id="collaResponsable" oninput="mayus(this)"><label>Observaciones</label><textarea id="collaObs" oninput="mayus(this)"></textarea><div class="actions"><button class="success" onclick="guardarColla()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarColla()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2>Collas externas</h2><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Responsable</th><th>Obs.</th><th>Acciones</th></tr></thead><tbody id="tablaCollas"></tbody></table></div></div></div></section>
 <section id="tab-disponibles" class="tab"><div class="card"><h2>Personal disponible</h2><div class="filters"><div><label>Desde</label><input type="date" id="dispDesde" onchange="renderDisponibles()"></div><div><label>Hasta</label><input type="date" id="dispHasta" onchange="renderDisponibles()"></div><div><label>Rol</label><select id="dispRol" onchange="renderDisponibles()"><option value="">Todos</option><option>Cabeza de equipo</option><option>Ayudante</option><option>Montador</option><option>Encargado</option><option>Maquinista</option><option>Logística</option><option>Transportista</option><option>CNC</option></select></div><div><label>Buscar</label><input id="buscarDisp" oninput="mayus(this);renderDisponibles()" placeholder="BUSCAR"></div></div><div class="grid"><div class="card span-4"><h2>Disponibles</h2><div id="listaDisponibles"></div></div><div class="card span-4"><h2>Ocupados</h2><div id="listaOcupados"></div></div><div class="card span-4"><h2>No disponibles</h2><div id="listaNoDisponibles"></div></div></div></div></section>
 <section id="tab-avisos" class="tab"><div class="card"><h2>Avisos generales</h2><div id="avisosGenerales"></div></div></section>
@@ -3965,7 +4026,7 @@ function renderPrint(eventosPersonalizados){
       .usuarios-limpio-form label{margin:0 0 4px!important;font-size:11px!important;text-transform:uppercase;color:#475569!important;letter-spacing:.4px}
       .usuarios-limpio-form input,.usuarios-limpio-form select{height:38px!important;border-radius:12px!important;text-transform:none!important}
       .usuarios-limpio-list{display:flex;flex-direction:column;gap:9px}
-      .usuario-limpio-row{display:grid;grid-template-columns:1fr 95px 105px auto;gap:10px;align-items:center;border:1px solid #dbe7ef;border-radius:16px;background:white;padding:12px}
+      .usuario-limpio-row{display:grid;grid-template-columns:1fr 150px 95px 105px auto;gap:10px;align-items:center;border:1px solid #dbe7ef;border-radius:16px;background:white;padding:12px}
       .usuario-limpio-name{font-weight:900;color:#0B5F86;text-transform:uppercase;letter-spacing:.2px}
       .usuario-limpio-pill{display:inline-flex;align-items:center;justify-content:center;min-width:82px;border-radius:999px;padding:6px 10px;font-size:10.5px;font-weight:900;text-transform:uppercase}
       .usuario-limpio-pill.rol{background:#eef7ff;color:#0B5F86;border:1px solid #bde7fb}
@@ -4026,6 +4087,7 @@ function renderPrint(eventosPersonalizados){
     const activo=u.activo!==false;
     return `<div class="usuario-limpio-row">
       <div class="usuario-limpio-name">${escLocal(u.usuario)}</div>
+      <div></div>
       <div><span class="usuario-limpio-pill rol">${escLocal((u.rol||'visor').toUpperCase())}</span></div>
       <div><span class="usuario-limpio-pill ${activo?'activo':'inactivo'}">${activo?'Activo':'Inactivo'}</span></div>
       <div class="usuario-limpio-actions">
@@ -4063,7 +4125,7 @@ function renderPrint(eventosPersonalizados){
       <label>Usuario</label>
       <input id="editUsuarioLimpio" value="${escLocal(u.usuario)}" ${isAdminPrincipal?'readonly':''}>
       <label>Contraseña</label>
-      <input id="editPassLimpio" type="text" placeholder="Nueva contraseña">
+      <input id="editPassLimpio" type="text" value="${escLocal(u.password||'')}" placeholder="Contraseña">
       <label>Rol</label>
       <select id="editRolLimpio" ${isAdminPrincipal?'disabled':''}>
         <option value="visor" ${(u.rol||'visor')==='visor'?'selected':''}>Visor</option>
