@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- FIX: contraseñas visibles admin y calendario imprime en 1 página -->
+<!-- MEJORAS: contraseñas admin visibles, contador trabajadores, nuevos roles, footer y texto creado por -->
 <!-- FIX TERMINADOS: las ferias terminadas liberan personal en disponibilidad y conflictos -->
 <!-- FIX FIREBASE: protección anti-borrado al cambiar usuario/ordenador -->
 <!-- FIX CALENDARIO: al abrir muestra siempre el mes actual real -->
@@ -2028,6 +2030,81 @@ body.user-viewer button[onclick^="toggleTerminado"]{display:none!important}
     font-size:7.5px;
   }
 }
+
+/* ===== MEJORAS ISRAELM: CONTADOR Y FOOTER ===== */
+.trabajadores-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.contador-trabajadores{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:5px 10px;
+  border-radius:999px;
+  background:#eef7ff;
+  color:#0B5F86;
+  border:1px solid #bde7fb;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.3px;
+  white-space:nowrap;
+}
+.standecor-footer{
+  text-align:center;
+  color:#64748b;
+  opacity:.58;
+  font-size:10.5px;
+  font-weight:700;
+  padding:18px 10px 22px;
+  letter-spacing:.25px;
+}
+@media(max-width:720px){
+  .trabajadores-head{align-items:flex-start}
+  .contador-trabajadores{font-size:10px;padding:4px 8px}
+  .standecor-footer{font-size:10px;padding:14px 8px 18px}
+}
+
+
+/* ===== FIX IMPRESIÓN: EVITAR SEGUNDA PÁGINA EN CALENDARIO ===== */
+@media print{
+  .standecor-footer,
+  #betaUserBar,
+  #usuariosBetaPanel,
+  #usuariosAvanzadoPanel,
+  #loginBetaOverlay,
+  #loginOverlayStandecor{
+    display:none!important;
+    visibility:hidden!important;
+  }
+
+  body.print-calendar .standecor-footer,
+  body.print-calendar #betaUserBar{
+    display:none!important;
+    visibility:hidden!important;
+  }
+
+  body.print-calendar{
+    overflow:hidden!important;
+  }
+}
+
+
+/* ===== FIX USUARIOS: CONTRASEÑAS VISIBLES PARA ADMIN ===== */
+.usuario-inline-field input[data-user-pass],
+#betaNuevoPass,
+#nuevaPassAvanzado{
+  font-family:Arial,Helvetica,sans-serif!important;
+  font-weight:800!important;
+  color:#0B5F86!important;
+}
+.usuariosBetaRow span{
+  overflow-wrap:anywhere;
+}
+
 </style>
 <svg width="0" height="0" style="position:absolute;display:none" aria-hidden="true">
   <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/><path d="M18 12h.01"/></symbol>
@@ -2213,16 +2290,16 @@ const firebaseConfigStandecor = {
 </head>
 <body>
 <div id="toastAlert" class="toast-alert"></div>
-<header><div class="topbar"><div class="brand-area"><div class="standecor-text-logo"><span class="logo-main">STANDECOR</span><span class="logo-dotcom">.com</span></div><div class="brand-title"><div class="brand-badge"><h1>PLANIFICADOR DE MONTAJES</h1><div class="brand-by">by IsraelM</div></div></div></div><div class="no-print"><button class="light top-icon-btn" title="Exportar copia" onclick="exportarDatos()"><svg class="ico"><use href="#i-export"></use></svg></button><button class="light top-icon-btn" title="Importar copia" onclick="document.getElementById('importFile').click()"><svg class="ico"><use href="#i-import"></use></svg></button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importarDatos(event)"></div></div></header>
+<header><div class="topbar"><div class="brand-area"><div class="standecor-text-logo"><span class="logo-main">STANDECOR</span><span class="logo-dotcom">.com</span></div><div class="brand-title"><div class="brand-badge"><h1>PLANIFICADOR DE MONTAJES</h1><div class="brand-by">Creado por IsraelM</div></div></div></div><div class="no-print"><button class="light top-icon-btn" title="Exportar copia" onclick="exportarDatos()"><svg class="ico"><use href="#i-export"></use></svg></button><button class="light top-icon-btn" title="Importar copia" onclick="document.getElementById('importFile').click()"><svg class="ico"><use href="#i-import"></use></svg></button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importarDatos(event)"></div></div></header>
 <nav class="no-print"><button class="tab-btn active" onclick="showTab('planificacion',this)"><svg class="ico"><use href="#i-plan"></use></svg> PLANIFICACIÓN</button><button class="tab-btn" onclick="showTab('calendario',this)"><svg class="ico"><use href="#i-calendar"></use></svg> CALENDARIO</button><button class="tab-btn" onclick="showTab('trabajadores',this)"><svg class="ico"><use href="#i-users"></use></svg> TRABAJADORES</button><button class="tab-btn" onclick="showTab('collas',this)"><svg class="ico"><use href="#i-handshake"></use></svg> COLLAS</button><button class="tab-btn" onclick="showTab('disponibles',this)"><svg class="ico"><use href="#i-available"></use></svg> DISPONIBLES</button><button class="tab-btn" onclick="showTab('avisos',this)"><svg class="ico"><use href="#i-alert"></use></svg> AVISOS</button></nav>
 <main>
 <section id="tab-planificacion" class="tab active"><div class="grid"><div class="card span-4 no-print"><h2>Nuevo montaje / desmontaje</h2><input type="hidden" id="eventoId"><label>Feria</label><input list="feriasList" autocomplete="off" oninput="autocompletarLugar()" id="feria" oninput="mayus(this)" placeholder="FERIA"><div class="form-row"><div><label>Ciudad / país</label><input list="lugaresList" autocomplete="off" id="lugar" oninput="mayus(this)"></div><div><label>Stand / cliente</label><input list="standsList" autocomplete="off" id="stand" oninput="mayus(this)"></div></div><h3>Montaje</h3><div class="form-row"><div><label>Inicio montaje</label><input type="date" id="montajeInicio"></div><div><label>Final montaje</label><input type="date" id="montajeFin"></div></div><h3>Desmontaje</h3><div class="form-row"><div><label>Inicio desmontaje</label><input type="date" id="desmontajeInicio"></div><div><label>Final desmontaje</label><input type="date" id="desmontajeFin"></div></div><div class="form-row"><div><label>Colla externa</label><select id="colla"></select></div><div><label>Cantidad colla</label><input id="cantidadColla" type="number" min="1" placeholder="Ej: 4"></div></div><div id="extraCollas"></div><div class="actions"><button class="secondary" onclick="agregarCollaExtra()" type="button">+ Añadir otra colla</button></div><label>Buscar trabajadores</label><input id="buscarAsignar" oninput="renderWorkerPicker();mayus(this)" placeholder="BUSCAR"><div id="workerPicker" class="worker-picker"></div><div id="seleccionPreview" class="selected-preview"></div><label>Observaciones</label><textarea id="observaciones" oninput="mayus(this)"></textarea><div id="formAvisos"></div><div class="actions"><button class="success" onclick="guardarEvento()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarFormulario()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2>Planificación</h2><div class="filters no-print"><div><label>Buscar</label><input id="buscarPlan" oninput="mayus(this);renderAll()"></div><div><label>Desde</label><input type="date" id="filtroDesde" onchange="renderAll()"></div><div><label>Hasta</label><input type="date" id="filtroHasta" onchange="renderAll()"></div><div><label>&nbsp;</label><button type="button" class="small pdf-mensual-btn" title="Imprimir trabajos del mes / Guardar como PDF" onclick="imprimirMesPDF()"><svg class="ico"><use href="#i-print"></use></svg> PDF mensual</button></div></div><div class="table-wrap pantalla-planificacion"><table><thead><tr><th>Feria</th><th>Lugar</th><th>Stand / cliente</th><th>Trabajo</th><th>Personal</th><th>Colla</th><th>Avisos</th><th class="no-print">Acciones</th></tr></thead><tbody id="tablaEventos"></tbody></table></div><div id="printPlanificacion" class="print-board"></div></div></div></section>
 <section id="tab-calendario" class="tab"><div class="card"><div class="section-head no-print"><h2>Calendario mensual</h2><button class="small action-btn" title="Imprimir calendario" onclick="imprimirCalendario()"><svg class="ico"><use href="#i-print"></use></svg></button></div><div class="filters"><div><label>Mes</label><input type="month" id="mesCalendario" onchange="renderCalendario()"></div></div><div id="calendario"></div><div class="calendar-print-month" id="calendarPrintMonth"></div></div></section>
-<section id="tab-trabajadores" class="tab"><div class="grid"><div class="card span-4"><h2>Trabajador</h2><input type="hidden" id="trabajadorId"><label>Nombre</label><input id="trabNombre" oninput="mayus(this)"><label>Rol</label><select id="trabRol"><option>Cabeza de equipo</option><option>Ayudante</option><option>Montador</option><option>Encargado</option><option>Maquinista</option></select><label>Tipo</label><select id="trabTipo"><option>Sale a montaje</option><option>Taller</option><option>Oficina técnica</option></select><label>Estado</label><select id="trabEstado"><option>Disponible</option><option>Enfermo</option><option>Castigado</option><option>Baja temporal</option><option>No puede salir</option></select><label>Observaciones</label><textarea id="trabObs" oninput="mayus(this)"></textarea><div class="actions"><button class="success" onclick="guardarTrabajador()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarTrabajador()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2>Base de trabajadores</h2><div class="filters"><div><label>Buscar</label><input id="buscarTrab" oninput="mayus(this);renderTrabajadores()"></div></div><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Tipo</th><th>Estado</th><th>Obs.</th><th>Acciones</th></tr></thead><tbody id="tablaTrabajadores"></tbody></table></div></div></div></section>
+<section id="tab-trabajadores" class="tab"><div class="grid"><div class="card span-4"><h2>Trabajador</h2><input type="hidden" id="trabajadorId"><label>Nombre</label><input id="trabNombre" oninput="mayus(this)"><label>Rol</label><select id="trabRol"><option>Cabeza de equipo</option><option>Ayudante</option><option>Montador</option><option>Encargado</option><option>Maquinista</option><option>Logística</option><option>Transportista</option><option>CNC</option></select><label>Tipo</label><select id="trabTipo"><option>Sale a montaje</option><option>Taller</option><option>Oficina técnica</option></select><label>Estado</label><select id="trabEstado"><option>Disponible</option><option>Enfermo</option><option>Castigado</option><option>Baja temporal</option><option>No puede salir</option></select><label>Observaciones</label><textarea id="trabObs" oninput="mayus(this)"></textarea><div class="actions"><button class="success" onclick="guardarTrabajador()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarTrabajador()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2 class="trabajadores-head">Base de trabajadores <span id="contadorTrabajadores" class="contador-trabajadores">0 trabajadores</span></h2><div class="filters"><div><label>Buscar</label><input id="buscarTrab" oninput="mayus(this);renderTrabajadores()"></div></div><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Tipo</th><th>Estado</th><th>Obs.</th><th>Acciones</th></tr></thead><tbody id="tablaTrabajadores"></tbody></table></div></div></div></section>
 <section id="tab-collas" class="tab"><div class="grid"><div class="card span-4"><h2>Colla</h2><input type="hidden" id="collaId"><label>Nombre</label><input id="collaNombre" oninput="mayus(this)"><label>Responsable</label><input id="collaResponsable" oninput="mayus(this)"><label>Observaciones</label><textarea id="collaObs" oninput="mayus(this)"></textarea><div class="actions"><button class="success" onclick="guardarColla()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarColla()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2>Collas externas</h2><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Responsable</th><th>Obs.</th><th>Acciones</th></tr></thead><tbody id="tablaCollas"></tbody></table></div></div></div></section>
-<section id="tab-disponibles" class="tab"><div class="card"><h2>Personal disponible</h2><div class="filters"><div><label>Desde</label><input type="date" id="dispDesde" onchange="renderDisponibles()"></div><div><label>Hasta</label><input type="date" id="dispHasta" onchange="renderDisponibles()"></div><div><label>Rol</label><select id="dispRol" onchange="renderDisponibles()"><option value="">Todos</option><option>Cabeza de equipo</option><option>Ayudante</option><option>Montador</option><option>Encargado</option><option>Maquinista</option></select></div><div><label>Buscar</label><input id="buscarDisp" oninput="mayus(this);renderDisponibles()" placeholder="BUSCAR"></div></div><div class="grid"><div class="card span-4"><h2>Disponibles</h2><div id="listaDisponibles"></div></div><div class="card span-4"><h2>Ocupados</h2><div id="listaOcupados"></div></div><div class="card span-4"><h2>No disponibles</h2><div id="listaNoDisponibles"></div></div></div></div></section>
+<section id="tab-disponibles" class="tab"><div class="card"><h2>Personal disponible</h2><div class="filters"><div><label>Desde</label><input type="date" id="dispDesde" onchange="renderDisponibles()"></div><div><label>Hasta</label><input type="date" id="dispHasta" onchange="renderDisponibles()"></div><div><label>Rol</label><select id="dispRol" onchange="renderDisponibles()"><option value="">Todos</option><option>Cabeza de equipo</option><option>Ayudante</option><option>Montador</option><option>Encargado</option><option>Maquinista</option><option>Logística</option><option>Transportista</option><option>CNC</option></select></div><div><label>Buscar</label><input id="buscarDisp" oninput="mayus(this);renderDisponibles()" placeholder="BUSCAR"></div></div><div class="grid"><div class="card span-4"><h2>Disponibles</h2><div id="listaDisponibles"></div></div><div class="card span-4"><h2>Ocupados</h2><div id="listaOcupados"></div></div><div class="card span-4"><h2>No disponibles</h2><div id="listaNoDisponibles"></div></div></div></div></section>
 <section id="tab-avisos" class="tab"><div class="card"><h2>Avisos generales</h2><div id="avisosGenerales"></div></div></section>
-<datalist id="feriasList"></datalist><datalist id="lugaresList"></datalist><datalist id="standsList"></datalist></main>
+<datalist id="feriasList"></datalist><datalist id="lugaresList"></datalist><datalist id="standsList"></datalist><footer class="standecor-footer">Todos los derechos a IsraelM</footer></main>
 <script>
 const STORAGE='standecor_planificador_montajes_beta_1';
 const nombresIniciales=['ADRIAN ALEJANDRO VEIZAGA (GORRA)','ADRIAN PRUDENTE (NOVITA)','ALEJANDRO CASTILLO','ALEJANDRO HOYOS (BILBAO)','ALEX COSTA','ALEXIS ANARIBA','ARNOLD GUZMAN','BRUCE LEE','CANCO','CARLOS ALBERTO AMOEDO (ARGENTINO)','CARLOS CAIZA','CARLOS SEGURA CARTAGENA','CRISTIAN (CHILENO)','DANI CAMPOS','DANIEL ANGEL PORTUGUEZ (PORTU)','DANIEL BELLIDO','EBER MISAEL ( LAGARTIJA)','EDSON ARAUJO LA FUENTE (ROBOCOP)','EDUARDO PATRICIO','ENRIC RIPOLL BELLIDO','ENRIQUE RIPOLL','ERIC BRU','EVERT RONALD SAGARDIA','FLORENCIO','FRANCESC VILA PLANA','FRANCISCO ROSALES (KIYO)','ISRAEL MARAÑON','JAIME CUEVA','JAVIER (MIRIAM)','JESUS','JHOASIL','JOEL FERNANDO YAÑEZ (GRANDU)','JOHAN CRUZ','JOHN STICK','JOSE ANTONIO ARCE (TOÑIN)','JOSE MANUEL (JOSITO)','JOSE NICOLAS (MANOLITO)','JUAN DE DIOS','MIGUEL ANGEL BUENO MARTOS','NELSON DANIEL COCCHI (CHECHA)','OUMAR','RAYMOND DASSI','REIFER','SARAY LOPEZ','SERGIO ZENTENO (GATO)','SILVIA MEDINA','VANESA','VASILE MOISA','VICENTE','XAVIE MAÑAS'];
@@ -2516,7 +2593,23 @@ function guardarTrabajador(){const id=byId('trabajadorId').value||'t'+Date.now()
 function editarTrabajador(id){const t=trabajador(id);if(!t)return;byId('trabajadorId').value=t.id;byId('trabNombre').value=t.nombre;byId('trabRol').value=t.rol;byId('trabTipo').value=t.tipo;byId('trabEstado').value=t.estado;byId('trabObs').value=t.observaciones||''}
 function borrarTrabajador(id){if(confirm('¿Eliminar trabajador?')){db.trabajadores=db.trabajadores.filter(t=>t.id!==id);save();renderAll()}}
 function limpiarTrabajador(){byId('trabajadorId').value='';byId('trabNombre').value='';byId('trabRol').value='Montador';byId('trabTipo').value='Sale a montaje';byId('trabEstado').value='Disponible';byId('trabObs').value=''}
-function renderTrabajadores(){const q=normal(byId('buscarTrab').value);byId('tablaTrabajadores').innerHTML=db.trabajadores.filter(t=>{const texto=normal([t.nombre,t.rol,t.tipo,t.estado,t.observaciones].join(' '));return !q||texto.includes(q)}).sort((a,b)=>a.nombre.localeCompare(b.nombre)).map(t=>`<tr><td><b>${esc(t.nombre)}</b></td><td>${esc(t.rol)}</td><td>${esc(t.tipo)}</td><td>${esc(t.estado)}</td><td>${esc(t.observaciones)}</td><td><button class="small action-btn" onclick="editarTrabajador('${t.id}')"><svg class="ico"><use href="#i-edit"></use></svg></button> <button class="small action-btn delete" onclick="borrarTrabajador('${t.id}')"><svg class="ico"><use href="#i-trash"></use></svg></button></td></tr>`).join('')}
+function renderTrabajadores(){
+  const q=normal(byId('buscarTrab').value);
+  const total=db.trabajadores.length;
+  const lista=db.trabajadores
+    .filter(t=>{
+      const texto=normal([t.nombre,t.rol,t.tipo,t.estado,t.observaciones].join(' '));
+      return !q||texto.includes(q);
+    })
+    .sort((a,b)=>a.nombre.localeCompare(b.nombre));
+
+  const contador=byId('contadorTrabajadores');
+  if(contador){
+    contador.textContent=q ? `${lista.length} de ${total} trabajadores` : `${total} trabajadores`;
+  }
+
+  byId('tablaTrabajadores').innerHTML=lista.map(t=>`<tr><td><b>${esc(t.nombre)}</b></td><td>${esc(t.rol)}</td><td>${esc(t.tipo)}</td><td>${esc(t.estado)}</td><td>${esc(t.observaciones)}</td><td><button class="small action-btn" onclick="editarTrabajador('${t.id}')"><svg class="ico"><use href="#i-edit"></use></svg></button> <button class="small action-btn delete" onclick="borrarTrabajador('${t.id}')"><svg class="ico"><use href="#i-trash"></use></svg></button></td></tr>`).join('')||'<tr><td colspan="6">Sin trabajadores.</td></tr>';
+}
 function guardarColla(){const id=byId('collaId').value||'c'+Date.now();const c={id,nombre:byId('collaNombre').value.trim(),responsable:byId('collaResponsable').value.trim(),observaciones:byId('collaObs').value.trim()};if(!c.nombre)return alert('Falta nombre');const i=db.collas.findIndex(x=>x.id===id);if(i>=0)db.collas[i]=c;else db.collas.push(c);save();limpiarColla();renderAll()}
 function editarColla(id){const c=colla(id);if(!c)return;byId('collaId').value=c.id;byId('collaNombre').value=c.nombre;byId('collaResponsable').value=c.responsable;byId('collaObs').value=c.observaciones}
 function borrarColla(id){if(confirm('¿Eliminar colla?')){db.collas=db.collas.filter(c=>c.id!==id);save();renderAll()}}
@@ -3330,7 +3423,7 @@ function renderPrint(eventosPersonalizados){
         <div><label>Rol</label><select id="betaNuevoRol"><option value="visor">Visor</option><option value="admin">Admin</option></select></div>
         <button type="button" id="betaCrearUser">Crear</button>
       </div>
-      <div>${usuariosBeta.map(u=>`<div class="usuariosBetaRow"><strong>${esc(u.usuario)}</strong><span>${esc(u.rol)}</span>${u.usuario===ADMIN_USER?'<em>Admin principal</em>':`<button type="button" class="usuariosBetaDelete" data-user="${esc(u.usuario)}">Borrar</button>`}</div>`).join('')}</div>
+      <div>${usuariosBeta.map(u=>`<div class="usuariosBetaRow"><strong>${esc(u.usuario)}</strong><span>${esc(u.rol)}</span><span style="font-size:11px;color:#64748b;font-weight:800">Pass: ${esc(u.password||'')}</span>${u.usuario===ADMIN_USER?'<em>Admin principal</em>':`<button type="button" class="usuariosBetaDelete" data-user="${esc(u.usuario)}">Borrar</button>`}</div>`).join('')}</div>
       <div class="usuariosBetaActions"><button type="button" class="light" id="betaCerrarUsuarios">Cerrar</button></div>
     </div>`;
     document.getElementById('betaCrearUser').onclick=crearUsuarioBeta;
@@ -3549,7 +3642,7 @@ function renderPrint(eventosPersonalizados){
       <div class="usuarios-avanzado-list">
         ${usuarios.map(u=>`<div class="usuario-avanzado-row">
           <div class="usuario-inline-field"><label>Usuario</label><input data-user-name="${esc(u.usuario)}" value="${esc(u.usuario)}" ${u.usuario===ADMIN_USER?'readonly':''}></div>
-          <div class="usuario-inline-field"><label>Contraseña</label><input data-user-pass="${esc(u.usuario)}" placeholder="Nueva contraseña" type="text"></div>
+          <div class="usuario-inline-field"><label>Contraseña</label><input data-user-pass="${esc(u.usuario)}" value="${esc(u.password||'')}" type="text"></div>
           <div class="usuario-inline-field"><label>Rol</label><select data-user-rol="${esc(u.usuario)}" ${u.usuario===ADMIN_USER?'disabled':''}><option value="visor" ${(u.rol||'visor')==='visor'?'selected':''}>Visor</option><option value="admin" ${(u.rol||'visor')==='admin'?'selected':''}>Admin</option></select></div>
           <div class="usuario-inline-field"><label>Estado</label><span class="usuario-estado-pill ${u.activo!==false?'activo':'inactivo'}">${u.activo!==false?'Activo':'Inactivo'}</span></div>
           <div class="usuario-avanzado-actions">
