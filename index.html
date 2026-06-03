@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- FIX FINAL EXPORTAR EXCEL: lee correctamente db.trabajadores y fallback desde tabla -->
 <!-- FIX DEFINITIVO EXPORTAR EXCEL: JS añadido correctamente -->
 <!-- FIX: importar/exportar plantilla XLSX funcional y botones limpios -->
 <!-- MEJORA: importar/exportar plantilla trabajadores XLSX -->
@@ -2194,6 +2195,35 @@ body.user-viewer button[onclick^="toggleTerminado"]{display:none!important}
     display:flex;
     justify-content:flex-start;
   }
+}
+
+
+/* ===== BOTONES PLANTILLA EXCEL FINALES ===== */
+.plantilla-actions{
+  display:flex!important;
+  gap:8px!important;
+  flex-wrap:wrap!important;
+  align-items:end!important;
+}
+.plantilla-icon-btn{
+  width:38px!important;
+  height:38px!important;
+  min-width:38px!important;
+  padding:0!important;
+  border-radius:12px!important;
+  justify-content:center!important;
+  background:#eef8fc!important;
+  color:#0B5F86!important;
+  border:1px solid #b8e4f4!important;
+  box-shadow:0 2px 7px rgba(15,23,42,.10)!important;
+}
+.plantilla-icon-btn .ico{
+  width:18px!important;
+  height:18px!important;
+}
+.plantilla-icon-btn:hover{
+  background:#dff1fb!important;
+  box-shadow:0 6px 14px rgba(20,164,227,.24)!important;
 }
 
 </style>
@@ -5318,6 +5348,189 @@ function importarPlantillaTrabajadoresXLSX(event){
         event.target.value='';
       }
     };
+    reader.readAsArrayBuffer(file);
+  });
+}
+</script>
+
+
+<script>
+/* ===== EXPORT_IMPORT_PLANTILLA_FINAL_STANDECOR ===== */
+function fechaArchivoPlantillaFinal(){
+  const d=new Date();
+  return String(d.getDate()).padStart(2,'0')+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+d.getFullYear();
+}
+
+function cargarMotorXLSXFinal(callback){
+  if(typeof XLSX!=='undefined'){
+    callback();
+    return;
+  }
+
+  const existente=document.querySelector('script[data-xlsx-final="1"]');
+  if(existente){
+    existente.addEventListener('load',callback,{once:true});
+    existente.addEventListener('error',function(){
+      alert('No se ha podido cargar el motor Excel. Revisa la conexión a internet.');
+    },{once:true});
+    return;
+  }
+
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+  s.dataset.xlsxFinal='1';
+  s.onload=callback;
+  s.onerror=function(){
+    alert('No se ha podido cargar el motor Excel. Revisa la conexión a internet.');
+  };
+  document.head.appendChild(s);
+}
+
+function obtenerTrabajadoresPlantillaFinal(){
+  try{
+    if(typeof db!=='undefined' && db && Array.isArray(db.trabajadores) && db.trabajadores.length){
+      return db.trabajadores.map(t=>({
+        nombre:t.nombre||'',
+        rol:t.rol||''
+      }));
+    }
+  }catch(e){}
+
+  // Respaldo: leer directamente la tabla visible de trabajadores
+  const filas=[...document.querySelectorAll('#tablaTrabajadores tr')];
+  return filas.map(tr=>{
+    const celdas=tr.querySelectorAll('td');
+    if(celdas.length<2)return null;
+    return {
+      nombre:(celdas[0].innerText||'').trim(),
+      rol:(celdas[1].innerText||'').trim()
+    };
+  }).filter(x=>x && x.nombre);
+}
+
+function exportarPlantillaTrabajadoresXLSX(){
+  cargarMotorXLSXFinal(function(){
+    try{
+      const trabajadores=obtenerTrabajadoresPlantillaFinal();
+
+      if(!trabajadores.length){
+        alert('No hay trabajadores para exportar.');
+        return;
+      }
+
+      const datos=trabajadores
+        .slice()
+        .sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''))
+        .map(t=>({
+          Nombre:t.nombre||'',
+          Rol:t.rol||''
+        }));
+
+      const ws=XLSX.utils.json_to_sheet(datos,{header:['Nombre','Rol']});
+      ws['!cols']=[{wch:42},{wch:24}];
+
+      const wb=XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb,ws,'Plantilla');
+
+      XLSX.writeFile(wb,'Plantilla_STANDECOR_'+fechaArchivoPlantillaFinal()+'.xlsx');
+    }catch(err){
+      console.error(err);
+      alert('No se ha podido exportar la plantilla.');
+    }
+  });
+}
+
+function normalizarRolPlantillaFinal(rol){
+  const r=String(rol||'').trim();
+  if(!r)return 'Montador';
+  const key=(typeof normal==='function') ? normal(r) : r.toLowerCase();
+  const mapa={
+    'cabeza':'Cabeza de equipo',
+    'cabeza de equipo':'Cabeza de equipo',
+    'ayudante':'Ayudante',
+    'montador':'Montador',
+    'encargado':'Encargado',
+    'maquinista':'Maquinista',
+    'logistica':'Logística',
+    'logística':'Logística',
+    'transportista':'Transportista',
+    'cnc':'CNC'
+  };
+  return mapa[key] || r;
+}
+
+function importarPlantillaTrabajadoresXLSX(event){
+  const file=event.target.files && event.target.files[0];
+  if(!file)return;
+
+  cargarMotorXLSXFinal(function(){
+    const reader=new FileReader();
+
+    reader.onload=function(e){
+      try{
+        if(typeof db==='undefined' || !db || !Array.isArray(db.trabajadores)){
+          alert('No se ha encontrado la base de trabajadores.');
+          return;
+        }
+
+        const data=new Uint8Array(e.target.result);
+        const wb=XLSX.read(data,{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+
+        let creados=0;
+        let actualizados=0;
+        let ignorados=0;
+
+        const existentesPorNombre=new Map(
+          db.trabajadores.map(t=>[
+            (typeof normal==='function' ? normal(t.nombre) : String(t.nombre||'').toLowerCase()),
+            t
+          ])
+        );
+
+        rows.forEach(row=>{
+          const nombre=String(row.Nombre ?? row.NOMBRE ?? row.nombre ?? '').trim();
+          const rol=normalizarRolPlantillaFinal(row.Rol ?? row.ROL ?? row.rol ?? '');
+
+          if(!nombre){
+            ignorados++;
+            return;
+          }
+
+          const key=typeof normal==='function' ? normal(nombre) : nombre.toLowerCase();
+          const existente=existentesPorNombre.get(key);
+
+          if(existente){
+            existente.rol=rol;
+            actualizados++;
+          }else{
+            const nuevo={
+              id:'t'+Date.now()+Math.random().toString(16).slice(2),
+              nombre:nombre.toUpperCase(),
+              rol:rol,
+              tipo:'Sale a montaje',
+              estado:'Disponible',
+              observaciones:''
+            };
+            db.trabajadores.push(nuevo);
+            existentesPorNombre.set(key,nuevo);
+            creados++;
+          }
+        });
+
+        save();
+        renderAll();
+
+        alert('Importación completada\n\n✓ '+creados+' trabajadores creados\n✓ '+actualizados+' trabajadores actualizados\n✓ '+ignorados+' filas ignoradas');
+      }catch(err){
+        console.error(err);
+        alert('No se ha podido importar la plantilla. Revisa que el Excel tenga columnas Nombre y Rol.');
+      }finally{
+        event.target.value='';
+      }
+    };
+
     reader.readAsArrayBuffer(file);
   });
 }
