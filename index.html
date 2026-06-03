@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- FIX: importar/exportar plantilla XLSX funcional y botones limpios -->
 <!-- MEJORA: importar/exportar plantilla trabajadores XLSX -->
 <!-- FIX FINAL USUARIOS: Admin principal ve contraseñas actuales -->
 <!-- FIX: contraseñas visibles admin y calendario imprime en 1 página -->
@@ -2157,6 +2158,43 @@ body.user-viewer button[onclick^="toggleTerminado"]{display:none!important}
   }
 }
 
+
+/* ===== BOTONES PLANTILLA EXCEL LIMPIOS ===== */
+.plantilla-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:end;
+}
+.plantilla-icon-btn{
+  width:38px!important;
+  height:38px!important;
+  min-width:38px!important;
+  padding:0!important;
+  border-radius:12px!important;
+  justify-content:center!important;
+  background:#eef8fc!important;
+  color:#0B5F86!important;
+  border:1px solid #b8e4f4!important;
+  box-shadow:0 2px 7px rgba(15,23,42,.10)!important;
+}
+.plantilla-icon-btn .ico{
+  width:18px!important;
+  height:18px!important;
+}
+.plantilla-icon-btn:hover{
+  background:#dff1fb!important;
+  color:#0B5F86!important;
+  box-shadow:0 6px 14px rgba(20,164,227,.24)!important;
+}
+@media(max-width:720px){
+  .plantilla-actions{
+    width:100%;
+    display:flex;
+    justify-content:flex-start;
+  }
+}
+
 </style>
 <svg width="0" height="0" style="position:absolute;display:none" aria-hidden="true">
   <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/><path d="M18 12h.01"/></symbol>
@@ -2352,8 +2390,8 @@ const firebaseConfigStandecor = {
   <div><label>Buscar</label><input id="buscarTrab" oninput="mayus(this);renderTrabajadores()"></div>
   <div class="plantilla-actions no-print">
     <label>&nbsp;</label>
-    <button type="button" class="small" onclick="exportarPlantillaTrabajadoresXLSX()">📊 Exportar plantilla</button>
-    <button type="button" class="small secondary" onclick="document.getElementById('importPlantillaTrabajadores').click()">📥 Importar plantilla</button>
+    <button type="button" class="plantilla-icon-btn" title="Exportar plantilla Excel" onclick="exportarPlantillaTrabajadoresXLSX()"><svg class="ico"><use href="#i-export"></use></svg></button>
+    <button type="button" class="plantilla-icon-btn" title="Importar plantilla Excel" onclick="document.getElementById('importPlantillaTrabajadores').click()"><svg class="ico"><use href="#i-import"></use></svg></button>
     <input id="importPlantillaTrabajadores" type="file" accept=".xlsx,.xls" style="display:none" onchange="importarPlantillaTrabajadoresXLSX(event)">
   </div>
 </div><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Tipo</th><th>Estado</th><th>Obs.</th><th>Acciones</th></tr></thead><tbody id="tablaTrabajadores"></tbody></table></div></div></div></section>
