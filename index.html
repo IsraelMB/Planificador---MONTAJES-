@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- FIX CRÍTICO FIREBASE: sincronización segura multi-dispositivo sin pérdida de montajes -->
+<!-- MEJORA EXCEL: formato Personal de Carpintería definitivo -->
+<!-- MEJORA EXCEL: plantilla profesional STANDECOR -->
 <!-- FIX FINAL EXPORTAR EXCEL: lee correctamente db.trabajadores y fallback desde tabla -->
 <!-- FIX DEFINITIVO EXPORTAR EXCEL: JS añadido correctamente -->
 <!-- FIX: importar/exportar plantilla XLSX funcional y botones limpios -->
@@ -5534,6 +5537,512 @@ function importarPlantillaTrabajadoresXLSX(event){
     reader.readAsArrayBuffer(file);
   });
 }
+</script>
+
+
+<script>
+/* ===== EXPORTAR PLANTILLA PROFESIONAL STANDECOR ===== */
+function exportarPlantillaTrabajadoresXLSX(){
+  cargarMotorXLSXFinal(function(){
+    try{
+      const trabajadores=obtenerTrabajadoresPlantillaFinal();
+
+      if(!trabajadores.length){
+        alert('No hay trabajadores para exportar.');
+        return;
+      }
+
+      const fecha=fechaArchivoPlantillaFinal();
+      const total=trabajadores.length;
+
+      const datos=trabajadores
+        .slice()
+        .sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''))
+        .map((t,i)=>({
+          num:i+1,
+          nombre:t.nombre||'',
+          rol:t.rol||''
+        }));
+
+      const filas=[
+        ['STANDECOR'],
+        ['PLANTILLA DE TRABAJADORES'],
+        ['Generado: '+fecha],
+        ['Total trabajadores: '+total],
+        [],
+        ['Nº','Nombre','Rol'],
+        ...datos.map(x=>[x.num,x.nombre,x.rol])
+      ];
+
+      const ws=XLSX.utils.aoa_to_sheet(filas);
+
+      ws['!merges']=[
+        {s:{r:0,c:0},e:{r:0,c:2}},
+        {s:{r:1,c:0},e:{r:1,c:2}},
+        {s:{r:2,c:0},e:{r:2,c:2}},
+        {s:{r:3,c:0},e:{r:3,c:2}}
+      ];
+
+      ws['!cols']=[
+        {wch:8},
+        {wch:45},
+        {wch:24}
+      ];
+
+      ws['!autofilter']={ref:'A6:C'+(datos.length+6)};
+      ws['!freeze']={xSplit:0,ySplit:6};
+
+      ws['!rows']=[
+        {hpt:28},
+        {hpt:22},
+        {hpt:18},
+        {hpt:18},
+        {hpt:8},
+        {hpt:22}
+      ];
+
+      const azul='14A4E3';
+      const azulOscuro='0B5F86';
+      const blanco='FFFFFF';
+      const borde={style:'thin',color:{rgb:'D9E2EC'}};
+
+      ['A1','A2','A3','A4'].forEach(c=>{
+        if(ws[c]){
+          ws[c].s={
+            alignment:{horizontal:'center',vertical:'center'},
+            font:{bold:true,color:{rgb:c==='A1'?blanco:azulOscuro},sz:c==='A1'?20:12},
+            fill:{fgColor:{rgb:c==='A1'?azul:'EAF7FD'}},
+            border:{top:borde,bottom:borde,left:borde,right:borde}
+          };
+        }
+      });
+
+      ['A6','B6','C6'].forEach(c=>{
+        if(ws[c]){
+          ws[c].s={
+            font:{bold:true,color:{rgb:blanco}},
+            alignment:{horizontal:'center',vertical:'center'},
+            fill:{fgColor:{rgb:azul}},
+            border:{top:borde,bottom:borde,left:borde,right:borde}
+          };
+        }
+      });
+
+      for(let r=7;r<=datos.length+6;r++){
+        ['A','B','C'].forEach(col=>{
+          const cell=ws[col+r];
+          if(cell){
+            cell.s={
+              alignment:{vertical:'center',horizontal:col==='A'?'center':'left'},
+              border:{top:borde,bottom:borde,left:borde,right:borde}
+            };
+          }
+        });
+      }
+
+      const wb=XLSX.utils.book_new();
+      wb.Props={
+        Title:'Plantilla STANDECOR',
+        Subject:'Listado de trabajadores',
+        Author:'IsraelM',
+        Company:'STANDECOR',
+        CreatedDate:new Date()
+      };
+
+      XLSX.utils.book_append_sheet(wb,ws,'Plantilla');
+
+      const resumen={};
+      trabajadores.forEach(t=>{
+        const rol=t.rol||'Sin rol';
+        resumen[rol]=(resumen[rol]||0)+1;
+      });
+
+      const resumenFilas=[
+        ['STANDECOR'],
+        ['RESUMEN POR ROL'],
+        ['Generado: '+fecha],
+        [],
+        ['Rol','Total'],
+        ...Object.keys(resumen).sort().map(rol=>[rol,resumen[rol]])
+      ];
+
+      const ws2=XLSX.utils.aoa_to_sheet(resumenFilas);
+      ws2['!merges']=[
+        {s:{r:0,c:0},e:{r:0,c:1}},
+        {s:{r:1,c:0},e:{r:1,c:1}},
+        {s:{r:2,c:0},e:{r:2,c:1}}
+      ];
+      ws2['!cols']=[{wch:28},{wch:12}];
+      ws2['!autofilter']={ref:'A5:B'+(Object.keys(resumen).length+5)};
+      XLSX.utils.book_append_sheet(wb,ws2,'Resumen');
+
+      XLSX.writeFile(wb,'Plantilla_STANDECOR_'+fecha+'.xlsx');
+    }catch(err){
+      console.error(err);
+      alert('No se ha podido exportar la plantilla.');
+    }
+  });
+}
+</script>
+
+
+<script>
+/* ===== EXPORTAR EXCEL FORMATO CARPINTERIA DEFINITIVO ===== */
+function exportarPlantillaTrabajadoresXLSX(){
+  cargarMotorXLSXFinal(function(){
+    try{
+      const trabajadores=obtenerTrabajadoresPlantillaFinal();
+
+      if(!trabajadores.length){
+        alert('No hay trabajadores para exportar.');
+        return;
+      }
+
+      const fecha=fechaArchivoPlantillaFinal();
+      const total=trabajadores.length;
+
+      const datos=trabajadores
+        .slice()
+        .sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''))
+        .map((t,i)=>[i+1, t.nombre||'', t.rol||'']);
+
+      const wb=XLSX.utils.book_new();
+      wb.Props={
+        Title:'Plantilla STANDECOR',
+        Subject:'Personal de Carpintería',
+        Author:'IsraelM',
+        Company:'STANDECOR',
+        CreatedDate:new Date()
+      };
+
+      const personal=[
+        ['STANDECOR','',''],
+        ['Personal de Carpintería','',''],
+        ['Total: '+total,'',''],
+        [],
+        ['Nº','Nombre','Rol'],
+        ...datos
+      ];
+
+      const ws=XLSX.utils.aoa_to_sheet(personal);
+
+      ws['!merges']=[
+        {s:{r:0,c:0},e:{r:0,c:2}},
+        {s:{r:1,c:0},e:{r:1,c:2}},
+        {s:{r:2,c:0},e:{r:2,c:2}}
+      ];
+
+      ws['!cols']=[{wch:8},{wch:46},{wch:24}];
+      ws['!rows']=[{hpt:28},{hpt:21},{hpt:20},{hpt:8},{hpt:21}];
+      ws['!autofilter']={ref:'A5:C'+(datos.length+5)};
+      ws['!freeze']={xSplit:0,ySplit:5};
+      ws['!pageSetup']={orientation:'landscape',fitToWidth:1,fitToHeight:0};
+      ws['!margins']={left:0.25,right:0.25,top:0.35,bottom:0.35,header:0.15,footer:0.15};
+
+      const azul='4BACC6';
+      const azulClaro='DAEEF3';
+      const azulMedio='92CDDC';
+      const blanco='FFFFFF';
+      const negro='000000';
+      const bordeAzul={style:'thin',color:{rgb:azul}};
+
+      function styleCell(sheet, cell, style){
+        if(sheet[cell]) sheet[cell].s=style;
+      }
+
+      styleCell(ws,'A1',{
+        font:{bold:false,color:{rgb:blanco},sz:20},
+        alignment:{horizontal:'center',vertical:'center'},
+        fill:{fgColor:{rgb:azul}}
+      });
+
+      styleCell(ws,'A2',{
+        font:{bold:true,color:{rgb:negro},sz:11},
+        alignment:{horizontal:'left',vertical:'center'},
+        fill:{fgColor:{rgb:azulMedio}}
+      });
+
+      styleCell(ws,'A3',{
+        font:{bold:true,color:{rgb:negro},sz:11},
+        alignment:{horizontal:'left',vertical:'center'},
+        fill:{fgColor:{rgb:azulClaro}}
+      });
+
+      ['A5','B5','C5'].forEach(c=>{
+        styleCell(ws,c,{
+          font:{bold:true,color:{rgb:negro},sz:11},
+          alignment:{horizontal:'left',vertical:'center'},
+          fill:{fgColor:{rgb:blanco}},
+          border:{top:bordeAzul,bottom:bordeAzul,left:bordeAzul,right:bordeAzul}
+        });
+      });
+
+      for(let r=6;r<=datos.length+5;r++){
+        const fill=(r%2===0)?azulClaro:blanco;
+        ['A','B','C'].forEach(col=>{
+          const cell=ws[col+r];
+          if(cell){
+            cell.s={
+              font:{color:{rgb:negro},sz:11},
+              alignment:{horizontal:col==='A'?'right':'left',vertical:'center'},
+              fill:{fgColor:{rgb:fill}},
+              border:{top:bordeAzul,bottom:bordeAzul,left:bordeAzul,right:bordeAzul}
+            };
+          }
+        });
+      }
+
+      XLSX.utils.book_append_sheet(wb,ws,'PERSONAL');
+
+      const resumen={};
+      trabajadores.forEach(t=>{
+        const rol=t.rol||'Sin rol';
+        resumen[rol]=(resumen[rol]||0)+1;
+      });
+
+      const resumenDatos=Object.keys(resumen).sort().map(rol=>[rol,resumen[rol]]);
+      const resumenFilas=[
+        ['STANDECOR',''],
+        ['RESUMEN POR ROL',''],
+        ['Rol','Total'],
+        ...resumenDatos
+      ];
+
+      const ws2=XLSX.utils.aoa_to_sheet(resumenFilas);
+      ws2['!merges']=[
+        {s:{r:0,c:0},e:{r:0,c:1}},
+        {s:{r:1,c:0},e:{r:1,c:1}}
+      ];
+      ws2['!cols']=[{wch:32},{wch:12}];
+      ws2['!rows']=[{hpt:28},{hpt:21},{hpt:21}];
+      ws2['!autofilter']={ref:'A3:B'+(resumenDatos.length+3)};
+      ws2['!freeze']={xSplit:0,ySplit:3};
+      ws2['!pageSetup']={orientation:'portrait',fitToWidth:1,fitToHeight:0};
+      ws2['!margins']={left:0.25,right:0.25,top:0.35,bottom:0.35,header:0.15,footer:0.15};
+
+      styleCell(ws2,'A1',{
+        font:{bold:false,color:{rgb:blanco},sz:18},
+        alignment:{horizontal:'center',vertical:'center'},
+        fill:{fgColor:{rgb:azul}}
+      });
+
+      styleCell(ws2,'A2',{
+        font:{bold:true,color:{rgb:negro},sz:11},
+        alignment:{horizontal:'left',vertical:'center'},
+        fill:{fgColor:{rgb:azulMedio}}
+      });
+
+      ['A3','B3'].forEach(c=>{
+        styleCell(ws2,c,{
+          font:{bold:true,color:{rgb:negro},sz:11},
+          alignment:{horizontal:'left',vertical:'center'},
+          fill:{fgColor:{rgb:blanco}},
+          border:{top:bordeAzul,bottom:bordeAzul,left:bordeAzul,right:bordeAzul}
+        });
+      });
+
+      for(let r=4;r<=resumenDatos.length+3;r++){
+        const fill=(r%2===0)?azulClaro:blanco;
+        ['A','B'].forEach(col=>{
+          const cell=ws2[col+r];
+          if(cell){
+            cell.s={
+              font:{color:{rgb:negro},sz:11},
+              alignment:{horizontal:col==='B'?'right':'left',vertical:'center'},
+              fill:{fgColor:{rgb:fill}},
+              border:{top:bordeAzul,bottom:bordeAzul,left:bordeAzul,right:bordeAzul}
+            };
+          }
+        });
+      }
+
+      XLSX.utils.book_append_sheet(wb,ws2,'RESUMEN');
+
+      XLSX.writeFile(wb,'Plantilla_STANDECOR_'+fecha+'.xlsx');
+    }catch(err){
+      console.error(err);
+      alert('No se ha podido exportar la plantilla.');
+    }
+  });
+}
+</script>
+
+
+<script>
+/* ===== FIX_CRITICO_SYNC_MULTI_DISPOSITIVO_STANDECOR =====
+   Evita que un móvil/tablet con datos antiguos sobrescriba Firebase.
+   En vez de reemplazar la base completa, fusiona eventos, trabajadores y collas por ID.
+*/
+(function(){
+  const SYNC_FIX_VERSION='2026-06-safe-merge';
+
+  function normalizarDbSync(d){
+    d=d||{};
+    d.trabajadores=Array.isArray(d.trabajadores)?d.trabajadores:[];
+    d.collas=Array.isArray(d.collas)?d.collas:[];
+    d.eventos=Array.isArray(d.eventos)?d.eventos:[];
+    d._syncVersion=SYNC_FIX_VERSION;
+    return d;
+  }
+
+  function contarTrabajoSync(d){
+    d=normalizarDbSync({...d});
+    return d.eventos.length + d.collas.length;
+  }
+
+  function mergeArrayPorIdSync(base, local){
+    const map=new Map();
+
+    (Array.isArray(base)?base:[]).forEach(x=>{
+      if(x && x.id) map.set(String(x.id), {...x});
+    });
+
+    (Array.isArray(local)?local:[]).forEach(x=>{
+      if(!x || !x.id)return;
+      const id=String(x.id);
+      const anterior=map.get(id)||{};
+      map.set(id,{...anterior,...x});
+    });
+
+    return [...map.values()];
+  }
+
+  function mergeDbSeguroSync(remoteDb, localDb){
+    const r=normalizarDbSync({...remoteDb});
+    const l=normalizarDbSync({...localDb});
+
+    const merged={
+      ...r,
+      ...l,
+      trabajadores:mergeArrayPorIdSync(r.trabajadores,l.trabajadores),
+      collas:mergeArrayPorIdSync(r.collas,l.collas),
+      eventos:mergeArrayPorIdSync(r.eventos,l.eventos),
+      actualizadoFirebase:Date.now(),
+      _syncVersion:SYNC_FIX_VERSION
+    };
+
+    return normalizarDbSync(merged);
+  }
+
+  function aplicarDbSeguroSync(nuevaDb){
+    window.aplicandoDatosFirebase=true;
+    db=normalizarDbSync(nuevaDb);
+    localStorage.setItem(STORAGE,JSON.stringify(db));
+    try{renderAll()}catch(e){console.warn('No se pudo renderizar tras sync',e)}
+    window.aplicandoDatosFirebase=false;
+  }
+
+  function iniciarFirebaseStandecorSeguro(){
+    try{
+      if(!window.firebase)return;
+
+      if(!firebase.apps || !firebase.apps.length){
+        firebase.initializeApp(firebaseConfigStandecor);
+      }
+
+      firebaseDbStandecor=firebase.firestore();
+      firebaseReadyStandecor=true;
+      firebaseCargaInicialCompletada=false;
+
+      const ref=firebaseDbStandecor.collection('standecor').doc('planificador');
+
+      window.guardarFirebaseStandecor=function(){
+        if(!firebaseReadyStandecor || !firebaseDbStandecor)return;
+
+        if(!firebaseCargaInicialCompletada){
+          console.warn('Guardado bloqueado: esperando carga inicial de Firebase.');
+          return;
+        }
+
+        const localDb=normalizarDbSync(db);
+
+        if(contarTrabajoSync(localDb)===0){
+          console.warn('Guardado bloqueado: base local sin trabajos/collas.');
+          alert('Protección activada: no se guardó una base vacía para evitar borrar los datos compartidos.');
+          return;
+        }
+
+        clearTimeout(firebaseTimerStandecor);
+        firebaseTimerStandecor=setTimeout(async()=>{
+          try{
+            const snap=await ref.get();
+            let finalDb=localDb;
+
+            if(snap.exists && snap.data() && snap.data().db){
+              const remoteDb=normalizarDbSync(snap.data().db);
+              finalDb=mergeDbSeguroSync(remoteDb,localDb);
+
+              // Protección fuerte: si Firebase tiene más trabajos, nunca se guarda una versión con menos.
+              if(contarTrabajoSync(finalDb)<contarTrabajoSync(remoteDb)){
+                console.warn('Guardado bloqueado: el resultado tendría menos trabajos que Firebase.');
+                return;
+              }
+            }else{
+              finalDb.actualizadoFirebase=Date.now();
+              finalDb._syncVersion=SYNC_FIX_VERSION;
+            }
+
+            db=finalDb;
+            localStorage.setItem(STORAGE,JSON.stringify(db));
+            await ref.set({db:finalDb,actualizadoFirebase:finalDb.actualizadoFirebase,syncVersion:SYNC_FIX_VERSION},{merge:true});
+          }catch(e){
+            console.warn('No se pudo guardar en Firebase con sync seguro',e);
+          }
+        },700);
+      };
+
+      ref.onSnapshot((snap)=>{
+        try{
+          if(!snap.exists || !snap.data() || !snap.data().db){
+            firebaseCargaInicialCompletada=true;
+            if(contarTrabajoSync(db)>0) window.guardarFirebaseStandecor();
+            return;
+          }
+
+          const remoteDb=normalizarDbSync(snap.data().db);
+          const localDb=normalizarDbSync(db);
+
+          if(contarTrabajoSync(remoteDb)===0 && contarTrabajoSync(localDb)>0){
+            firebaseCargaInicialCompletada=true;
+            console.warn('Firebase trae base vacía; se conserva la local.');
+            return;
+          }
+
+          const merged=mergeDbSeguroSync(remoteDb,localDb);
+
+          // Si hay diferencias de cantidad, aplicamos la unión para no perder trabajos añadidos desde otro dispositivo.
+          aplicarDbSeguroSync(merged);
+          firebaseCargaInicialCompletada=true;
+
+          // Si la unión tiene más datos que Firebase, se re-sube para consolidar.
+          if(contarTrabajoSync(merged)>contarTrabajoSync(remoteDb)){
+            window.guardarFirebaseStandecor();
+          }
+        }catch(e){
+          firebaseCargaInicialCompletada=true;
+          console.warn('Error en snapshot seguro',e);
+        }
+      });
+
+      console.log('Sync seguro STANDECOR activado',SYNC_FIX_VERSION);
+    }catch(e){
+      console.warn('No se pudo iniciar sync seguro. La app sigue con localStorage.',e);
+    }
+  }
+
+  window.iniciarFirebaseStandecor=iniciarFirebaseStandecorSeguro;
+
+  // Si la versión anterior ya inició Firebase, dejamos el override para los próximos guardados.
+  setTimeout(()=>{
+    try{
+      if(!firebaseReadyStandecor){
+        iniciarFirebaseStandecorSeguro();
+      }else{
+        console.log('Sync seguro preparado para próximos guardados.');
+      }
+    }catch(e){}
+  },1200);
+})();
 </script>
 
 </html>
