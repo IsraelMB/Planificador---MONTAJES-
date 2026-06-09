@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- FIX COPIAS: restaurar sin recargar página -->
+<!-- FIX COPIAS LIMPIAS: solo crear/editar/terminar montaje y manual -->
+<!-- FIX RESTAURAR: sin confirmaciones y mensaje simple -->
+<!-- FIX DEFINITIVO: restaurar copias automáticas directo y limpio -->
+<!-- FIX REAL COPIAS: copia antes de borrar planificación y restauración limpia -->
+<!-- FIX FORZADO RESTAURAR COPIAS: recuperación real aunque existan eliminados internos -->
+<!-- FIX FINAL RESTAURAR COPIAS: limpia eliminados y recarga tras restaurar -->
+<!-- FIX RESTAURAR COPIAS: elimina marcas internas de borrado al restaurar -->
+<!-- FIX PLANIFICACIÓN: eliminados permanentes con sincronización segura -->
+<!-- FIX COPIAS: automáticas solo por cambios en montajes/desmontajes -->
+<!-- FIX TRABAJADORES: eliminados permanentes con sincronización segura -->
 <!-- FIX FINAL COPIAS: eliminado doble disparo automático -->
 <!-- FIX COPIAS: anti-duplicados y etiquetas de origen -->
 <!-- FIX COPIAS AUTOMÁTICAS: Firebase correcto y botón en menú principal -->
@@ -2274,6 +2285,20 @@ body.user-viewer button[onclick^="toggleTerminado"]{display:none!important}
 .backup-origin{display:inline-flex;align-items:center;justify-content:center;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:900;margin-left:6px;letter-spacing:.3px;border:1px solid #bde7fb;background:#eef7ff;color:#0B5F86}
 .backup-origin.manual{background:#eefaf0;border-color:#bfe7c7;color:#207a35}
 .backup-origin.restauracion{background:#fff7df;border-color:#f5d48a;color:#92400e}
+
+
+/* ===== COPIAS: ETIQUETA ANTES DE BORRAR ===== */
+.backup-origin.preborrado{
+  background:#fff1f1!important;
+  border-color:#ffcaca!important;
+  color:#b42318!important;
+}
+
+
+/* ===== COPIAS LIMPIAS: SOLO AUTOMÁTICA / MANUAL ===== */
+.backup-origin.preborrado{
+  display:none!important;
+}
 
 </style>
 <svg width="0" height="0" style="position:absolute;display:none" aria-hidden="true">
@@ -6830,6 +6855,2680 @@ function exportarPlantillaTrabajadoresXLSX(){
     };
 
     window.__saveFinalSinDuplicadosStandecor=true;
+  }
+})();
+</script>
+
+
+<script>
+/* ===== FIX_ELIMINAR_TRABAJADORES_PERMANENTE_STANDECOR ===== */
+(function(){
+  function asegurarEliminadosTrabajadores(){
+    if(!db) return;
+    if(!db.trabajadoresEliminados || typeof db.trabajadoresEliminados!=='object'){
+      db.trabajadoresEliminados={};
+    }
+  }
+
+  function trabajadorEliminado(id){
+    asegurarEliminadosTrabajadores();
+    return Boolean(db.trabajadoresEliminados && db.trabajadoresEliminados[String(id)]);
+  }
+
+  function purgarTrabajadoresEliminados(){
+    try{
+      asegurarEliminadosTrabajadores();
+      const eliminados=db.trabajadoresEliminados||{};
+      const antes=(db.trabajadores||[]).length;
+
+      db.trabajadores=(db.trabajadores||[]).filter(t=>t && t.id && !eliminados[String(t.id)]);
+
+      // También quitamos al trabajador eliminado de montajes/desmontajes existentes.
+      (db.eventos||[]).forEach(ev=>{
+        if(Array.isArray(ev.ayudantes)){
+          ev.ayudantes=ev.ayudantes.filter(id=>!eliminados[String(id)]);
+        }
+        if(ev.cabezaPrincipalId && eliminados[String(ev.cabezaPrincipalId)]){
+          ev.cabezaPrincipalId='';
+        }
+      });
+
+      return antes!==db.trabajadores.length;
+    }catch(e){
+      console.warn('No se pudieron purgar trabajadores eliminados',e);
+      return false;
+    }
+  }
+
+  // Sustituye el borrado por un borrado permanente sincronizable.
+  window.borrarTrabajador=function(id){
+    const t=(db.trabajadores||[]).find(x=>x.id===id);
+    const nombre=t && t.nombre ? t.nombre : 'este trabajador';
+
+    if(!confirm('¿Eliminar trabajador?\n\n'+nombre+'\n\nSe quitará también de los montajes donde estuviera asignado.')) return;
+
+    asegurarEliminadosTrabajadores();
+    db.trabajadoresEliminados[String(id)]=Date.now();
+
+    db.trabajadores=(db.trabajadores||[]).filter(t=>t.id!==id);
+
+    (db.eventos||[]).forEach(ev=>{
+      if(Array.isArray(ev.ayudantes)){
+        ev.ayudantes=ev.ayudantes.filter(x=>String(x)!==String(id));
+      }
+      if(String(ev.cabezaPrincipalId||'')===String(id)){
+        ev.cabezaPrincipalId='';
+      }
+    });
+
+    save();
+    renderAll();
+  };
+
+  // Evita que trabajador(id) devuelva trabajadores ya eliminados.
+  window.trabajador=function(id){
+    if(trabajadorEliminado(id)) return undefined;
+    return (db.trabajadores||[]).find(t=>t.id===id);
+  };
+
+  // Reforzar renderAll: si Firebase vuelve a traer un trabajador eliminado, se purga antes de pintar.
+  if(!window.__renderAllPurgarTrabajadoresEliminados){
+    const renderAllOriginal=window.renderAll;
+    if(typeof renderAllOriginal==='function'){
+      window.renderAll=function(){
+        const cambio=purgarTrabajadoresEliminados();
+        const r=renderAllOriginal.apply(this,arguments);
+
+        // Si hubo reaparición desde Firebase, se vuelve a guardar la base ya limpia.
+        if(cambio && !window.aplicandoDatosFirebase){
+          try{save()}catch(e){}
+        }
+
+        return r;
+      };
+      window.__renderAllPurgarTrabajadoresEliminados=true;
+    }
+  }
+
+  // Reforzar renderTrabajadores para contar/listar solo trabajadores no eliminados.
+  if(!window.__renderTrabajadoresFiltraEliminados){
+    const renderTrabajadoresOriginal=window.renderTrabajadores;
+    if(typeof renderTrabajadoresOriginal==='function'){
+      window.renderTrabajadores=function(){
+        purgarTrabajadoresEliminados();
+        return renderTrabajadoresOriginal.apply(this,arguments);
+      };
+      window.__renderTrabajadoresFiltraEliminados=true;
+    }
+  }
+
+  // Reforzar save: nunca guardar trabajadores que estén marcados como eliminados.
+  if(!window.__savePurgarTrabajadoresEliminados){
+    const saveOriginal=window.save;
+    if(typeof saveOriginal==='function'){
+      window.save=function(){
+        purgarTrabajadoresEliminados();
+        return saveOriginal.apply(this,arguments);
+      };
+      window.__savePurgarTrabajadoresEliminados=true;
+    }
+  }
+
+  // Limpieza inicial al cargar.
+  setTimeout(()=>{
+    try{
+      const cambio=purgarTrabajadoresEliminados();
+      if(cambio){
+        localStorage.setItem(STORAGE,JSON.stringify(db));
+        renderAll();
+        save();
+      }
+    }catch(e){}
+  },1200);
+})();
+</script>
+
+
+<script>
+/* ===== COPIAS_SOLO_EVENTOS_STANDECOR =====
+   Desde aquí las copias automáticas SOLO se crean si cambia db.eventos:
+   montajes, desmontajes, fechas, personal, collas de una feria, observaciones o terminado.
+   No se crean por trabajadores, usuarios, importar/exportar, restaurar o borrar copias.
+*/
+(function(){
+  const BACKUP_COLLECTION='standecor_backups';
+  const BACKUP_LIMIT=10;
+  const MIN_DUPLICADO_MS=120000;
+  const SESSION_LAST='standecor_last_event_backup_signature';
+  let saveTimerSoloEventos=null;
+  let ultimaFirmaEventos=obtenerFirmaEventos();
+
+  function usuarioActualSoloEventos(){
+    try{return JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null')}catch(e){return null}
+  }
+
+  function nombreUsuarioSoloEventos(){
+    const u=usuarioActualSoloEventos();
+    return u && u.usuario ? u.usuario : 'SIN USUARIO';
+  }
+
+  function esAdminSoloEventos(){
+    const u=usuarioActualSoloEventos();
+    return Boolean(u && u.rol==='admin');
+  }
+
+  function esIsraelMSoloEventos(){
+    const u=usuarioActualSoloEventos();
+    return Boolean(u && String(u.usuario||'').toUpperCase()==='ISRAELM');
+  }
+
+  function refBackupsSoloEventos(){
+    try{
+      if(window.firebase && firebase.apps && firebase.apps.length){
+        return firebase.firestore().collection(BACKUP_COLLECTION);
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function refPlanificadorSoloEventos(){
+    try{
+      if(window.firebase && firebase.apps && firebase.apps.length){
+        return firebase.firestore().collection('standecor').doc('planificador');
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function fechaSoloEventos(ms){
+    const d=new Date(ms||Date.now());
+    return d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function normalizarDbSoloEventos(){
+    db=db||{};
+    db.trabajadores=Array.isArray(db.trabajadores)?db.trabajadores:[];
+    db.collas=Array.isArray(db.collas)?db.collas:[];
+    db.eventos=Array.isArray(db.eventos)?db.eventos:[];
+    if(!db.trabajadoresEliminados || typeof db.trabajadoresEliminados!=='object'){
+      db.trabajadoresEliminados={};
+    }
+  }
+
+  function purgarTrabajadoresEliminadosSoloEventos(){
+    try{
+      normalizarDbSoloEventos();
+      const eliminados=db.trabajadoresEliminados||{};
+      db.trabajadores=(db.trabajadores||[]).filter(t=>t && t.id && !eliminados[String(t.id)]);
+      (db.eventos||[]).forEach(ev=>{
+        if(Array.isArray(ev.ayudantes)){
+          ev.ayudantes=ev.ayudantes.filter(id=>!eliminados[String(id)]);
+        }
+        if(ev.cabezaPrincipalId && eliminados[String(ev.cabezaPrincipalId)]){
+          ev.cabezaPrincipalId='';
+        }
+      });
+    }catch(e){}
+  }
+
+  function obtenerFirmaEventos(){
+    try{
+      const eventos=(db && Array.isArray(db.eventos)) ? db.eventos : [];
+      return eventos
+        .slice()
+        .sort((a,b)=>String(a.id||'').localeCompare(String(b.id||'')))
+        .map(e=>[
+          e.id,
+          e.feria,
+          e.lugar,
+          e.stand,
+          e.montajeInicio,
+          e.montajeFin,
+          e.desmontajeInicio,
+          e.desmontajeFin,
+          e.terminado ? 1 : 0,
+          (Array.isArray(e.ayudantes)?e.ayudantes.slice().sort().join(','):''),
+          e.cabezaPrincipalId||'',
+          e.collaId||'',
+          e.cantidadColla||'',
+          JSON.stringify(e.collasExtra||[]),
+          e.observaciones||''
+        ].join('|'))
+        .join('¬');
+    }catch(e){
+      return '';
+    }
+  }
+
+  function contarMontajesSoloEventos(d){
+    return (d&&Array.isArray(d.eventos)?d.eventos:[]).filter(e=>!e.terminado&&(e.montajeInicio||e.montajeFin)).length;
+  }
+
+  function contarDesmontajesSoloEventos(d){
+    return (d&&Array.isArray(d.eventos)?d.eventos:[]).filter(e=>!e.terminado&&(e.desmontajeInicio||e.desmontajeFin)).length;
+  }
+
+  function totalTrabajosSoloEventos(d){
+    return d&&Array.isArray(d.eventos)?d.eventos.length:0;
+  }
+
+  async function ultimaCopiaSoloEventos(){
+    const ref=refBackupsSoloEventos();
+    if(!ref)return null;
+    const snap=await ref.orderBy('createdAt','desc').limit(1).get();
+    let out=null;
+    snap.forEach(doc=>out={id:doc.id,...doc.data()});
+    return out;
+  }
+
+  async function limpiarBackupsSoloEventos(){
+    const ref=refBackupsSoloEventos();
+    if(!ref)return;
+    const snap=await ref.orderBy('createdAt','desc').get();
+    const docs=[];
+    snap.forEach(doc=>docs.push(doc));
+    for(const doc of docs.slice(BACKUP_LIMIT)){
+      await doc.ref.delete();
+    }
+  }
+
+  async function crearBackupEventos(motivo, forzarManual){
+    const ref=refBackupsSoloEventos();
+    if(!ref)return;
+
+    normalizarDbSoloEventos();
+
+    const copia=JSON.parse(JSON.stringify(db||{}));
+    const total=totalTrabajosSoloEventos(copia);
+    if(!total){
+      console.warn('Copia omitida: no hay montajes/desmontajes.');
+      return;
+    }
+
+    const ahora=Date.now();
+    const firmaEventos=obtenerFirmaEventos();
+    const ultima=await ultimaCopiaSoloEventos();
+
+    if(!forzarManual && ultima){
+      const muyReciente=(ahora-Number(ultima.createdAt||0))<MIN_DUPLICADO_MS;
+      if(ultima.firmaEventos===firmaEventos && muyReciente){
+        console.log('Copia automática de eventos duplicada ignorada.');
+        return;
+      }
+    }
+
+    const origen=forzarManual ? 'MANUAL' : 'AUTOMÁTICA';
+
+    await ref.add({
+      createdAt:ahora,
+      fechaTexto:fechaSoloEventos(ahora),
+      usuario:nombreUsuarioSoloEventos(),
+      motivo:motivo || (forzarManual ? 'Copia manual desde panel' : 'Cambio en montaje/desmontaje'),
+      origen,
+      firmaEventos,
+      montajes:contarMontajesSoloEventos(copia),
+      desmontajes:contarDesmontajesSoloEventos(copia),
+      trabajos:total,
+      trabajadores:Array.isArray(copia.trabajadores)?copia.trabajadores.length:0,
+      collas:Array.isArray(copia.collas)?copia.collas.length:0,
+      db:copia
+    });
+
+    sessionStorage.setItem(SESSION_LAST,JSON.stringify({firmaEventos,t:ahora}));
+    await limpiarBackupsSoloEventos();
+    console.log('Copia '+origen+' creada solo por eventos.');
+  }
+
+  // Reemplazo final de save:
+  // Guarda local/Firebase, pero solo crea copia automática si ha cambiado db.eventos.
+  window.save=function(){
+    normalizarDbSoloEventos();
+    purgarTrabajadoresEliminadosSoloEventos();
+
+    const firmaAntes=ultimaFirmaEventos;
+    const firmaAhora=obtenerFirmaEventos();
+
+    localStorage.setItem(STORAGE,JSON.stringify(db));
+
+    if(window.guardarFirebaseStandecor && !window.aplicandoDatosFirebase){
+      window.guardarFirebaseStandecor();
+    }
+
+    clearTimeout(saveTimerSoloEventos);
+    saveTimerSoloEventos=setTimeout(()=>{
+      const firmaActual=obtenerFirmaEventos();
+
+      if(firmaActual && firmaActual!==firmaAntes){
+        ultimaFirmaEventos=firmaActual;
+        crearBackupEventos('Cambio en montaje/desmontaje',false);
+      }else{
+        ultimaFirmaEventos=firmaActual;
+        console.log('Sin copia automática: no cambió la planificación.');
+      }
+    },1600);
+  };
+
+  // Botón "Crear copia ahora" del panel: se mantiene como copia manual voluntaria.
+  window.crearBackupManualStandecor=function(){
+    return crearBackupEventos('Copia manual desde panel',true);
+  };
+
+  // Panel de copias con etiquetas.
+  window.abrirPanelBackupsStandecor=async function(){
+    if(!esAdminSoloEventos()){
+      alert('Solo los administradores pueden ver las copias automáticas.');
+      return;
+    }
+
+    let p=document.getElementById('backupsStandecorPanel');
+    if(!p){
+      p=document.createElement('div');
+      p.id='backupsStandecorPanel';
+      document.body.appendChild(p);
+    }
+
+    p.style.display='flex';
+    p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><p class="muted">Cargando copias...</p></div>';
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    const ref=refBackupsSoloEventos();
+    if(!ref){
+      p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><div class="alerta">Firebase no está listo. Cierra y vuelve a abrir la aplicación.</div></div>';
+      document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+      return;
+    }
+
+    const snap=await ref.orderBy('createdAt','desc').limit(BACKUP_LIMIT).get();
+    const backups=[];
+    snap.forEach(doc=>backups.push({id:doc.id,...doc.data()}));
+
+    const puedeRestaurar=esIsraelMSoloEventos();
+    const escLocal=(s)=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    p.innerHTML=`<div class="backups-modal">
+      <div class="backups-head">
+        <h2>Copias automáticas</h2>
+        <button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button>
+      </div>
+      <div class="backups-actions-top">
+        <button type="button" class="backup-download" id="crearBackupAhora">Crear copia ahora</button>
+        <span class="muted">Automáticas solo por cambios en montajes/desmontajes. Se conservan las últimas ${BACKUP_LIMIT}. Solo IsraelM puede restaurar o eliminar.</span>
+      </div>
+      <div>
+        ${backups.length?backups.map(b=>{
+          const origen=b.origen||'AUTOMÁTICA';
+          const clase=origen==='MANUAL'?'manual':origen==='RESTAURACIÓN'?'restauracion':'auto';
+          return `<div class="backup-row">
+            <div>
+              <div class="backup-title">
+                ${escLocal(b.fechaTexto||fechaSoloEventos(b.createdAt))} · ${escLocal(b.usuario||'SIN USUARIO')}
+                <span class="backup-origin ${clase}">${escLocal(origen)}</span>
+              </div>
+              <div class="backup-meta">
+                ${escLocal(b.motivo||'Copia automática')}<br>
+                ${Number(b.trabajos||0)} trabajos · ${Number(b.montajes||0)} montajes activos · ${Number(b.desmontajes||0)} desmontajes activos · ${Number(b.trabajadores||0)} trabajadores · ${Number(b.collas||0)} collas
+              </div>
+            </div>
+            <div class="backup-buttons">
+              <button type="button" class="backup-download" data-download-backup="${escLocal(b.id)}">Descargar</button>
+              ${puedeRestaurar?`<button type="button" class="backup-restore" data-restore-backup="${escLocal(b.id)}">Restaurar</button><button type="button" class="backup-delete" data-delete-backup="${escLocal(b.id)}">Eliminar</button>`:''}
+            </div>
+          </div>`;
+        }).join(''):'<p class="muted">Todavía no hay copias automáticas.</p>'}
+      </div>
+    </div>`;
+
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+    document.getElementById('crearBackupAhora').onclick=async()=>{await crearBackupEventos('Copia manual desde panel',true);window.abrirPanelBackupsStandecor();};
+
+    p.querySelectorAll('[data-download-backup]').forEach(btn=>{
+      btn.onclick=()=>{
+        const b=backups.find(x=>x.id===btn.getAttribute('data-download-backup'));
+        if(!b)return;
+        const blob=new Blob([JSON.stringify(b.db,null,2)],{type:'application/json'});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download='Backup_STANDECOR_'+String(b.fechaTexto||'copia').replace(/[/: ]/g,'-')+'.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+    });
+
+    p.querySelectorAll('[data-delete-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        if(!esIsraelMSoloEventos()){alert('Solo IsraelM puede eliminar copias.');return}
+        if(!confirm('¿Eliminar esta copia automática?'))return;
+        await ref.doc(btn.getAttribute('data-delete-backup')).delete();
+        window.abrirPanelBackupsStandecor();
+      };
+    });
+
+    p.querySelectorAll('[data-restore-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        if(!esIsraelMSoloEventos()){alert('Solo IsraelM puede restaurar copias.');return}
+        const id=btn.getAttribute('data-restore-backup');
+        const b=backups.find(x=>x.id===id);
+        if(!b||!b.db)return;
+
+        if(!confirm('¿Seguro que deseas restaurar esta copia?\\n\\n'+(b.fechaTexto||'')+'\\n'+(b.trabajos||0)+' trabajos\\n\\nEsta acción reemplazará los datos actuales.'))return;
+        const texto=prompt('Para confirmar escribe RESTAURAR');
+        if(texto!=='RESTAURAR')return;
+
+        db=b.db;
+        normalizarDbSoloEventos();
+        db.actualizadoFirebase=Date.now();
+        localStorage.setItem(STORAGE,JSON.stringify(db));
+
+        const planRef=refPlanificadorSoloEventos();
+        if(planRef){
+          await planRef.set({
+            db:db,
+            actualizadoFirebase:db.actualizadoFirebase,
+            restauradoDesdeBackup:id,
+            restauradoPor:nombreUsuarioSoloEventos()
+          },{merge:true});
+        }
+
+        ultimaFirmaEventos=obtenerFirmaEventos();
+        renderAll();
+        alert('Copia restaurada correctamente.');
+        p.style.display='none';
+      };
+    });
+  };
+
+  setTimeout(()=>{ultimaFirmaEventos=obtenerFirmaEventos();},1200);
+})();
+</script>
+
+
+<script>
+/* ===== FIX_ELIMINAR_PLANIFICACION_PERMANENTE_STANDECOR ===== */
+(function(){
+  function asegurarEliminadosEventos(){
+    db=db||{};
+    if(!db.eventosEliminados || typeof db.eventosEliminados!=='object'){
+      db.eventosEliminados={};
+    }
+    db.eventos=Array.isArray(db.eventos)?db.eventos:[];
+  }
+
+  function eventoEliminado(id){
+    asegurarEliminadosEventos();
+    return Boolean(db.eventosEliminados && db.eventosEliminados[String(id)]);
+  }
+
+  function purgarEventosEliminados(){
+    try{
+      asegurarEliminadosEventos();
+      const eliminados=db.eventosEliminados||{};
+      const antes=db.eventos.length;
+      db.eventos=db.eventos.filter(e=>e && e.id && !eliminados[String(e.id)]);
+      return antes!==db.eventos.length;
+    }catch(e){
+      console.warn('No se pudieron purgar eventos eliminados',e);
+      return false;
+    }
+  }
+
+  // Borrado permanente: marca la feria/trabajo como eliminado para que Firebase no lo vuelva a fusionar.
+  window.borrarEvento=function(id){
+    const ev=(db.eventos||[]).find(e=>String(e.id)===String(id));
+    const nombre=ev ? ((ev.feria||'')+' '+(ev.stand||'')).trim() : 'este montaje/desmontaje';
+
+    if(!confirm('¿Eliminar montaje/desmontaje?\n\n'+nombre+'\n\nNo volverá a aparecer al sincronizar con otros dispositivos.')) return;
+
+    asegurarEliminadosEventos();
+    db.eventosEliminados[String(id)]=Date.now();
+    db.eventos=(db.eventos||[]).filter(e=>String(e.id)!==String(id));
+
+    save();
+    renderAll();
+  };
+
+  // Refuerzo sobre renderAll: si Firebase devuelve un evento eliminado, se purga antes de pintar.
+  if(!window.__renderAllPurgarEventosEliminados){
+    const renderAllOriginal=window.renderAll;
+    if(typeof renderAllOriginal==='function'){
+      window.renderAll=function(){
+        const cambio=purgarEventosEliminados();
+        const r=renderAllOriginal.apply(this,arguments);
+
+        if(cambio && !window.aplicandoDatosFirebase){
+          try{save()}catch(e){}
+        }
+
+        return r;
+      };
+      window.__renderAllPurgarEventosEliminados=true;
+    }
+  }
+
+  // Refuerzo sobre save: nunca guardar eventos marcados como eliminados.
+  if(!window.__savePurgarEventosEliminados){
+    const saveOriginal=window.save;
+    if(typeof saveOriginal==='function'){
+      window.save=function(){
+        purgarEventosEliminados();
+        return saveOriginal.apply(this,arguments);
+      };
+      window.__savePurgarEventosEliminados=true;
+    }
+  }
+
+  // Limpieza inicial.
+  setTimeout(()=>{
+    try{
+      const cambio=purgarEventosEliminados();
+      if(cambio){
+        localStorage.setItem(STORAGE,JSON.stringify(db));
+        renderAll();
+        save();
+      }
+    }catch(e){}
+  },1200);
+})();
+</script>
+
+
+<script>
+/* ===== FIX_RESTAURAR_COPIAS_AUTOMATICAS_STANDECOR ===== */
+(function(){
+  const BACKUP_COLLECTION='standecor_backups';
+  const BACKUP_LIMIT=10;
+
+  function usuarioRestoreFix(){try{return JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null')}catch(e){return null}}
+  function esAdminRestoreFix(){const u=usuarioRestoreFix();return Boolean(u&&u.rol==='admin')}
+  function esIsraelMRestoreFix(){const u=usuarioRestoreFix();return Boolean(u&&String(u.usuario||'').toUpperCase()==='ISRAELM')}
+  function nombreUsuarioRestoreFix(){const u=usuarioRestoreFix();return u&&u.usuario?u.usuario:'SIN USUARIO'}
+  function fechaRestoreFix(ms){const d=new Date(ms||Date.now());return d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}
+  function refBackupsRestoreFix(){try{if(window.firebase&&firebase.apps&&firebase.apps.length)return firebase.firestore().collection(BACKUP_COLLECTION)}catch(e){}return null}
+  function refPlanificadorRestoreFix(){try{if(window.firebase&&firebase.apps&&firebase.apps.length)return firebase.firestore().collection('standecor').doc('planificador')}catch(e){}return null}
+
+  function prepararDbRestaurada(copia){
+    const restaurada=JSON.parse(JSON.stringify(copia||{}));
+    restaurada.trabajadores=Array.isArray(restaurada.trabajadores)?restaurada.trabajadores:[];
+    restaurada.collas=Array.isArray(restaurada.collas)?restaurada.collas:[];
+    restaurada.eventos=Array.isArray(restaurada.eventos)?restaurada.eventos:[];
+
+    /* Clave:
+       Si la copia es anterior a un borrado, no debe conservar marcas actuales de borrado.
+       Por eso se usan solo las marcas guardadas dentro de la copia. */
+    restaurada.eventosEliminados=(restaurada.eventosEliminados&&typeof restaurada.eventosEliminados==='object')?restaurada.eventosEliminados:{};
+    restaurada.trabajadoresEliminados=(restaurada.trabajadoresEliminados&&typeof restaurada.trabajadoresEliminados==='object')?restaurada.trabajadoresEliminados:{};
+
+    restaurada.actualizadoFirebase=Date.now();
+    restaurada.restauradoDesdeCopiaAutomatica=true;
+    restaurada.restauradoPor=nombreUsuarioRestoreFix();
+    restaurada.restauradoEn=restaurada.actualizadoFirebase;
+    return restaurada;
+  }
+
+  async function abrirPanelBackupsRestoreFix(){
+    if(!esAdminRestoreFix()){
+      alert('Solo los administradores pueden ver las copias automáticas.');
+      return;
+    }
+
+    let p=document.getElementById('backupsStandecorPanel');
+    if(!p){
+      p=document.createElement('div');
+      p.id='backupsStandecorPanel';
+      document.body.appendChild(p);
+    }
+
+    p.style.display='flex';
+    p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><p class="muted">Cargando copias...</p></div>';
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    const ref=refBackupsRestoreFix();
+    if(!ref){
+      p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><div class="alerta">Firebase no está listo. Cierra y vuelve a abrir la aplicación.</div></div>';
+      document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+      return;
+    }
+
+    const snap=await ref.orderBy('createdAt','desc').limit(BACKUP_LIMIT).get();
+    const backups=[];
+    snap.forEach(doc=>backups.push({id:doc.id,...doc.data()}));
+
+    const puedeRestaurar=esIsraelMRestoreFix();
+    const escLocal=(s)=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    p.innerHTML=`<div class="backups-modal">
+      <div class="backups-head">
+        <h2>Copias automáticas</h2>
+        <button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button>
+      </div>
+      <div class="backups-actions-top">
+        <button type="button" class="backup-download" id="crearBackupAhora">Crear copia ahora</button>
+        <span class="muted">Automáticas solo por cambios en montajes/desmontajes. Se conservan las últimas ${BACKUP_LIMIT}. Solo IsraelM puede restaurar o eliminar.</span>
+      </div>
+      <div>
+        ${backups.length?backups.map(b=>{
+          const origen=b.origen||'AUTOMÁTICA';
+          const clase=origen==='MANUAL'?'manual':origen==='RESTAURACIÓN'?'restauracion':'auto';
+          return `<div class="backup-row">
+            <div>
+              <div class="backup-title">
+                ${escLocal(b.fechaTexto||fechaRestoreFix(b.createdAt))} · ${escLocal(b.usuario||'SIN USUARIO')}
+                <span class="backup-origin ${clase}">${escLocal(origen)}</span>
+              </div>
+              <div class="backup-meta">
+                ${escLocal(b.motivo||'Copia automática')}<br>
+                ${Number(b.trabajos||0)} trabajos · ${Number(b.montajes||0)} montajes activos · ${Number(b.desmontajes||0)} desmontajes activos · ${Number(b.trabajadores||0)} trabajadores · ${Number(b.collas||0)} collas
+              </div>
+            </div>
+            <div class="backup-buttons">
+              <button type="button" class="backup-download" data-download-backup="${escLocal(b.id)}">Descargar</button>
+              ${puedeRestaurar?`<button type="button" class="backup-restore" data-restore-backup="${escLocal(b.id)}">Restaurar</button><button type="button" class="backup-delete" data-delete-backup="${escLocal(b.id)}">Eliminar</button>`:''}
+            </div>
+          </div>`;
+        }).join(''):'<p class="muted">Todavía no hay copias automáticas.</p>'}
+      </div>
+    </div>`;
+
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    document.getElementById('crearBackupAhora').onclick=async()=>{
+      if(typeof window.crearBackupManualStandecor==='function') await window.crearBackupManualStandecor();
+      abrirPanelBackupsRestoreFix();
+    };
+
+    p.querySelectorAll('[data-download-backup]').forEach(btn=>{
+      btn.onclick=()=>{
+        const b=backups.find(x=>x.id===btn.getAttribute('data-download-backup'));
+        if(!b)return;
+        const blob=new Blob([JSON.stringify(b.db,null,2)],{type:'application/json'});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download='Backup_STANDECOR_'+String(b.fechaTexto||'copia').replace(/[/: ]/g,'-')+'.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+    });
+
+    p.querySelectorAll('[data-delete-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        if(!esIsraelMRestoreFix()){alert('Solo IsraelM puede eliminar copias.');return}
+        if(!confirm('¿Eliminar esta copia automática?'))return;
+        await ref.doc(btn.getAttribute('data-delete-backup')).delete();
+        abrirPanelBackupsRestoreFix();
+      };
+    });
+
+    p.querySelectorAll('[data-restore-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        if(!esIsraelMRestoreFix()){alert('Solo IsraelM puede restaurar copias.');return}
+
+        const id=btn.getAttribute('data-restore-backup');
+        const b=backups.find(x=>x.id===id);
+        if(!b||!b.db)return;
+
+        if(!confirm('¿Seguro que deseas restaurar esta copia?\\n\\n'+(b.fechaTexto||'')+'\\n'+(b.trabajos||0)+' trabajos\\n\\nEsta acción reemplazará los datos actuales.'))return;
+        const texto=prompt('Para confirmar escribe RESTAURAR');
+        if(texto!=='RESTAURAR')return;
+
+        try{
+          const restaurada=prepararDbRestaurada(b.db);
+
+          window.aplicandoDatosFirebase=true;
+          db=restaurada;
+          localStorage.setItem(STORAGE,JSON.stringify(db));
+
+          const planRef=refPlanificadorRestoreFix();
+          if(planRef){
+            /* Clave: SIN merge. Así Firebase no conserva eventosEliminados antiguos. */
+            await planRef.set({
+              db:db,
+              actualizadoFirebase:db.actualizadoFirebase,
+              restauradoDesdeBackup:id,
+              restauradoPor:nombreUsuarioRestoreFix()
+            });
+          }
+
+          try{renderAll()}catch(e){}
+          window.aplicandoDatosFirebase=false;
+
+          alert('Copia restaurada correctamente.');
+          p.style.display='none';
+        }catch(e){
+          window.aplicandoDatosFirebase=false;
+          console.error(e);
+          alert('No se pudo restaurar la copia.');
+        }
+      };
+    });
+  }
+
+  window.abrirPanelBackupsStandecor=abrirPanelBackupsRestoreFix;
+})();
+</script>
+
+
+<script>
+/* ===== FIX_FINAL_RESTAURAR_COPIAS_AUTOMATICAS_STANDECOR =====
+   Restauración fuerte:
+   - Lee la copia directamente desde Firebase al pulsar RESTAURAR.
+   - Limpia SIEMPRE eventosEliminados y trabajadoresEliminados.
+   - Sobrescribe el documento principal completo.
+   - Actualiza localStorage.
+   - Recarga la página para evitar que otro listener vuelva a fusionar datos antiguos.
+*/
+(function(){
+  const BACKUP_COLLECTION='standecor_backups';
+  const BACKUP_LIMIT=10;
+
+  function getUserRestoreFinal(){
+    try{return JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null')}catch(e){return null}
+  }
+
+  function isAdminRestoreFinal(){
+    const u=getUserRestoreFinal();
+    return Boolean(u && u.rol==='admin');
+  }
+
+  function isIsraelRestoreFinal(){
+    const u=getUserRestoreFinal();
+    return Boolean(u && String(u.usuario||'').toUpperCase()==='ISRAELM');
+  }
+
+  function userNameRestoreFinal(){
+    const u=getUserRestoreFinal();
+    return u && u.usuario ? u.usuario : 'SIN USUARIO';
+  }
+
+  function dbFireRestoreFinal(){
+    try{
+      if(window.firebase && firebase.apps && firebase.apps.length){
+        return firebase.firestore();
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function fechaRestoreFinal(ms){
+    const d=new Date(ms||Date.now());
+    return d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function escRestoreFinal(s){
+    return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function prepararRestauracionFinal(copia){
+    const r=JSON.parse(JSON.stringify(copia||{}));
+
+    r.trabajadores=Array.isArray(r.trabajadores)?r.trabajadores:[];
+    r.collas=Array.isArray(r.collas)?r.collas:[];
+    r.eventos=Array.isArray(r.eventos)?r.eventos:[];
+
+    /*
+      CLAVE FINAL:
+      Al restaurar una copia, queremos recuperar lo que hay dentro de la copia.
+      Si dejamos marcas internas de borrado, esas marcas pueden volver a borrar la feria.
+      Por eso se limpian siempre.
+    */
+    r.eventosEliminados={};
+    r.trabajadoresEliminados={};
+
+    r.actualizadoFirebase=Date.now();
+    r.restauradoDesdeCopiaAutomatica=true;
+    r.restauradoPor=userNameRestoreFinal();
+    r.restauradoEn=r.actualizadoFirebase;
+
+    return r;
+  }
+
+  async function restaurarBackupFinalDesdeId(id){
+    if(!isIsraelRestoreFinal()){
+      alert('Solo IsraelM puede restaurar copias.');
+      return;
+    }
+
+    const fdb=dbFireRestoreFinal();
+    if(!fdb){
+      alert('Firebase no está listo. Cierra y vuelve a abrir la aplicación.');
+      return;
+    }
+
+    const snap=await fdb.collection(BACKUP_COLLECTION).doc(id).get();
+    if(!snap.exists){
+      alert('No se encontró esta copia.');
+      return;
+    }
+
+    const b=snap.data()||{};
+    if(!b.db){
+      alert('Esta copia no contiene datos para restaurar.');
+      return;
+    }
+
+    if(!confirm('¿Seguro que deseas restaurar esta copia?\n\n'+(b.fechaTexto||'')+'\n'+(b.trabajos||0)+' trabajos\n\nEsta acción reemplazará los datos actuales.'))return;
+    const texto=prompt('Para confirmar escribe RESTAURAR');
+    if(texto!=='RESTAURAR')return;
+
+    try{
+      const restaurada=prepararRestauracionFinal(b.db);
+
+      window.aplicandoDatosFirebase=true;
+      window.__restaurandoBackupStandecor=true;
+
+      db=restaurada;
+      localStorage.setItem(STORAGE,JSON.stringify(db));
+
+      /*
+        CLAVE:
+        set() sin merge. Esto reemplaza el documento completo y elimina restos como
+        eventosEliminados antiguos o campos de sincronización obsoletos.
+      */
+      await fdb.collection('standecor').doc('planificador').set({
+        db:restaurada,
+        actualizadoFirebase:restaurada.actualizadoFirebase,
+        restauradoDesdeBackup:id,
+        restauradoPor:userNameRestoreFinal(),
+        restauradoEn:restaurada.actualizadoFirebase
+      });
+
+      alert('Copia restaurada correctamente. La aplicación se recargará ahora.');
+      location.reload();
+    }catch(e){
+      console.error(e);
+      window.aplicandoDatosFirebase=false;
+      window.__restaurandoBackupStandecor=false;
+      alert('No se pudo restaurar la copia. Revisa la consola o prueba otra copia.');
+    }
+  }
+
+  async function abrirPanelBackupsFinal(){
+    if(!isAdminRestoreFinal()){
+      alert('Solo los administradores pueden ver las copias automáticas.');
+      return;
+    }
+
+    let p=document.getElementById('backupsStandecorPanel');
+    if(!p){
+      p=document.createElement('div');
+      p.id='backupsStandecorPanel';
+      document.body.appendChild(p);
+    }
+
+    p.style.display='flex';
+    p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><p class="muted">Cargando copias...</p></div>';
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    const fdb=dbFireRestoreFinal();
+    if(!fdb){
+      p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><div class="alerta">Firebase no está listo. Cierra y vuelve a abrir la aplicación.</div></div>';
+      document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+      return;
+    }
+
+    const snap=await fdb.collection(BACKUP_COLLECTION).orderBy('createdAt','desc').limit(BACKUP_LIMIT).get();
+    const backups=[];
+    snap.forEach(doc=>backups.push({id:doc.id,...doc.data()}));
+
+    const puedeRestaurar=isIsraelRestoreFinal();
+
+    p.innerHTML=`<div class="backups-modal">
+      <div class="backups-head">
+        <h2>Copias automáticas</h2>
+        <button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button>
+      </div>
+      <div class="backups-actions-top">
+        <button type="button" class="backup-download" id="crearBackupAhora">Crear copia ahora</button>
+        <span class="muted">Automáticas solo por cambios en montajes/desmontajes. Se conservan las últimas ${BACKUP_LIMIT}. Solo IsraelM puede restaurar o eliminar.</span>
+      </div>
+      <div>
+        ${backups.length?backups.map(b=>{
+          const origen=b.origen||'AUTOMÁTICA';
+          const clase=origen==='MANUAL'?'manual':origen==='RESTAURACIÓN'?'restauracion':'auto';
+          return `<div class="backup-row">
+            <div>
+              <div class="backup-title">
+                ${escRestoreFinal(b.fechaTexto||fechaRestoreFinal(b.createdAt))} · ${escRestoreFinal(b.usuario||'SIN USUARIO')}
+                <span class="backup-origin ${clase}">${escRestoreFinal(origen)}</span>
+              </div>
+              <div class="backup-meta">
+                ${escRestoreFinal(b.motivo||'Copia automática')}<br>
+                ${Number(b.trabajos||0)} trabajos · ${Number(b.montajes||0)} montajes activos · ${Number(b.desmontajes||0)} desmontajes activos · ${Number(b.trabajadores||0)} trabajadores · ${Number(b.collas||0)} collas
+              </div>
+            </div>
+            <div class="backup-buttons">
+              <button type="button" class="backup-download" data-download-backup="${escRestoreFinal(b.id)}">Descargar</button>
+              ${puedeRestaurar?`<button type="button" class="backup-restore" data-restore-backup="${escRestoreFinal(b.id)}">Restaurar</button><button type="button" class="backup-delete" data-delete-backup="${escRestoreFinal(b.id)}">Eliminar</button>`:''}
+            </div>
+          </div>`;
+        }).join(''):'<p class="muted">Todavía no hay copias automáticas.</p>'}
+      </div>
+    </div>`;
+
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    document.getElementById('crearBackupAhora').onclick=async()=>{
+      if(typeof window.crearBackupManualStandecor==='function'){
+        await window.crearBackupManualStandecor();
+      }
+      abrirPanelBackupsFinal();
+    };
+
+    p.querySelectorAll('[data-download-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        const id=btn.getAttribute('data-download-backup');
+        const snap=await fdb.collection(BACKUP_COLLECTION).doc(id).get();
+        if(!snap.exists)return;
+        const b=snap.data()||{};
+        const blob=new Blob([JSON.stringify(b.db,null,2)],{type:'application/json'});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download='Backup_STANDECOR_'+String(b.fechaTexto||'copia').replace(/[/: ]/g,'-')+'.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+    });
+
+    p.querySelectorAll('[data-delete-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        if(!isIsraelRestoreFinal()){alert('Solo IsraelM puede eliminar copias.');return}
+        if(!confirm('¿Eliminar esta copia automática?'))return;
+        await fdb.collection(BACKUP_COLLECTION).doc(btn.getAttribute('data-delete-backup')).delete();
+        abrirPanelBackupsFinal();
+      };
+    });
+
+    p.querySelectorAll('[data-restore-backup]').forEach(btn=>{
+      btn.onclick=()=>restaurarBackupFinalDesdeId(btn.getAttribute('data-restore-backup'));
+    });
+  }
+
+  window.abrirPanelBackupsStandecor=abrirPanelBackupsFinal;
+})();
+</script>
+
+
+<script>
+/* ===== RESTAURACION_FORZADA_COPIAS_STANDECOR =====
+   Esta capa corrige el caso más delicado:
+   - Se elimina una feria.
+   - Queda marcada internamente en eventosEliminados.
+   - Al restaurar una copia, esas marcas pueden impedir que vuelva a verse.
+
+   Solución:
+   1) Al restaurar, se limpia eventosEliminados y trabajadoresEliminados.
+   2) Se guardan los datos restaurados en localStorage y en Firebase.
+   3) Se guarda una "restauración pendiente" en localStorage.
+   4) Al recargar, esta misma capa vuelve a imponer esos datos restaurados antes de seguir trabajando.
+*/
+(function(){
+  const BACKUP_COLLECTION='standecor_backups';
+  const BACKUP_LIMIT=10;
+  const FORCE_KEY='standecor_restore_forzado_pendiente_v1';
+
+  function usuarioRF(){
+    try{return JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null')}catch(e){return null}
+  }
+
+  function esAdminRF(){
+    const u=usuarioRF();
+    return Boolean(u && u.rol==='admin');
+  }
+
+  function esIsraelRF(){
+    const u=usuarioRF();
+    return Boolean(u && String(u.usuario||'').toUpperCase()==='ISRAELM');
+  }
+
+  function nombreRF(){
+    const u=usuarioRF();
+    return u && u.usuario ? u.usuario : 'SIN USUARIO';
+  }
+
+  function fireRF(){
+    try{
+      if(window.firebase && firebase.apps && firebase.apps.length){
+        return firebase.firestore();
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function fechaRF(ms){
+    const d=new Date(ms||Date.now());
+    return d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function escRF(s){
+    return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function prepararDbRF(copia){
+    const r=JSON.parse(JSON.stringify(copia||{}));
+
+    r.trabajadores=Array.isArray(r.trabajadores)?r.trabajadores:[];
+    r.collas=Array.isArray(r.collas)?r.collas:[];
+    r.eventos=Array.isArray(r.eventos)?r.eventos:[];
+
+    /*
+      MUY IMPORTANTE:
+      Al restaurar, limpiamos marcas internas de borrado.
+      Si no se limpian, la app vuelve a borrar visualmente lo restaurado.
+    */
+    r.eventosEliminados={};
+    r.trabajadoresEliminados={};
+
+    r.actualizadoFirebase=Date.now()+5000;
+    r.restauradoDesdeCopiaAutomatica=true;
+    r.restauradoPor=nombreRF();
+    r.restauradoEn=r.actualizadoFirebase;
+
+    return r;
+  }
+
+  async function escribirPlanificadorRF(restaurada,id){
+    const fdb=fireRF();
+    if(!fdb) throw new Error('Firebase no disponible');
+
+    /*
+      set SIN merge para limpiar completamente restos anteriores.
+      Después repetimos update/set una segunda vez con pequeño margen para vencer listeners antiguos.
+    */
+    await fdb.collection('standecor').doc('planificador').set({
+      db:restaurada,
+      actualizadoFirebase:restaurada.actualizadoFirebase,
+      restauradoDesdeBackup:id,
+      restauradoPor:nombreRF(),
+      restauradoEn:restaurada.restauradoEn
+    });
+
+    await new Promise(r=>setTimeout(r,350));
+
+    await fdb.collection('standecor').doc('planificador').set({
+      db:restaurada,
+      actualizadoFirebase:restaurada.actualizadoFirebase,
+      restauradoDesdeBackup:id,
+      restauradoPor:nombreRF(),
+      restauradoEn:restaurada.restauradoEn
+    });
+  }
+
+  async function aplicarRestauracionPendienteRF(){
+    try{
+      const raw=localStorage.getItem(FORCE_KEY);
+      if(!raw)return;
+
+      const payload=JSON.parse(raw);
+      if(!payload || !payload.db)return;
+
+      const restaurada=prepararDbRF(payload.db);
+
+      window.aplicandoDatosFirebase=true;
+      window.__restaurandoBackupStandecor=true;
+
+      db=restaurada;
+      localStorage.setItem(STORAGE,JSON.stringify(db));
+
+      try{
+        const fdb=fireRF();
+        if(fdb){
+          await fdb.collection('standecor').doc('planificador').set({
+            db:restaurada,
+            actualizadoFirebase:restaurada.actualizadoFirebase,
+            restauradoDesdeBackup:payload.id||'pendiente',
+            restauradoPor:nombreRF(),
+            restauradoEn:restaurada.restauradoEn
+          });
+        }
+      }catch(e){
+        console.warn('Restauración pendiente: Firebase no disponible todavía',e);
+      }
+
+      try{renderAll()}catch(e){}
+      window.aplicandoDatosFirebase=false;
+      window.__restaurandoBackupStandecor=false;
+
+      localStorage.removeItem(FORCE_KEY);
+      console.log('Restauración forzada aplicada en arranque.');
+    }catch(e){
+      console.warn('No se pudo aplicar restauración pendiente',e);
+    }
+  }
+
+  // Se ejecuta al cargar el archivo, antes de que pasen los setTimeout de purga antiguos.
+  setTimeout(aplicarRestauracionPendienteRF,100);
+
+  async function restaurarCopiaRF(id){
+    if(!esIsraelRF()){
+      alert('Solo IsraelM puede restaurar copias.');
+      return;
+    }
+
+    const fdb=fireRF();
+    if(!fdb){
+      alert('Firebase no está listo. Cierra y vuelve a abrir la aplicación.');
+      return;
+    }
+
+    const snap=await fdb.collection(BACKUP_COLLECTION).doc(id).get();
+    if(!snap.exists){
+      alert('No se encontró esta copia.');
+      return;
+    }
+
+    const b=snap.data()||{};
+    if(!b.db){
+      alert('Esta copia no contiene datos.');
+      return;
+    }
+
+    if(!confirm('¿Seguro que deseas restaurar esta copia?\n\n'+(b.fechaTexto||'')+'\n'+(b.trabajos||0)+' trabajos\n\nEsta acción reemplazará los datos actuales.'))return;
+
+    const texto=prompt('Para confirmar escribe RESTAURAR');
+    if(texto!=='RESTAURAR')return;
+
+    try{
+      const restaurada=prepararDbRF(b.db);
+
+      window.aplicandoDatosFirebase=true;
+      window.__restaurandoBackupStandecor=true;
+
+      db=restaurada;
+      localStorage.setItem(STORAGE,JSON.stringify(db));
+
+      /*
+        Guardamos también una restauración pendiente.
+        Si un listener antiguo fusiona algo raro, al recargar se vuelve a imponer esta copia.
+      */
+      localStorage.setItem(FORCE_KEY,JSON.stringify({
+        id:id,
+        t:Date.now(),
+        db:restaurada
+      }));
+
+      await escribirPlanificadorRF(restaurada,id);
+
+      try{renderAll()}catch(e){}
+
+      alert('Copia restaurada correctamente. La aplicación se recargará para aplicar la restauración limpia.');
+      location.reload();
+    }catch(e){
+      console.error(e);
+      window.aplicandoDatosFirebase=false;
+      window.__restaurandoBackupStandecor=false;
+      alert('No se pudo restaurar la copia automática.');
+    }
+  }
+
+  async function abrirPanelRF(){
+    if(!esAdminRF()){
+      alert('Solo los administradores pueden ver las copias automáticas.');
+      return;
+    }
+
+    const fdb=fireRF();
+    let p=document.getElementById('backupsStandecorPanel');
+    if(!p){
+      p=document.createElement('div');
+      p.id='backupsStandecorPanel';
+      document.body.appendChild(p);
+    }
+
+    p.style.display='flex';
+    p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><p class="muted">Cargando copias...</p></div>';
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    if(!fdb){
+      p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><div class="alerta">Firebase no está listo. Cierra y vuelve a abrir la aplicación.</div></div>';
+      document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+      return;
+    }
+
+    const snap=await fdb.collection(BACKUP_COLLECTION).orderBy('createdAt','desc').limit(BACKUP_LIMIT).get();
+    const backups=[];
+    snap.forEach(doc=>backups.push({id:doc.id,...doc.data()}));
+
+    const puedeRestaurar=esIsraelRF();
+
+    p.innerHTML=`<div class="backups-modal">
+      <div class="backups-head">
+        <h2>Copias automáticas</h2>
+        <button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button>
+      </div>
+      <div class="backups-actions-top">
+        <button type="button" class="backup-download" id="crearBackupAhora">Crear copia ahora</button>
+        <span class="muted">Automáticas solo por cambios en montajes/desmontajes. Se conservan las últimas ${BACKUP_LIMIT}. Solo IsraelM puede restaurar o eliminar.</span>
+      </div>
+      <div>
+        ${backups.length?backups.map(b=>{
+          const origen=b.origen||'AUTOMÁTICA';
+          const clase=origen==='MANUAL'?'manual':origen==='RESTAURACIÓN'?'restauracion':'auto';
+          return `<div class="backup-row">
+            <div>
+              <div class="backup-title">
+                ${escRF(b.fechaTexto||fechaRF(b.createdAt))} · ${escRF(b.usuario||'SIN USUARIO')}
+                <span class="backup-origin ${clase}">${escRF(origen)}</span>
+              </div>
+              <div class="backup-meta">
+                ${escRF(b.motivo||'Copia automática')}<br>
+                ${Number(b.trabajos||0)} trabajos · ${Number(b.montajes||0)} montajes activos · ${Number(b.desmontajes||0)} desmontajes activos · ${Number(b.trabajadores||0)} trabajadores · ${Number(b.collas||0)} collas
+              </div>
+            </div>
+            <div class="backup-buttons">
+              <button type="button" class="backup-download" data-download-backup="${escRF(b.id)}">Descargar</button>
+              ${puedeRestaurar?`<button type="button" class="backup-restore" data-restore-backup="${escRF(b.id)}">Restaurar</button><button type="button" class="backup-delete" data-delete-backup="${escRF(b.id)}">Eliminar</button>`:''}
+            </div>
+          </div>`;
+        }).join(''):'<p class="muted">Todavía no hay copias automáticas.</p>'}
+      </div>
+    </div>`;
+
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    document.getElementById('crearBackupAhora').onclick=async()=>{
+      if(typeof window.crearBackupManualStandecor==='function'){
+        await window.crearBackupManualStandecor();
+      }
+      abrirPanelRF();
+    };
+
+    p.querySelectorAll('[data-download-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        const id=btn.getAttribute('data-download-backup');
+        const snap=await fdb.collection(BACKUP_COLLECTION).doc(id).get();
+        if(!snap.exists)return;
+        const b=snap.data()||{};
+        const blob=new Blob([JSON.stringify(b.db,null,2)],{type:'application/json'});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download='Backup_STANDECOR_'+String(b.fechaTexto||'copia').replace(/[/: ]/g,'-')+'.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+    });
+
+    p.querySelectorAll('[data-delete-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        if(!esIsraelRF()){alert('Solo IsraelM puede eliminar copias.');return}
+        if(!confirm('¿Eliminar esta copia automática?'))return;
+        await fdb.collection(BACKUP_COLLECTION).doc(btn.getAttribute('data-delete-backup')).delete();
+        abrirPanelRF();
+      };
+    });
+
+    p.querySelectorAll('[data-restore-backup]').forEach(btn=>{
+      btn.onclick=()=>restaurarCopiaRF(btn.getAttribute('data-restore-backup'));
+    });
+  }
+
+  // Forzamos que el botón COPIAS use este panel final.
+  window.abrirPanelBackupsStandecor=abrirPanelRF;
+})();
+</script>
+
+
+<script>
+/* ===== FIX_REAL_COPIAS_RESTORE_BORRADO_PLANIFICACION_STANDECOR =====
+   Motivo del fallo:
+   Las copias automáticas que se estaban probando muchas veces ya eran DESPUÉS del borrado.
+   Esa copia no puede recuperar una feria porque la feria ya no está dentro de la copia.
+
+   Solución:
+   - Antes de eliminar una feria, se crea automáticamente una copia "ANTES DE BORRAR".
+   - Después se elimina la feria.
+   - Se bloquea la copia automática posterior al borrado para no llenar el historial con copias inútiles.
+   - Al restaurar, se limpian siempre eventosEliminados/trabajadoresEliminados.
+*/
+(function(){
+  const BACKUP_COLLECTION='standecor_backups';
+  const BACKUP_LIMIT=10;
+  const SKIP_AUTO_KEY='standecor_skip_auto_backup_until';
+
+  function fireFix(){
+    try{
+      if(window.firebase && firebase.apps && firebase.apps.length){
+        return firebase.firestore();
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function usuarioFix(){
+    try{return JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null')}catch(e){return null}
+  }
+
+  function nombreFix(){
+    const u=usuarioFix();
+    return u && u.usuario ? u.usuario : 'SIN USUARIO';
+  }
+
+  function esAdminFix(){
+    const u=usuarioFix();
+    return Boolean(u && u.rol==='admin');
+  }
+
+  function esIsraelFix(){
+    const u=usuarioFix();
+    return Boolean(u && String(u.usuario||'').toUpperCase()==='ISRAELM');
+  }
+
+  function fechaFix(ms){
+    const d=new Date(ms||Date.now());
+    return d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function escFix(s){
+    return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function firmaEventosFix(d){
+    d=d||{};
+    return (d.eventos||[])
+      .slice()
+      .sort((a,b)=>String(a.id||'').localeCompare(String(b.id||'')))
+      .map(e=>[
+        e.id,e.feria,e.lugar,e.stand,e.montajeInicio,e.montajeFin,
+        e.desmontajeInicio,e.desmontajeFin,e.terminado?1:0,
+        (e.ayudantes||[]).slice().sort().join(','),
+        e.cabezaPrincipalId||'',e.collaId||'',e.cantidadColla||'',
+        JSON.stringify(e.collasExtra||[]),e.observaciones||''
+      ].join('|')).join('¬');
+  }
+
+  function prepararDbParaRestaurarFix(copia){
+    const r=JSON.parse(JSON.stringify(copia||{}));
+    r.trabajadores=Array.isArray(r.trabajadores)?r.trabajadores:[];
+    r.collas=Array.isArray(r.collas)?r.collas:[];
+    r.eventos=Array.isArray(r.eventos)?r.eventos:[];
+    r.eventosEliminados={};
+    r.trabajadoresEliminados={};
+    r.actualizadoFirebase=Date.now()+10000;
+    r.restauradoPor=nombreFix();
+    r.restauradoEn=r.actualizadoFirebase;
+    return r;
+  }
+
+  function clonarDbActualFix(){
+    const c=JSON.parse(JSON.stringify(db||{}));
+    c.trabajadores=Array.isArray(c.trabajadores)?c.trabajadores:[];
+    c.collas=Array.isArray(c.collas)?c.collas:[];
+    c.eventos=Array.isArray(c.eventos)?c.eventos:[];
+    c.eventosEliminados=(c.eventosEliminados&&typeof c.eventosEliminados==='object')?c.eventosEliminados:{};
+    c.trabajadoresEliminados=(c.trabajadoresEliminados&&typeof c.trabajadoresEliminados==='object')?c.trabajadoresEliminados:{};
+    return c;
+  }
+
+  async function limpiarBackupsFix(){
+    const f=fireFix();
+    if(!f)return;
+    try{
+      const snap=await f.collection(BACKUP_COLLECTION).orderBy('createdAt','desc').get();
+      const docs=[];
+      snap.forEach(doc=>docs.push(doc));
+      for(const doc of docs.slice(BACKUP_LIMIT)){
+        await doc.ref.delete();
+      }
+    }catch(e){}
+  }
+
+  async function crearCopiaAntesDeBorrarFix(ev){
+    const f=fireFix();
+    if(!f)return;
+
+    const copia=clonarDbActualFix();
+    const ahora=Date.now();
+
+    await f.collection(BACKUP_COLLECTION).add({
+      createdAt:ahora,
+      fechaTexto:fechaFix(ahora),
+      usuario:nombreFix(),
+      motivo:'Antes de borrar: '+((ev&&ev.feria)||'montaje/desmontaje'),
+      origen:'ANTES DE BORRAR',
+      firmaEventos:firmaEventosFix(copia),
+      montajes:(copia.eventos||[]).filter(e=>!e.terminado&&(e.montajeInicio||e.montajeFin)).length,
+      desmontajes:(copia.eventos||[]).filter(e=>!e.terminado&&(e.desmontajeInicio||e.desmontajeFin)).length,
+      trabajos:(copia.eventos||[]).length,
+      trabajadores:(copia.trabajadores||[]).length,
+      collas:(copia.collas||[]).length,
+      db:copia
+    });
+
+    await limpiarBackupsFix();
+  }
+
+  // Bloquea copias automáticas inmediatamente posteriores a un borrado.
+  // Esto evita que la copia "después de borrar" aparezca encima de la copia útil.
+  if(!window.__patchFirestoreBackupsSkipDeleteStandecor){
+    const intentarPatch=()=>{
+      try{
+        if(!window.firebase || !firebase.apps || !firebase.apps.length)return false;
+        const f=firebase.firestore();
+        const proto=Object.getPrototypeOf(f.collection(BACKUP_COLLECTION));
+        if(!proto || proto.__standecorSkipDeletePatched)return true;
+        const addOriginal=proto.add;
+        proto.add=function(data){
+          try{
+            const skipUntil=Number(sessionStorage.getItem(SKIP_AUTO_KEY)||0);
+            const origen=String((data&&data.origen)||'');
+            const motivo=String((data&&data.motivo)||'');
+            if(Date.now()<skipUntil && (origen==='AUTOMÁTICA' || motivo.toLowerCase().includes('automático') || motivo.toLowerCase().includes('cambio en montaje'))){
+              console.log('Copia automática posterior al borrado bloqueada.');
+              return Promise.resolve({id:'omitida_post_borrado'});
+            }
+          }catch(e){}
+          return addOriginal.apply(this,arguments);
+        };
+        proto.__standecorSkipDeletePatched=true;
+        return true;
+      }catch(e){return false;}
+    };
+    const int=setInterval(()=>{if(intentarPatch())clearInterval(int)},500);
+    window.__patchFirestoreBackupsSkipDeleteStandecor=true;
+  }
+
+  // Reemplazo final del borrado de planificación.
+  window.borrarEvento=async function(id){
+    const ev=(db.eventos||[]).find(e=>String(e.id)===String(id));
+    const nombre=ev ? ((ev.feria||'')+' '+(ev.stand||'')).trim() : 'este montaje/desmontaje';
+
+    if(!confirm('¿Eliminar montaje/desmontaje?\n\n'+nombre+'\n\nSe creará una copia automática justo ANTES de borrar.'))return;
+
+    try{
+      await crearCopiaAntesDeBorrarFix(ev);
+    }catch(e){
+      console.warn('No se pudo crear copia antes de borrar',e);
+      if(!confirm('No se pudo crear la copia previa al borrado.\n\n¿Quieres eliminar igualmente?'))return;
+    }
+
+    sessionStorage.setItem(SKIP_AUTO_KEY,String(Date.now()+15000));
+
+    db.eventosEliminados=(db.eventosEliminados&&typeof db.eventosEliminados==='object')?db.eventosEliminados:{};
+    db.eventosEliminados[String(id)]=Date.now();
+    db.eventos=(db.eventos||[]).filter(e=>String(e.id)!==String(id));
+
+    save();
+    renderAll();
+  };
+
+  async function restaurarBackupFix(id){
+    if(!esIsraelFix()){
+      alert('Solo IsraelM puede restaurar copias.');
+      return;
+    }
+
+    const f=fireFix();
+    if(!f){
+      alert('Firebase no está listo.');
+      return;
+    }
+
+    const snap=await f.collection(BACKUP_COLLECTION).doc(id).get();
+    if(!snap.exists){
+      alert('No se encontró esta copia.');
+      return;
+    }
+
+    const b=snap.data()||{};
+    if(!b.db){
+      alert('Esta copia no contiene datos.');
+      return;
+    }
+
+    if(!confirm('¿Seguro que deseas restaurar esta copia?\n\n'+(b.fechaTexto||'')+'\n'+(b.trabajos||0)+' trabajos\n\nEsta acción reemplazará los datos actuales.'))return;
+    const texto=prompt('Para confirmar escribe RESTAURAR');
+    if(texto!=='RESTAURAR')return;
+
+    const restaurada=prepararDbParaRestaurarFix(b.db);
+
+    try{
+      window.aplicandoDatosFirebase=true;
+      window.__restaurandoBackupStandecor=true;
+      sessionStorage.setItem(SKIP_AUTO_KEY,String(Date.now()+20000));
+
+      db=restaurada;
+      localStorage.setItem(STORAGE,JSON.stringify(db));
+
+      await f.collection('standecor').doc('planificador').set({
+        db:restaurada,
+        actualizadoFirebase:restaurada.actualizadoFirebase,
+        restauradoDesdeBackup:id,
+        restauradoPor:nombreFix(),
+        restauradoEn:restaurada.restauradoEn
+      });
+
+      // Guardamos una señal de restauración local para que al recargar se conserve.
+      localStorage.setItem('standecor_restore_forzado_pendiente_v1',JSON.stringify({
+        id:id,
+        t:Date.now(),
+        db:restaurada
+      }));
+
+      alert('Copia restaurada correctamente. Se recargará la aplicación.');
+      location.reload();
+    }catch(e){
+      console.error(e);
+      window.aplicandoDatosFirebase=false;
+      window.__restaurandoBackupStandecor=false;
+      alert('No se pudo restaurar la copia.');
+    }
+  }
+
+  async function abrirPanelFix(){
+    if(!esAdminFix()){
+      alert('Solo los administradores pueden ver las copias automáticas.');
+      return;
+    }
+
+    const f=fireFix();
+    let p=document.getElementById('backupsStandecorPanel');
+    if(!p){
+      p=document.createElement('div');
+      p.id='backupsStandecorPanel';
+      document.body.appendChild(p);
+    }
+
+    p.style.display='flex';
+    p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><p class="muted">Cargando copias...</p></div>';
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    if(!f){
+      p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><div class="alerta">Firebase no está listo.</div></div>';
+      document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+      return;
+    }
+
+    const snap=await f.collection(BACKUP_COLLECTION).orderBy('createdAt','desc').limit(BACKUP_LIMIT).get();
+    const backups=[];
+    snap.forEach(doc=>backups.push({id:doc.id,...doc.data()}));
+
+    const puedeRestaurar=esIsraelFix();
+
+    p.innerHTML=`<div class="backups-modal">
+      <div class="backups-head">
+        <h2>Copias automáticas</h2>
+        <button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button>
+      </div>
+      <div class="backups-actions-top">
+        <button type="button" class="backup-download" id="crearBackupAhora">Crear copia ahora</button>
+        <span class="muted">Consejo: para recuperar una feria borrada, usa la copia marcada como ANTES DE BORRAR.</span>
+      </div>
+      <div>
+        ${backups.length?backups.map(b=>{
+          const origen=b.origen||'AUTOMÁTICA';
+          const clase=origen==='MANUAL'?'manual':origen==='RESTAURACIÓN'?'restauracion':origen==='ANTES DE BORRAR'?'preborrado':'auto';
+          return `<div class="backup-row">
+            <div>
+              <div class="backup-title">
+                ${escFix(b.fechaTexto||fechaFix(b.createdAt))} · ${escFix(b.usuario||'SIN USUARIO')}
+                <span class="backup-origin ${clase}">${escFix(origen)}</span>
+              </div>
+              <div class="backup-meta">
+                ${escFix(b.motivo||'Copia automática')}<br>
+                ${Number(b.trabajos||0)} trabajos · ${Number(b.montajes||0)} montajes activos · ${Number(b.desmontajes||0)} desmontajes activos · ${Number(b.trabajadores||0)} trabajadores · ${Number(b.collas||0)} collas
+              </div>
+            </div>
+            <div class="backup-buttons">
+              <button type="button" class="backup-download" data-download-backup="${escFix(b.id)}">Descargar</button>
+              ${puedeRestaurar?`<button type="button" class="backup-restore" data-restore-backup="${escFix(b.id)}">Restaurar</button><button type="button" class="backup-delete" data-delete-backup="${escFix(b.id)}">Eliminar</button>`:''}
+            </div>
+          </div>`;
+        }).join(''):'<p class="muted">Todavía no hay copias automáticas.</p>'}
+      </div>
+    </div>`;
+
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    document.getElementById('crearBackupAhora').onclick=async()=>{
+      const copia=clonarDbActualFix();
+      const ahora=Date.now();
+      await f.collection(BACKUP_COLLECTION).add({
+        createdAt:ahora,
+        fechaTexto:fechaFix(ahora),
+        usuario:nombreFix(),
+        motivo:'Copia manual desde panel',
+        origen:'MANUAL',
+        firmaEventos:firmaEventosFix(copia),
+        montajes:(copia.eventos||[]).filter(e=>!e.terminado&&(e.montajeInicio||e.montajeFin)).length,
+        desmontajes:(copia.eventos||[]).filter(e=>!e.terminado&&(e.desmontajeInicio||e.desmontajeFin)).length,
+        trabajos:(copia.eventos||[]).length,
+        trabajadores:(copia.trabajadores||[]).length,
+        collas:(copia.collas||[]).length,
+        db:copia
+      });
+      abrirPanelFix();
+    };
+
+    p.querySelectorAll('[data-download-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        const id=btn.getAttribute('data-download-backup');
+        const s=await f.collection(BACKUP_COLLECTION).doc(id).get();
+        if(!s.exists)return;
+        const b=s.data()||{};
+        const blob=new Blob([JSON.stringify(b.db,null,2)],{type:'application/json'});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download='Backup_STANDECOR_'+String(b.fechaTexto||'copia').replace(/[/: ]/g,'-')+'.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+    });
+
+    p.querySelectorAll('[data-delete-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        if(!esIsraelFix()){alert('Solo IsraelM puede eliminar copias.');return}
+        if(!confirm('¿Eliminar esta copia automática?'))return;
+        await f.collection(BACKUP_COLLECTION).doc(btn.getAttribute('data-delete-backup')).delete();
+        abrirPanelFix();
+      };
+    });
+
+    p.querySelectorAll('[data-restore-backup]').forEach(btn=>{
+      btn.onclick=()=>restaurarBackupFix(btn.getAttribute('data-restore-backup'));
+    });
+  }
+
+  window.abrirPanelBackupsStandecor=abrirPanelFix;
+})();
+</script>
+
+
+<script>
+/* ===== RESTAURAR_COPIAS_AUTOMATICAS_DIRECTO_FINAL_STANDECOR =====
+   Restauración directa:
+   - No depende de funciones antiguas.
+   - No conserva eventosEliminados.
+   - No usa merge.
+   - Aplica en pantalla sin esperar a recarga.
+*/
+(function(){
+  const BACKUP_COLLECTION='standecor_backups';
+  const BACKUP_LIMIT=10;
+
+  function fdbDirecto(){
+    try{
+      if(window.firebase && firebase.apps && firebase.apps.length){
+        return firebase.firestore();
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function usuarioDirecto(){
+    try{return JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null')}catch(e){return null}
+  }
+
+  function esAdminDirecto(){
+    const u=usuarioDirecto();
+    return Boolean(u && u.rol==='admin');
+  }
+
+  function esIsraelDirecto(){
+    const u=usuarioDirecto();
+    return Boolean(u && String(u.usuario||'').toUpperCase()==='ISRAELM');
+  }
+
+  function nombreDirecto(){
+    const u=usuarioDirecto();
+    return u && u.usuario ? u.usuario : 'SIN USUARIO';
+  }
+
+  function fechaDirecto(ms){
+    const d=new Date(ms||Date.now());
+    return d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function escDirecto(s){
+    return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function prepararDbDirecto(copia){
+    const c=JSON.parse(JSON.stringify(copia||{}));
+
+    const restaurada={
+      ...c,
+      trabajadores:Array.isArray(c.trabajadores)?c.trabajadores:[],
+      collas:Array.isArray(c.collas)?c.collas:[],
+      eventos:Array.isArray(c.eventos)?c.eventos:[],
+      eventosEliminados:{},
+      trabajadoresEliminados:{},
+      actualizadoFirebase:Date.now()+20000,
+      restauradoDesdeCopiaAutomatica:true,
+      restauradoPor:nombreDirecto(),
+      restauradoEn:Date.now()
+    };
+
+    return restaurada;
+  }
+
+  async function restaurarDirecto(id){
+    if(!esIsraelDirecto()){
+      alert('Solo IsraelM puede restaurar copias.');
+      return;
+    }
+
+    const f=fdbDirecto();
+    if(!f){
+      alert('Firebase no está listo. Cierra y vuelve a abrir la aplicación.');
+      return;
+    }
+
+    const snap=await f.collection(BACKUP_COLLECTION).doc(id).get();
+    if(!snap.exists){
+      alert('No se encontró esta copia.');
+      return;
+    }
+
+    const backup=snap.data()||{};
+    if(!backup.db || !Array.isArray(backup.db.eventos)){
+      alert('Esta copia no contiene planificación para restaurar.');
+      return;
+    }
+
+    const totalAntes=Array.isArray(db.eventos)?db.eventos.length:0;
+    const totalCopia=backup.db.eventos.length;
+
+    if(!confirm('¿Seguro que deseas restaurar esta copia?\n\nCopia: '+(backup.fechaTexto||'')+'\nTrabajos actuales: '+totalAntes+'\nTrabajos de la copia: '+totalCopia+'\n\nEsta acción reemplazará la planificación actual.'))return;
+
+    const texto=prompt('Para confirmar escribe RESTAURAR');
+    if(texto!=='RESTAURAR')return;
+
+    try{
+      window.aplicandoDatosFirebase=true;
+      window.__restaurandoBackupStandecor=true;
+      sessionStorage.setItem('standecor_skip_auto_backup_until',String(Date.now()+30000));
+
+      const restaurada=prepararDbDirecto(backup.db);
+
+      // Aplicar inmediatamente en la app.
+      db=restaurada;
+      localStorage.setItem(STORAGE,JSON.stringify(db));
+
+      // Sobrescribir Firebase completo. Sin merge.
+      await f.collection('standecor').doc('planificador').set({
+        db:restaurada,
+        actualizadoFirebase:restaurada.actualizadoFirebase,
+        restauradoDesdeBackup:id,
+        restauradoPor:nombreDirecto(),
+        restauradoEn:restaurada.restauradoEn
+      });
+
+      // Segunda escritura corta para ganar a listeners antiguos.
+      await new Promise(r=>setTimeout(r,300));
+      await f.collection('standecor').doc('planificador').set({
+        db:restaurada,
+        actualizadoFirebase:restaurada.actualizadoFirebase,
+        restauradoDesdeBackup:id,
+        restauradoPor:nombreDirecto(),
+        restauradoEn:restaurada.restauradoEn
+      });
+
+      window.aplicandoDatosFirebase=false;
+      window.__restaurandoBackupStandecor=false;
+
+      try{renderAll()}catch(e){console.warn(e)}
+
+      alert('Copia restaurada correctamente.\n\nTrabajos restaurados: '+restaurada.eventos.length);
+
+      const panel=document.getElementById('backupsStandecorPanel');
+      if(panel) panel.style.display='none';
+
+      // Recarga suave para que todos los módulos lean limpio desde localStorage/Firebase.
+      setTimeout(()=>location.reload(),600);
+    }catch(e){
+      console.error(e);
+      window.aplicandoDatosFirebase=false;
+      window.__restaurandoBackupStandecor=false;
+      alert('No se pudo restaurar la copia automática. Revisa la consola.');
+    }
+  }
+
+  async function abrirPanelDirecto(){
+    if(!esAdminDirecto()){
+      alert('Solo los administradores pueden ver las copias automáticas.');
+      return;
+    }
+
+    const f=fdbDirecto();
+    let p=document.getElementById('backupsStandecorPanel');
+    if(!p){
+      p=document.createElement('div');
+      p.id='backupsStandecorPanel';
+      document.body.appendChild(p);
+    }
+
+    p.style.display='flex';
+    p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><p class="muted">Cargando copias...</p></div>';
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    if(!f){
+      p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><div class="alerta">Firebase no está listo.</div></div>';
+      document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+      return;
+    }
+
+    const snap=await f.collection(BACKUP_COLLECTION).orderBy('createdAt','desc').limit(BACKUP_LIMIT).get();
+    const backups=[];
+    snap.forEach(doc=>backups.push({id:doc.id,...doc.data()}));
+
+    const puedeRestaurar=esIsraelDirecto();
+
+    p.innerHTML=`<div class="backups-modal">
+      <div class="backups-head">
+        <h2>Copias automáticas</h2>
+        <button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button>
+      </div>
+      <div class="backups-actions-top">
+        <button type="button" class="backup-download" id="crearBackupAhora">Crear copia ahora</button>
+        <span class="muted">Para recuperar una feria borrada, usa la copia ANTES DE BORRAR.</span>
+      </div>
+      <div>
+        ${backups.length?backups.map(b=>{
+          const origen=b.origen||'AUTOMÁTICA';
+          const clase=origen==='MANUAL'?'manual':origen==='RESTAURACIÓN'?'restauracion':origen==='ANTES DE BORRAR'?'preborrado':'auto';
+          return `<div class="backup-row">
+            <div>
+              <div class="backup-title">
+                ${escDirecto(b.fechaTexto||fechaDirecto(b.createdAt))} · ${escDirecto(b.usuario||'SIN USUARIO')}
+                <span class="backup-origin ${clase}">${escDirecto(origen)}</span>
+              </div>
+              <div class="backup-meta">
+                ${escDirecto(b.motivo||'Copia automática')}<br>
+                ${Number(b.trabajos||0)} trabajos · ${Number(b.montajes||0)} montajes activos · ${Number(b.desmontajes||0)} desmontajes activos · ${Number(b.trabajadores||0)} trabajadores · ${Number(b.collas||0)} collas
+              </div>
+            </div>
+            <div class="backup-buttons">
+              <button type="button" class="backup-download" data-download-backup="${escDirecto(b.id)}">Descargar</button>
+              ${puedeRestaurar?`<button type="button" class="backup-restore" data-restore-backup="${escDirecto(b.id)}">Restaurar</button><button type="button" class="backup-delete" data-delete-backup="${escDirecto(b.id)}">Eliminar</button>`:''}
+            </div>
+          </div>`;
+        }).join(''):'<p class="muted">Todavía no hay copias automáticas.</p>'}
+      </div>
+    </div>`;
+
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    document.getElementById('crearBackupAhora').onclick=async()=>{
+      if(typeof window.crearBackupManualStandecor==='function'){
+        await window.crearBackupManualStandecor();
+      }
+      abrirPanelDirecto();
+    };
+
+    p.querySelectorAll('[data-download-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        const id=btn.getAttribute('data-download-backup');
+        const s=await f.collection(BACKUP_COLLECTION).doc(id).get();
+        if(!s.exists)return;
+        const b=s.data()||{};
+        const blob=new Blob([JSON.stringify(b.db,null,2)],{type:'application/json'});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download='Backup_STANDECOR_'+String(b.fechaTexto||'copia').replace(/[/: ]/g,'-')+'.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+    });
+
+    p.querySelectorAll('[data-delete-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        if(!esIsraelDirecto()){alert('Solo IsraelM puede eliminar copias.');return}
+        if(!confirm('¿Eliminar esta copia automática?'))return;
+        await f.collection(BACKUP_COLLECTION).doc(btn.getAttribute('data-delete-backup')).delete();
+        abrirPanelDirecto();
+      };
+    });
+
+    p.querySelectorAll('[data-restore-backup]').forEach(btn=>{
+      btn.onclick=()=>restaurarDirecto(btn.getAttribute('data-restore-backup'));
+    });
+  }
+
+  window.abrirPanelBackupsStandecor=abrirPanelDirecto;
+})();
+</script>
+
+
+<script>
+/* ===== RESTAURAR_COPIAS_SIN_CONFIRMACIONES_STANDECOR ===== */
+(function(){
+  const BACKUP_COLLECTION='standecor_backups';
+  const BACKUP_LIMIT=10;
+
+  function fdbSinConfirm(){
+    try{
+      if(window.firebase && firebase.apps && firebase.apps.length){
+        return firebase.firestore();
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function usuarioSinConfirm(){
+    try{return JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null')}catch(e){return null}
+  }
+
+  function esAdminSinConfirm(){
+    const u=usuarioSinConfirm();
+    return Boolean(u && u.rol==='admin');
+  }
+
+  function esIsraelSinConfirm(){
+    const u=usuarioSinConfirm();
+    return Boolean(u && String(u.usuario||'').toUpperCase()==='ISRAELM');
+  }
+
+  function nombreSinConfirm(){
+    const u=usuarioSinConfirm();
+    return u && u.usuario ? u.usuario : 'SIN USUARIO';
+  }
+
+  function fechaSinConfirm(ms){
+    const d=new Date(ms||Date.now());
+    return d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function escSinConfirm(s){
+    return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function prepararDbSinConfirm(copia){
+    const c=JSON.parse(JSON.stringify(copia||{}));
+    return {
+      ...c,
+      trabajadores:Array.isArray(c.trabajadores)?c.trabajadores:[],
+      collas:Array.isArray(c.collas)?c.collas:[],
+      eventos:Array.isArray(c.eventos)?c.eventos:[],
+      eventosEliminados:{},
+      trabajadoresEliminados:{},
+      actualizadoFirebase:Date.now()+20000,
+      restauradoDesdeCopiaAutomatica:true,
+      restauradoPor:nombreSinConfirm(),
+      restauradoEn:Date.now()
+    };
+  }
+
+  function avisoRestore(msg,tipo){
+    let box=document.getElementById('restoreAvisoStandecor');
+    if(!box){
+      box=document.createElement('div');
+      box.id='restoreAvisoStandecor';
+      box.style.position='fixed';
+      box.style.left='50%';
+      box.style.top='22px';
+      box.style.transform='translateX(-50%)';
+      box.style.zIndex='2147483647';
+      box.style.padding='12px 18px';
+      box.style.borderRadius='999px';
+      box.style.fontWeight='900';
+      box.style.fontSize='13px';
+      box.style.boxShadow='0 12px 35px rgba(0,0,0,.22)';
+      document.body.appendChild(box);
+    }
+    box.textContent=msg;
+    box.style.background=tipo==='ok'?'#e9f8ee':'#fff1f1';
+    box.style.color=tipo==='ok'?'#207a35':'#b42318';
+    box.style.border=tipo==='ok'?'1px solid #bfe7c7':'1px solid #ffcaca';
+    box.style.display='block';
+    setTimeout(()=>{box.style.display='none'},2600);
+  }
+
+  async function restaurarSinConfirm(id){
+    if(!esIsraelSinConfirm()){
+      avisoRestore('Solo IsraelM puede restaurar copias.','error');
+      return;
+    }
+
+    const f=fdbSinConfirm();
+    if(!f){
+      avisoRestore('Firebase no está listo.','error');
+      return;
+    }
+
+    try{
+      const snap=await f.collection(BACKUP_COLLECTION).doc(id).get();
+      if(!snap.exists){
+        avisoRestore('No se encontró esta copia.','error');
+        return;
+      }
+
+      const backup=snap.data()||{};
+      if(!backup.db || !Array.isArray(backup.db.eventos)){
+        avisoRestore('Esta copia no contiene planificación.','error');
+        return;
+      }
+
+      window.aplicandoDatosFirebase=true;
+      window.__restaurandoBackupStandecor=true;
+      sessionStorage.setItem('standecor_skip_auto_backup_until',String(Date.now()+30000));
+
+      const restaurada=prepararDbSinConfirm(backup.db);
+
+      db=restaurada;
+      localStorage.setItem(STORAGE,JSON.stringify(db));
+
+      await f.collection('standecor').doc('planificador').set({
+        db:restaurada,
+        actualizadoFirebase:restaurada.actualizadoFirebase,
+        restauradoDesdeBackup:id,
+        restauradoPor:nombreSinConfirm(),
+        restauradoEn:restaurada.restauradoEn
+      });
+
+      await new Promise(r=>setTimeout(r,250));
+
+      await f.collection('standecor').doc('planificador').set({
+        db:restaurada,
+        actualizadoFirebase:restaurada.actualizadoFirebase,
+        restauradoDesdeBackup:id,
+        restauradoPor:nombreSinConfirm(),
+        restauradoEn:restaurada.restauradoEn
+      });
+
+      window.aplicandoDatosFirebase=false;
+      window.__restaurandoBackupStandecor=false;
+
+      try{renderAll()}catch(e){}
+
+      const panel=document.getElementById('backupsStandecorPanel');
+      if(panel) panel.style.display='none';
+
+      avisoRestore('Copia restaurada correctamente.', 'ok');
+      /* Sin recarga: la copia ya queda restaurada y se ve el aviso superior. */
+    }catch(e){
+      console.error(e);
+      window.aplicandoDatosFirebase=false;
+      window.__restaurandoBackupStandecor=false;
+      avisoRestore('No se pudo restaurar la copia.', 'error');
+    }
+  }
+
+  async function abrirPanelSinConfirm(){
+    if(!esAdminSinConfirm()){
+      avisoRestore('Solo los administradores pueden ver las copias.','error');
+      return;
+    }
+
+    const f=fdbSinConfirm();
+    let p=document.getElementById('backupsStandecorPanel');
+    if(!p){
+      p=document.createElement('div');
+      p.id='backupsStandecorPanel';
+      document.body.appendChild(p);
+    }
+
+    p.style.display='flex';
+    p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><p class="muted">Cargando copias...</p></div>';
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    if(!f){
+      p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><div class="alerta">Firebase no está listo.</div></div>';
+      document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+      return;
+    }
+
+    const snap=await f.collection(BACKUP_COLLECTION).orderBy('createdAt','desc').limit(BACKUP_LIMIT).get();
+    const backups=[];
+    snap.forEach(doc=>backups.push({id:doc.id,...doc.data()}));
+
+    const puedeRestaurar=esIsraelSinConfirm();
+
+    p.innerHTML=`<div class="backups-modal">
+      <div class="backups-head">
+        <h2>Copias automáticas</h2>
+        <button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button>
+      </div>
+      <div class="backups-actions-top">
+        <button type="button" class="backup-download" id="crearBackupAhora">Crear copia ahora</button>
+        <span class="muted">Restauración directa. Para recuperar una feria borrada, usa la copia ANTES DE BORRAR.</span>
+      </div>
+      <div>
+        ${backups.length?backups.map(b=>{
+          const origen=b.origen||'AUTOMÁTICA';
+          const clase=origen==='MANUAL'?'manual':origen==='RESTAURACIÓN'?'restauracion':origen==='ANTES DE BORRAR'?'preborrado':'auto';
+          return `<div class="backup-row">
+            <div>
+              <div class="backup-title">
+                ${escSinConfirm(b.fechaTexto||fechaSinConfirm(b.createdAt))} · ${escSinConfirm(b.usuario||'SIN USUARIO')}
+                <span class="backup-origin ${clase}">${escSinConfirm(origen)}</span>
+              </div>
+              <div class="backup-meta">
+                ${escSinConfirm(b.motivo||'Copia automática')}<br>
+                ${Number(b.trabajos||0)} trabajos · ${Number(b.montajes||0)} montajes activos · ${Number(b.desmontajes||0)} desmontajes activos · ${Number(b.trabajadores||0)} trabajadores · ${Number(b.collas||0)} collas
+              </div>
+            </div>
+            <div class="backup-buttons">
+              <button type="button" class="backup-download" data-download-backup="${escSinConfirm(b.id)}">Descargar</button>
+              ${puedeRestaurar?`<button type="button" class="backup-restore" data-restore-backup="${escSinConfirm(b.id)}">Restaurar</button><button type="button" class="backup-delete" data-delete-backup="${escSinConfirm(b.id)}">Eliminar</button>`:''}
+            </div>
+          </div>`;
+        }).join(''):'<p class="muted">Todavía no hay copias automáticas.</p>'}
+      </div>
+    </div>`;
+
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    document.getElementById('crearBackupAhora').onclick=async()=>{
+      if(typeof window.crearBackupManualStandecor==='function'){
+        await window.crearBackupManualStandecor();
+      }
+      abrirPanelSinConfirm();
+    };
+
+    p.querySelectorAll('[data-download-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        const id=btn.getAttribute('data-download-backup');
+        const s=await f.collection(BACKUP_COLLECTION).doc(id).get();
+        if(!s.exists)return;
+        const b=s.data()||{};
+        const blob=new Blob([JSON.stringify(b.db,null,2)],{type:'application/json'});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download='Backup_STANDECOR_'+String(b.fechaTexto||'copia').replace(/[/: ]/g,'-')+'.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+    });
+
+    p.querySelectorAll('[data-delete-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        if(!esIsraelSinConfirm()){avisoRestore('Solo IsraelM puede eliminar copias.','error');return}
+        await f.collection(BACKUP_COLLECTION).doc(btn.getAttribute('data-delete-backup')).delete();
+        abrirPanelSinConfirm();
+      };
+    });
+
+    p.querySelectorAll('[data-restore-backup]').forEach(btn=>{
+      btn.onclick=()=>restaurarSinConfirm(btn.getAttribute('data-restore-backup'));
+    });
+  }
+
+  window.abrirPanelBackupsStandecor=abrirPanelSinConfirm;
+})();
+</script>
+
+
+<script>
+/* ===== COPIAS_LIMPIAS_SOLO_MONTAJES_STANDECOR =====
+   Configuración final:
+   AUTOMÁTICA solo cuando:
+   - Se crea un montaje/desmontaje.
+   - Se edita un montaje/desmontaje.
+   - Se marca una feria como terminada.
+   MANUAL solo al pulsar "Crear copia ahora".
+   No crea copia al borrar ferias/trabajadores/copias/restaurar/importar/exportar.
+*/
+(function(){
+  const BACKUP_COLLECTION='standecor_backups';
+  const BACKUP_LIMIT=10;
+  let ultimoBackupEventosFirma='';
+  let ultimoBackupEventosMs=0;
+
+  function fdbClean(){
+    try{
+      if(window.firebase && firebase.apps && firebase.apps.length){
+        return firebase.firestore();
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function usuarioClean(){
+    try{return JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null')}catch(e){return null}
+  }
+
+  function esAdminClean(){
+    const u=usuarioClean();
+    return Boolean(u && u.rol==='admin');
+  }
+
+  function esIsraelClean(){
+    const u=usuarioClean();
+    return Boolean(u && String(u.usuario||'').toUpperCase()==='ISRAELM');
+  }
+
+  function nombreClean(){
+    const u=usuarioClean();
+    return u && u.usuario ? u.usuario : 'SIN USUARIO';
+  }
+
+  function fechaClean(ms){
+    const d=new Date(ms||Date.now());
+    return d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function escClean(s){
+    return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function firmaEventosClean(d){
+    d=d||db||{};
+    const eventos=Array.isArray(d.eventos)?d.eventos:[];
+    return eventos
+      .slice()
+      .sort((a,b)=>String(a.id||'').localeCompare(String(b.id||'')))
+      .map(e=>[
+        e.id,e.feria,e.lugar,e.stand,
+        e.montajeInicio,e.montajeFin,e.desmontajeInicio,e.desmontajeFin,
+        e.terminado?1:0,
+        (Array.isArray(e.ayudantes)?e.ayudantes.slice().sort().join(','):''),
+        e.cabezaPrincipalId||'',e.collaId||'',e.cantidadColla||'',
+        JSON.stringify(e.collasExtra||[]),
+        e.observaciones||''
+      ].join('|'))
+      .join('¬');
+  }
+
+  function clonarDbClean(){
+    const c=JSON.parse(JSON.stringify(db||{}));
+    c.trabajadores=Array.isArray(c.trabajadores)?c.trabajadores:[];
+    c.collas=Array.isArray(c.collas)?c.collas:[];
+    c.eventos=Array.isArray(c.eventos)?c.eventos:[];
+    c.eventosEliminados=(c.eventosEliminados&&typeof c.eventosEliminados==='object')?c.eventosEliminados:{};
+    c.trabajadoresEliminados=(c.trabajadoresEliminados&&typeof c.trabajadoresEliminados==='object')?c.trabajadoresEliminados:{};
+    return c;
+  }
+
+  function prepararRestauradaClean(copia){
+    const c=JSON.parse(JSON.stringify(copia||{}));
+    return {
+      ...c,
+      trabajadores:Array.isArray(c.trabajadores)?c.trabajadores:[],
+      collas:Array.isArray(c.collas)?c.collas:[],
+      eventos:Array.isArray(c.eventos)?c.eventos:[],
+      eventosEliminados:{},
+      trabajadoresEliminados:{},
+      actualizadoFirebase:Date.now()+20000,
+      restauradoDesdeCopiaAutomatica:true,
+      restauradoPor:nombreClean(),
+      restauradoEn:Date.now()
+    };
+  }
+
+  function contarMontajesClean(c){
+    return (c.eventos||[]).filter(e=>!e.terminado&&(e.montajeInicio||e.montajeFin)).length;
+  }
+
+  function contarDesmontajesClean(c){
+    return (c.eventos||[]).filter(e=>!e.terminado&&(e.desmontajeInicio||e.desmontajeFin)).length;
+  }
+
+  async function limpiarBackupsClean(){
+    const f=fdbClean();
+    if(!f)return;
+    try{
+      const snap=await f.collection(BACKUP_COLLECTION).orderBy('createdAt','desc').get();
+      const docs=[];
+      snap.forEach(doc=>docs.push(doc));
+      for(const doc of docs.slice(BACKUP_LIMIT)){
+        await doc.ref.delete();
+      }
+    }catch(e){}
+  }
+
+  async function existeBackupRecienteClean(firma){
+    const f=fdbClean();
+    if(!f)return false;
+    try{
+      const snap=await f.collection(BACKUP_COLLECTION).orderBy('createdAt','desc').limit(5).get();
+      const ahora=Date.now();
+      let existe=false;
+      snap.forEach(doc=>{
+        const b=doc.data()||{};
+        if(b.firmaEventos===firma && (ahora-Number(b.createdAt||0))<120000){
+          existe=true;
+        }
+      });
+      return existe;
+    }catch(e){return false}
+  }
+
+  async function crearBackupClean(motivo, origen){
+    const f=fdbClean();
+    if(!f)return;
+
+    const copia=clonarDbClean();
+    if(!copia.eventos.length)return;
+
+    const firma=firmaEventosClean(copia);
+    const ahora=Date.now();
+
+    if(origen==='AUTOMÁTICA'){
+      if(firma===ultimoBackupEventosFirma && (ahora-ultimoBackupEventosMs)<120000){
+        console.log('Copia automática duplicada ignorada.');
+        return;
+      }
+      if(await existeBackupRecienteClean(firma)){
+        ultimoBackupEventosFirma=firma;
+        ultimoBackupEventosMs=ahora;
+        console.log('Copia automática ya existente en Firebase.');
+        return;
+      }
+    }
+
+    const item={
+      createdAt:ahora,
+      fechaTexto:fechaClean(ahora),
+      usuario:nombreClean(),
+      motivo:motivo || (origen==='MANUAL'?'Copia manual desde panel':'Cambio en montaje/desmontaje'),
+      origen:origen || 'AUTOMÁTICA',
+      firmaEventos:firma,
+      montajes:contarMontajesClean(copia),
+      desmontajes:contarDesmontajesClean(copia),
+      trabajos:copia.eventos.length,
+      trabajadores:copia.trabajadores.length,
+      collas:copia.collas.length,
+      db:copia
+    };
+
+    await f.collection(BACKUP_COLLECTION).add(item);
+    await limpiarBackupsClean();
+
+    ultimoBackupEventosFirma=firma;
+    ultimoBackupEventosMs=ahora;
+  }
+
+  // Guardado base: mantiene localStorage/Firebase, pero NO crea backup automático por defecto.
+  function guardarSinBackupClean(){
+    localStorage.setItem(STORAGE,JSON.stringify(db));
+    if(window.guardarFirebaseStandecor && !window.aplicandoDatosFirebase){
+      window.guardarFirebaseStandecor();
+    }
+  }
+
+  // Reemplazamos save para que los cambios menores NO generen copias.
+  window.save=function(){
+    guardarSinBackupClean();
+  };
+
+  // Copia manual.
+  window.crearBackupManualStandecor=function(){
+    return crearBackupClean('Copia manual desde panel','MANUAL');
+  };
+
+  // Detectar creación/edición de montaje: envolvemos guardarEvento.
+  if(typeof window.guardarEvento==='function' && !window.guardarEvento.__backupClean){
+    const guardarEventoOriginal=window.guardarEvento;
+    window.guardarEvento=function(){
+      const idActual=(document.getElementById('eventoId')?.value||'').trim();
+      const antes=firmaEventosClean();
+      const r=guardarEventoOriginal.apply(this,arguments);
+
+      setTimeout(()=>{
+        const despues=firmaEventosClean();
+        if(despues && despues!==antes){
+          crearBackupClean(idActual?'Edición de montaje/desmontaje':'Creación de montaje/desmontaje','AUTOMÁTICA');
+        }
+      },900);
+
+      return r;
+    };
+    window.guardarEvento.__backupClean=true;
+  }
+
+  // Detectar pasar a terminado: envolvemos toggleTerminado.
+  if(typeof window.toggleTerminado==='function' && !window.toggleTerminado.__backupClean){
+    const toggleTerminadoOriginal=window.toggleTerminado;
+    window.toggleTerminado=function(id){
+      const antes=firmaEventosClean();
+      const r=toggleTerminadoOriginal.apply(this,arguments);
+
+      setTimeout(()=>{
+        const despues=firmaEventosClean();
+        if(despues && despues!==antes){
+          crearBackupClean('Feria marcada como terminada','AUTOMÁTICA');
+        }
+      },900);
+
+      return r;
+    };
+    window.toggleTerminado.__backupClean=true;
+  }
+
+  // Borrar feria: sin copia previa y sin mensaje de "antes de borrar".
+  window.borrarEvento=function(id){
+    const ev=(db.eventos||[]).find(e=>String(e.id)===String(id));
+    const nombre=ev ? ((ev.feria||'')+' '+(ev.stand||'')).trim() : 'este montaje/desmontaje';
+
+    if(!confirm('¿Eliminar montaje/desmontaje?\n\n'+nombre))return;
+
+    db.eventosEliminados=(db.eventosEliminados&&typeof db.eventosEliminados==='object')?db.eventosEliminados:{};
+    db.eventosEliminados[String(id)]=Date.now();
+    db.eventos=(db.eventos||[]).filter(e=>String(e.id)!==String(id));
+
+    guardarSinBackupClean();
+    renderAll();
+  };
+
+  async function restaurarClean(id){
+    if(!esIsraelClean()){
+      avisoClean('Solo IsraelM puede restaurar copias.','error');
+      return;
+    }
+
+    const f=fdbClean();
+    if(!f){
+      avisoClean('Firebase no está listo.','error');
+      return;
+    }
+
+    try{
+      const snap=await f.collection(BACKUP_COLLECTION).doc(id).get();
+      if(!snap.exists){
+        avisoClean('No se encontró esta copia.','error');
+        return;
+      }
+
+      const b=snap.data()||{};
+      if(!b.db || !Array.isArray(b.db.eventos)){
+        avisoClean('Esta copia no contiene planificación.','error');
+        return;
+      }
+
+      window.aplicandoDatosFirebase=true;
+      window.__restaurandoBackupStandecor=true;
+      sessionStorage.setItem('standecor_skip_auto_backup_until',String(Date.now()+30000));
+
+      const restaurada=prepararRestauradaClean(b.db);
+      db=restaurada;
+      localStorage.setItem(STORAGE,JSON.stringify(db));
+
+      await f.collection('standecor').doc('planificador').set({
+        db:restaurada,
+        actualizadoFirebase:restaurada.actualizadoFirebase,
+        restauradoDesdeBackup:id,
+        restauradoPor:nombreClean(),
+        restauradoEn:restaurada.restauradoEn
+      });
+
+      window.aplicandoDatosFirebase=false;
+      window.__restaurandoBackupStandecor=false;
+
+      try{renderAll()}catch(e){}
+
+      const panel=document.getElementById('backupsStandecorPanel');
+      if(panel) panel.style.display='none';
+
+      avisoClean('Copia restaurada correctamente.','ok');
+      /* Sin recarga: la copia ya queda restaurada y se ve el aviso superior. */
+    }catch(e){
+      console.error(e);
+      window.aplicandoDatosFirebase=false;
+      window.__restaurandoBackupStandecor=false;
+      avisoClean('No se pudo restaurar la copia.','error');
+    }
+  }
+
+  function avisoClean(msg,tipo){
+    let box=document.getElementById('restoreAvisoStandecor');
+    if(!box){
+      box=document.createElement('div');
+      box.id='restoreAvisoStandecor';
+      box.style.position='fixed';
+      box.style.left='50%';
+      box.style.top='22px';
+      box.style.transform='translateX(-50%)';
+      box.style.zIndex='2147483647';
+      box.style.padding='12px 18px';
+      box.style.borderRadius='999px';
+      box.style.fontWeight='900';
+      box.style.fontSize='13px';
+      box.style.boxShadow='0 12px 35px rgba(0,0,0,.22)';
+      document.body.appendChild(box);
+    }
+    box.textContent=msg;
+    box.style.background=tipo==='ok'?'#e9f8ee':'#fff1f1';
+    box.style.color=tipo==='ok'?'#207a35':'#b42318';
+    box.style.border=tipo==='ok'?'1px solid #bfe7c7':'1px solid #ffcaca';
+    box.style.display='block';
+    setTimeout(()=>{box.style.display='none'},2600);
+  }
+
+  async function abrirPanelClean(){
+    if(!esAdminClean()){
+      avisoClean('Solo los administradores pueden ver las copias.','error');
+      return;
+    }
+
+    const f=fdbClean();
+    let p=document.getElementById('backupsStandecorPanel');
+    if(!p){
+      p=document.createElement('div');
+      p.id='backupsStandecorPanel';
+      document.body.appendChild(p);
+    }
+
+    p.style.display='flex';
+    p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><p class="muted">Cargando copias...</p></div>';
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    if(!f){
+      p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><div class="alerta">Firebase no está listo.</div></div>';
+      document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+      return;
+    }
+
+    const snap=await f.collection(BACKUP_COLLECTION).orderBy('createdAt','desc').limit(BACKUP_LIMIT).get();
+    const backups=[];
+    snap.forEach(doc=>{
+      const b={id:doc.id,...doc.data()};
+      if(b.origen!=='ANTES DE BORRAR')backups.push(b);
+    });
+
+    const puedeRestaurar=esIsraelClean();
+
+    p.innerHTML=`<div class="backups-modal">
+      <div class="backups-head">
+        <h2>Copias automáticas</h2>
+        <button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button>
+      </div>
+      <div class="backups-actions-top">
+        <button type="button" class="backup-download" id="crearBackupAhora">Crear copia ahora</button>
+        <span class="muted">Automáticas solo al crear, editar o terminar montajes/desmontajes. Manual al pulsar crear copia ahora.</span>
+      </div>
+      <div>
+        ${backups.length?backups.map(b=>{
+          const origen=b.origen==='MANUAL'?'MANUAL':'AUTOMÁTICA';
+          const clase=origen==='MANUAL'?'manual':'auto';
+          return `<div class="backup-row">
+            <div>
+              <div class="backup-title">
+                ${escClean(b.fechaTexto||fechaClean(b.createdAt))} · ${escClean(b.usuario||'SIN USUARIO')}
+                <span class="backup-origin ${clase}">${escClean(origen)}</span>
+              </div>
+              <div class="backup-meta">
+                ${escClean(b.motivo||'Copia automática')}<br>
+                ${Number(b.trabajos||0)} trabajos · ${Number(b.montajes||0)} montajes activos · ${Number(b.desmontajes||0)} desmontajes activos · ${Number(b.trabajadores||0)} trabajadores · ${Number(b.collas||0)} collas
+              </div>
+            </div>
+            <div class="backup-buttons">
+              <button type="button" class="backup-download" data-download-backup="${escClean(b.id)}">Descargar</button>
+              ${puedeRestaurar?`<button type="button" class="backup-restore" data-restore-backup="${escClean(b.id)}">Restaurar</button><button type="button" class="backup-delete" data-delete-backup="${escClean(b.id)}">Eliminar</button>`:''}
+            </div>
+          </div>`;
+        }).join(''):'<p class="muted">Todavía no hay copias automáticas.</p>'}
+      </div>
+    </div>`;
+
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    document.getElementById('crearBackupAhora').onclick=async()=>{
+      await crearBackupClean('Copia manual desde panel','MANUAL');
+      abrirPanelClean();
+    };
+
+    p.querySelectorAll('[data-download-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        const id=btn.getAttribute('data-download-backup');
+        const s=await f.collection(BACKUP_COLLECTION).doc(id).get();
+        if(!s.exists)return;
+        const b=s.data()||{};
+        const blob=new Blob([JSON.stringify(b.db,null,2)],{type:'application/json'});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download='Backup_STANDECOR_'+String(b.fechaTexto||'copia').replace(/[/: ]/g,'-')+'.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+    });
+
+    p.querySelectorAll('[data-delete-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        if(!esIsraelClean()){avisoClean('Solo IsraelM puede eliminar copias.','error');return}
+        await f.collection(BACKUP_COLLECTION).doc(btn.getAttribute('data-delete-backup')).delete();
+        abrirPanelClean();
+      };
+    });
+
+    p.querySelectorAll('[data-restore-backup]').forEach(btn=>{
+      btn.onclick=()=>restaurarClean(btn.getAttribute('data-restore-backup'));
+    });
+  }
+
+  window.abrirPanelBackupsStandecor=abrirPanelClean;
+
+  setTimeout(()=>{ultimoBackupEventosFirma=firmaEventosClean();},1500);
+})();
+</script>
+
+
+<script>
+/* ===== RESTAURAR_COPIAS_SIN_RECARGA_STANDECOR ===== */
+(function(){
+  const oldReload=location.reload.bind(location);
+  let bloquearReloadHasta=0;
+
+  window.bloquearRecargaPorRestauracionStandecor=function(ms){
+    bloquearReloadHasta=Date.now()+(ms||4000);
+  };
+
+  try{
+    Object.defineProperty(location,'reload',{
+      value:function(){
+        if(Date.now()<bloquearReloadHasta){
+          console.log('Recarga bloqueada tras restaurar copia para mostrar el aviso.');
+          return;
+        }
+        return oldReload();
+      },
+      configurable:true
+    });
+  }catch(e){}
+
+  const abrirOriginal=window.abrirPanelBackupsStandecor;
+  if(typeof abrirOriginal==='function'){
+    window.abrirPanelBackupsStandecor=function(){
+      const r=abrirOriginal.apply(this,arguments);
+      setTimeout(()=>{
+        document.querySelectorAll('[data-restore-backup]').forEach(btn=>{
+          const old=btn.onclick;
+          btn.onclick=function(ev){
+            if(typeof window.bloquearRecargaPorRestauracionStandecor==='function'){
+              window.bloquearRecargaPorRestauracionStandecor(5000);
+            }
+            return old ? old.call(this,ev) : undefined;
+          };
+        });
+      },300);
+      return r;
+    };
   }
 })();
 </script>
