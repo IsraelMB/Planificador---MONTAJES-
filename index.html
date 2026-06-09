@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- FIX FINAL COPIAS: eliminado doble disparo automático -->
+<!-- FIX COPIAS: anti-duplicados y etiquetas de origen -->
+<!-- FIX COPIAS AUTOMÁTICAS: Firebase correcto y botón en menú principal -->
+<!-- MEJORA: copias automáticas Firebase con restauración solo IsraelM -->
 <!-- FIX CRÍTICO FIREBASE: sincronización segura multi-dispositivo sin pérdida de montajes -->
 <!-- MEJORA EXCEL: formato Personal de Carpintería definitivo -->
 <!-- MEJORA EXCEL: plantilla profesional STANDECOR -->
@@ -2229,6 +2233,48 @@ body.user-viewer button[onclick^="toggleTerminado"]{display:none!important}
   box-shadow:0 6px 14px rgba(20,164,227,.24)!important;
 }
 
+
+/* ===== COPIAS AUTOMÁTICAS FIREBASE ===== */
+#backupsStandecorPanel{position:fixed;inset:0;z-index:2147483630;background:rgba(15,23,42,.58);display:none;align-items:center;justify-content:center;padding:18px}
+.backups-modal{width:min(860px,96vw);max-height:88vh;overflow:auto;background:white;border-radius:24px;padding:22px;box-shadow:0 24px 80px rgba(0,0,0,.30)}
+.backups-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.backups-head h2{margin:0;color:#0B5F86}
+.backups-actions-top{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.backup-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border:1px solid #dbe7ef;border-radius:16px;background:#f8fcff;padding:12px;margin-bottom:9px}
+.backup-title{font-weight:900;color:#0B5F86;margin-bottom:5px}.backup-meta{font-size:11px;font-weight:800;color:#64748b;line-height:1.35}
+.backup-buttons{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.backup-buttons button{height:32px!important;padding:6px 10px!important;border-radius:11px!important;font-size:11px!important;box-shadow:none!important}
+.backup-restore{background:#eefaf0!important;color:#207a35!important;border:1px solid #bfe7c7!important}.backup-delete{background:#fff1f1!important;color:#b42318!important;border:1px solid #ffcaca!important}.backup-download{background:#eef7ff!important;color:#0B5F86!important;border:1px solid #bde7fb!important}
+#betaBackupsBtn{width:20px!important;height:20px!important;min-width:20px!important;min-height:20px!important;padding:0!important;border-radius:999px!important;background:rgba(255,255,255,.95)!important;color:#0B5F86!important;border:0!important;box-shadow:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;font-size:12px!important}
+@media(max-width:720px){.backup-row{grid-template-columns:1fr}.backup-buttons{justify-content:flex-start}}
+
+
+/* ===== FIX COPIAS: BOTÓN EN MENÚ PRINCIPAL ===== */
+#betaBackupsBtn{
+  display:none!important;
+}
+.nav-backups-btn{
+  background:white!important;
+  color:#0B5F86!important;
+  border:1px solid var(--borde)!important;
+}
+.nav-backups-btn .ico{
+  width:16px!important;
+  height:16px!important;
+}
+.nav-backups-btn:hover{
+  background:#eef7ff!important;
+}
+@media(max-width:720px){
+  .nav-backups-btn{
+    min-width:max-content!important;
+  }
+}
+
+
+/* ===== COPIAS: ETIQUETAS DE ORIGEN ===== */
+.backup-origin{display:inline-flex;align-items:center;justify-content:center;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:900;margin-left:6px;letter-spacing:.3px;border:1px solid #bde7fb;background:#eef7ff;color:#0B5F86}
+.backup-origin.manual{background:#eefaf0;border-color:#bfe7c7;color:#207a35}
+.backup-origin.restauracion{background:#fff7df;border-color:#f5d48a;color:#92400e}
+
 </style>
 <svg width="0" height="0" style="position:absolute;display:none" aria-hidden="true">
   <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/><path d="M18 12h.01"/></symbol>
@@ -2416,7 +2462,7 @@ const firebaseConfigStandecor = {
 <body>
 <div id="toastAlert" class="toast-alert"></div>
 <header><div class="topbar"><div class="brand-area"><div class="standecor-text-logo"><span class="logo-main">STANDECOR</span><span class="logo-dotcom">.com</span></div><div class="brand-title"><div class="brand-badge"><h1>PLANIFICADOR DE MONTAJES</h1><div class="brand-by">Creado por IsraelM</div></div></div></div><div class="no-print"><button class="light top-icon-btn" title="Exportar copia" onclick="exportarDatos()"><svg class="ico"><use href="#i-export"></use></svg></button><button class="light top-icon-btn" title="Importar copia" onclick="document.getElementById('importFile').click()"><svg class="ico"><use href="#i-import"></use></svg></button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importarDatos(event)"></div></div></header>
-<nav class="no-print"><button class="tab-btn active" onclick="showTab('planificacion',this)"><svg class="ico"><use href="#i-plan"></use></svg> PLANIFICACIÓN</button><button class="tab-btn" onclick="showTab('calendario',this)"><svg class="ico"><use href="#i-calendar"></use></svg> CALENDARIO</button><button class="tab-btn" onclick="showTab('trabajadores',this)"><svg class="ico"><use href="#i-users"></use></svg> TRABAJADORES</button><button class="tab-btn" onclick="showTab('collas',this)"><svg class="ico"><use href="#i-handshake"></use></svg> COLLAS</button><button class="tab-btn" onclick="showTab('disponibles',this)"><svg class="ico"><use href="#i-available"></use></svg> DISPONIBLES</button><button class="tab-btn" onclick="showTab('avisos',this)"><svg class="ico"><use href="#i-alert"></use></svg> AVISOS</button></nav>
+<nav class="no-print"><button class="tab-btn active" onclick="showTab('planificacion',this)"><svg class="ico"><use href="#i-plan"></use></svg> PLANIFICACIÓN</button><button class="tab-btn" onclick="showTab('calendario',this)"><svg class="ico"><use href="#i-calendar"></use></svg> CALENDARIO</button><button class="tab-btn" onclick="showTab('trabajadores',this)"><svg class="ico"><use href="#i-users"></use></svg> TRABAJADORES</button><button class="tab-btn" onclick="showTab('collas',this)"><svg class="ico"><use href="#i-handshake"></use></svg> COLLAS</button><button class="tab-btn" onclick="showTab('disponibles',this)"><svg class="ico"><use href="#i-available"></use></svg> DISPONIBLES</button><button class="tab-btn" onclick="showTab('avisos',this)"><svg class="ico"><use href="#i-alert"></use></svg> AVISOS</button><button class="tab-btn nav-backups-btn" id="navBackupsStandecorBtn" type="button" onclick="abrirPanelBackupsStandecor()"><span style="font-size:15px;line-height:1">☁</span> COPIAS</button></nav>
 <main>
 <section id="tab-planificacion" class="tab active"><div class="grid"><div class="card span-4 no-print"><h2>Nuevo montaje / desmontaje</h2><input type="hidden" id="eventoId"><label>Feria</label><input list="feriasList" autocomplete="off" oninput="autocompletarLugar()" id="feria" oninput="mayus(this)" placeholder="FERIA"><div class="form-row"><div><label>Ciudad / país</label><input list="lugaresList" autocomplete="off" id="lugar" oninput="mayus(this)"></div><div><label>Stand / cliente</label><input list="standsList" autocomplete="off" id="stand" oninput="mayus(this)"></div></div><h3>Montaje</h3><div class="form-row"><div><label>Inicio montaje</label><input type="date" id="montajeInicio"></div><div><label>Final montaje</label><input type="date" id="montajeFin"></div></div><h3>Desmontaje</h3><div class="form-row"><div><label>Inicio desmontaje</label><input type="date" id="desmontajeInicio"></div><div><label>Final desmontaje</label><input type="date" id="desmontajeFin"></div></div><div class="form-row"><div><label>Colla externa</label><select id="colla"></select></div><div><label>Cantidad colla</label><input id="cantidadColla" type="number" min="1" placeholder="Ej: 4"></div></div><div id="extraCollas"></div><div class="actions"><button class="secondary" onclick="agregarCollaExtra()" type="button">+ Añadir otra colla</button></div><label>Buscar trabajadores</label><input id="buscarAsignar" oninput="renderWorkerPicker();mayus(this)" placeholder="BUSCAR"><div id="workerPicker" class="worker-picker"></div><div id="seleccionPreview" class="selected-preview"></div><label>Observaciones</label><textarea id="observaciones" oninput="mayus(this)"></textarea><div id="formAvisos"></div><div class="actions"><button class="success" onclick="guardarEvento()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarFormulario()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2>Planificación</h2><div class="filters no-print"><div><label>Buscar</label><input id="buscarPlan" oninput="mayus(this);renderAll()"></div><div><label>Desde</label><input type="date" id="filtroDesde" onchange="renderAll()"></div><div><label>Hasta</label><input type="date" id="filtroHasta" onchange="renderAll()"></div><div><label>&nbsp;</label><button type="button" class="small pdf-mensual-btn" title="Imprimir trabajos del mes / Guardar como PDF" onclick="imprimirMesPDF()"><svg class="ico"><use href="#i-print"></use></svg> PDF mensual</button></div></div><div class="table-wrap pantalla-planificacion"><table><thead><tr><th>Feria</th><th>Lugar</th><th>Stand / cliente</th><th>Trabajo</th><th>Personal</th><th>Colla</th><th>Avisos</th><th class="no-print">Acciones</th></tr></thead><tbody id="tablaEventos"></tbody></table></div><div id="printPlanificacion" class="print-board"></div></div></div></section>
 <section id="tab-calendario" class="tab"><div class="card"><div class="section-head no-print"><h2>Calendario mensual</h2><button class="small action-btn" title="Imprimir calendario" onclick="imprimirCalendario()"><svg class="ico"><use href="#i-print"></use></svg></button></div><div class="filters"><div><label>Mes</label><input type="month" id="mesCalendario" onchange="renderCalendario()"></div></div><div id="calendario"></div><div class="calendar-print-month" id="calendarPrintMonth"></div></div></section>
@@ -6042,6 +6088,749 @@ function exportarPlantillaTrabajadoresXLSX(){
       }
     }catch(e){}
   },1200);
+})();
+</script>
+
+
+<script>
+/* ===== COPIAS_AUTOMATICAS_FIREBASE_STANDECOR ===== */
+(function(){
+  const BACKUP_LIMIT=10;
+  const BACKUP_COLLECTION='standecor_backups';
+  const SESSION_KEY_BACKUP='standecor_beta_user_session';
+  let backupTimer=null;
+  let ultimoBackupFirma='';
+  let ultimoBackupMs=0;
+  let restaurandoBackup=false;
+
+  function usuarioBackupActual(){try{return JSON.parse(localStorage.getItem(SESSION_KEY_BACKUP)||'null')}catch(e){return null}}
+  function nombreBackupUsuario(){const u=usuarioBackupActual();return u&&u.usuario?u.usuario:'SIN USUARIO'}
+  function esAdminBackup(){const u=usuarioBackupActual();return Boolean(u&&u.rol==='admin')}
+  function esIsraelMBackup(){const u=usuarioBackupActual();return Boolean(u&&String(u.usuario||'').toUpperCase()==='ISRAELM')}
+  function refBackupsStandecor(){try{if(window.firebaseDbStandecor)return window.firebaseDbStandecor.collection(BACKUP_COLLECTION);if(window.firebase&&firebase.apps&&firebase.apps.length)return firebase.firestore().collection(BACKUP_COLLECTION)}catch(e){}return null}
+  function clonarDbBackup(){return JSON.parse(JSON.stringify(db||{}))}
+  function contarMontajesBackup(d){d=d||{};return (Array.isArray(d.eventos)?d.eventos:[]).filter(e=>!e.terminado&&(e.montajeInicio||e.montajeFin)).length}
+  function contarDesmontajesBackup(d){d=d||{};return (Array.isArray(d.eventos)?d.eventos:[]).filter(e=>!e.terminado&&(e.desmontajeInicio||e.desmontajeFin)).length}
+  function totalTrabajosBackup(d){d=d||{};return Array.isArray(d.eventos)?d.eventos.length:0}
+  function firmaBackup(d){d=d||{};const ev=(d.eventos||[]).map(e=>[e.id,e.feria,e.lugar,e.stand,e.montajeInicio,e.montajeFin,e.desmontajeInicio,e.desmontajeFin,e.terminado,(e.ayudantes||[]).join(',')].join('|')).join('¬');const tr=(d.trabajadores||[]).map(t=>[t.id,t.nombre,t.rol,t.tipo,t.estado].join('|')).join('¬');const co=(d.collas||[]).map(c=>[c.id,c.nombre,c.responsable].join('|')).join('¬');return ev+'#'+tr+'#'+co}
+  function formatoFechaBackup(ms){const d=new Date(ms||Date.now());return d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}
+
+  async function limpiarBackupsAntiguos(){
+    const ref=refBackupsStandecor(); if(!ref)return;
+    try{const snap=await ref.orderBy('createdAt','desc').get();const docs=[];snap.forEach(doc=>docs.push(doc));for(const doc of docs.slice(BACKUP_LIMIT)){await doc.ref.delete()}}catch(e){console.warn('No se pudieron limpiar copias antiguas',e)}
+  }
+
+  async function crearBackupStandecor(motivo){
+    if(restaurandoBackup)return;
+    const ref=refBackupsStandecor(); if(!ref)return;
+    const copia=clonarDbBackup();
+    const total=totalTrabajosBackup(copia);
+    if(!total && !(copia.collas||[]).length){console.warn('Backup omitido: base sin trabajos ni collas.');return}
+    const f=firmaBackup(copia), ahora=Date.now();
+    if(f===ultimoBackupFirma && ahora-ultimoBackupMs<60000)return;
+    ultimoBackupFirma=f; ultimoBackupMs=ahora;
+    const item={createdAt:ahora,fechaTexto:formatoFechaBackup(ahora),usuario:nombreBackupUsuario(),motivo:motivo||'Cambio automático',montajes:contarMontajesBackup(copia),desmontajes:contarDesmontajesBackup(copia),trabajos:totalTrabajosBackup(copia),trabajadores:Array.isArray(copia.trabajadores)?copia.trabajadores.length:0,collas:Array.isArray(copia.collas)?copia.collas.length:0,db:copia};
+    try{await ref.add(item);await limpiarBackupsAntiguos();console.log('Copia automática creada',item.fechaTexto,item.motivo)}catch(e){console.warn('No se pudo crear la copia automática',e)}
+  }
+
+
+  /* Wrapper antiguo de copias desactivado: evita duplicados automáticos. */
+
+
+  async function cargarBackupsStandecor(){const ref=refBackupsStandecor();if(!ref)return[];const snap=await ref.orderBy('createdAt','desc').limit(BACKUP_LIMIT).get();const arr=[];snap.forEach(doc=>arr.push({id:doc.id,...doc.data()}));return arr}
+  function asegurarPanelBackups(){let p=document.getElementById('backupsStandecorPanel');if(!p){p=document.createElement('div');p.id='backupsStandecorPanel';document.body.appendChild(p)}return p}
+
+  async function abrirPanelBackups(){
+    if(!esAdminBackup())return;
+    const p=asegurarPanelBackups();p.style.display='flex';
+    p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><p class="muted">Cargando copias...</p></div>';
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+    await renderBackupsStandecor();
+  }
+
+  async function renderBackupsStandecor(){
+    const p=asegurarPanelBackups(), backups=await cargarBackupsStandecor(), puedeRestaurar=esIsraelMBackup();
+    p.innerHTML=`<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><div class="backups-actions-top"><button type="button" class="backup-download" id="crearBackupAhora">Crear copia ahora</button><span class="muted">Se conservan las últimas ${BACKUP_LIMIT} copias. Solo IsraelM puede restaurar o eliminar.</span></div><div>${backups.length?backups.map(b=>`<div class="backup-row"><div><div class="backup-title">${esc(b.fechaTexto||formatoFechaBackup(b.createdAt))} · ${esc(b.usuario||'SIN USUARIO')}</div><div class="backup-meta">${esc(b.motivo||'Copia automática')}<br>${Number(b.trabajos||0)} trabajos · ${Number(b.montajes||0)} montajes activos · ${Number(b.desmontajes||0)} desmontajes activos · ${Number(b.trabajadores||0)} trabajadores · ${Number(b.collas||0)} collas</div></div><div class="backup-buttons"><button type="button" class="backup-download" data-download-backup="${esc(b.id)}">Descargar</button>${puedeRestaurar?`<button type="button" class="backup-restore" data-restore-backup="${esc(b.id)}">Restaurar</button><button type="button" class="backup-delete" data-delete-backup="${esc(b.id)}">Eliminar</button>`:''}</div></div>`).join(''):'<p class="muted">Todavía no hay copias automáticas.</p>'}</div></div>`;
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+    document.getElementById('crearBackupAhora').onclick=async()=>{await crearBackupStandecor('Copia manual desde panel');await renderBackupsStandecor()};
+    p.querySelectorAll('[data-download-backup]').forEach(btn=>btn.onclick=()=>descargarBackup(btn.getAttribute('data-download-backup'),backups));
+    p.querySelectorAll('[data-restore-backup]').forEach(btn=>btn.onclick=()=>restaurarBackup(btn.getAttribute('data-restore-backup'),backups));
+    p.querySelectorAll('[data-delete-backup]').forEach(btn=>btn.onclick=()=>eliminarBackup(btn.getAttribute('data-delete-backup')));
+  }
+
+  function descargarBackup(id,backups){const b=backups.find(x=>x.id===id);if(!b)return;const blob=new Blob([JSON.stringify(b.db,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Backup_STANDECOR_'+String(b.fechaTexto||'copia').replace(/[/: ]/g,'-')+'.json';a.click();URL.revokeObjectURL(a.href)}
+
+  async function restaurarBackup(id,backups){
+    if(!esIsraelMBackup()){alert('Solo IsraelM puede restaurar copias.');return}
+    const b=backups.find(x=>x.id===id); if(!b||!b.db)return;
+    if(!confirm('¿Seguro que deseas restaurar esta copia?\n\n'+(b.fechaTexto||'')+'\n'+(b.trabajos||0)+' trabajos\n\nEsta acción reemplazará los datos actuales.'))return;
+    const texto=prompt('Para confirmar escribe RESTAURAR'); if(texto!=='RESTAURAR')return;
+    try{
+      restaurandoBackup=true; db=b.db; db.trabajadores=db.trabajadores||[]; db.collas=db.collas||[]; db.eventos=db.eventos||[]; db.actualizadoFirebase=Date.now();
+      localStorage.setItem(STORAGE,JSON.stringify(db));
+      if(window.firebaseDbStandecor){await firebaseDbStandecor.collection('standecor').doc('planificador').set({db:db,actualizadoFirebase:db.actualizadoFirebase,restauradoDesdeBackup:id,restauradoPor:nombreBackupUsuario()},{merge:true})}
+      renderAll(); restaurandoBackup=false; alert('Copia restaurada correctamente.'); document.getElementById('backupsStandecorPanel').style.display='none';
+    }catch(e){restaurandoBackup=false;console.error(e);alert('No se pudo restaurar la copia.')}
+  }
+
+  async function eliminarBackup(id){if(!esIsraelMBackup()){alert('Solo IsraelM puede eliminar copias.');return}if(!confirm('¿Eliminar esta copia automática?'))return;const ref=refBackupsStandecor();if(!ref)return;await ref.doc(id).delete();await renderBackupsStandecor()}
+
+  function instalarBotonBackups(){
+    const u=usuarioBackupActual(); if(!u||u.rol!=='admin')return;
+    const bar=document.getElementById('betaUserBar'); if(!bar||document.getElementById('betaBackupsBtn'))return;
+    const btn=document.createElement('button'); btn.type='button'; btn.id='betaBackupsBtn'; btn.title='Copias automáticas'; btn.textContent='☁'; btn.onclick=abrirPanelBackups;
+    const salir=document.getElementById('betaSalirBtn'); if(salir)bar.insertBefore(btn,salir);else bar.appendChild(btn);
+  }
+
+  setInterval(instalarBotonBackups,1200);
+  window.abrirPanelBackupsStandecor=abrirPanelBackups;
+})();
+</script>
+
+
+<script>
+/* ===== COPIAS_AUTOMATICAS_FIREBASE_STANDECOR_FIX_FINAL ===== */
+(function(){
+  const BACKUP_LIMIT=10;
+  const BACKUP_COLLECTION='standecor_backups';
+  const SESSION_KEY_BACKUP='standecor_beta_user_session';
+  let backupTimerFinal=null;
+  let ultimoBackupFirmaFinal='';
+  let ultimoBackupMsFinal=0;
+  let restaurandoBackupFinal=false;
+
+  function usuarioBackupActualFinal(){try{return JSON.parse(localStorage.getItem(SESSION_KEY_BACKUP)||'null')}catch(e){return null}}
+  function nombreBackupUsuarioFinal(){const u=usuarioBackupActualFinal();return u&&u.usuario?u.usuario:'SIN USUARIO'}
+  function esAdminBackupFinal(){const u=usuarioBackupActualFinal();return Boolean(u&&u.rol==='admin')}
+  function esIsraelMBackupFinal(){const u=usuarioBackupActualFinal();return Boolean(u&&String(u.usuario||'').toUpperCase()==='ISRAELM')}
+
+  function dbFirestoreBackupsFinal(){
+    try{
+      if(window.firebase && firebase.apps && firebase.apps.length){
+        return firebase.firestore();
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function refBackupsStandecorFinal(){
+    const fdb=dbFirestoreBackupsFinal();
+    return fdb ? fdb.collection(BACKUP_COLLECTION) : null;
+  }
+
+  function refPlanificadorStandecorFinal(){
+    const fdb=dbFirestoreBackupsFinal();
+    return fdb ? fdb.collection('standecor').doc('planificador') : null;
+  }
+
+  function clonarDbBackupFinal(){return JSON.parse(JSON.stringify(db||{}))}
+  function totalTrabajosBackupFinal(d){d=d||{};return Array.isArray(d.eventos)?d.eventos.length:0}
+  function contarMontajesBackupFinal(d){d=d||{};return (Array.isArray(d.eventos)?d.eventos:[]).filter(e=>!e.terminado&&(e.montajeInicio||e.montajeFin)).length}
+  function contarDesmontajesBackupFinal(d){d=d||{};return (Array.isArray(d.eventos)?d.eventos:[]).filter(e=>!e.terminado&&(e.desmontajeInicio||e.desmontajeFin)).length}
+  function formatoFechaBackupFinal(ms){const d=new Date(ms||Date.now());return d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}
+  function firmaBackupFinal(d){
+    d=d||{};
+    const ev=(d.eventos||[]).map(e=>[e.id,e.feria,e.lugar,e.stand,e.montajeInicio,e.montajeFin,e.desmontajeInicio,e.desmontajeFin,e.terminado,(e.ayudantes||[]).join(',')].join('|')).join('¬');
+    const tr=(d.trabajadores||[]).map(t=>[t.id,t.nombre,t.rol,t.tipo,t.estado].join('|')).join('¬');
+    const co=(d.collas||[]).map(c=>[c.id,c.nombre,c.responsable].join('|')).join('¬');
+    return ev+'#'+tr+'#'+co;
+  }
+
+  async function limpiarBackupsAntiguosFinal(){
+    const ref=refBackupsStandecorFinal(); if(!ref)return;
+    try{
+      const snap=await ref.orderBy('createdAt','desc').get();
+      const docs=[]; snap.forEach(doc=>docs.push(doc));
+      for(const doc of docs.slice(BACKUP_LIMIT)){await doc.ref.delete()}
+    }catch(e){console.warn('No se pudieron limpiar copias antiguas',e)}
+  }
+
+  async function crearBackupStandecorFinal(motivo){
+    if(restaurandoBackupFinal)return;
+    const ref=refBackupsStandecorFinal();
+    if(!ref){
+      console.warn('Copias: Firebase todavía no está listo.');
+      return;
+    }
+
+    const copia=clonarDbBackupFinal();
+    const total=totalTrabajosBackupFinal(copia);
+    if(!total && !(copia.collas||[]).length){
+      console.warn('Backup omitido: base sin trabajos ni collas.');
+      return;
+    }
+
+    const f=firmaBackupFinal(copia);
+    const ahora=Date.now();
+    if(f===ultimoBackupFirmaFinal && ahora-ultimoBackupMsFinal<60000)return;
+
+    ultimoBackupFirmaFinal=f;
+    ultimoBackupMsFinal=ahora;
+
+    const item={
+      createdAt:ahora,
+      fechaTexto:formatoFechaBackupFinal(ahora),
+      usuario:nombreBackupUsuarioFinal(),
+      motivo:motivo||'Cambio automático',
+      montajes:contarMontajesBackupFinal(copia),
+      desmontajes:contarDesmontajesBackupFinal(copia),
+      trabajos:total,
+      trabajadores:Array.isArray(copia.trabajadores)?copia.trabajadores.length:0,
+      collas:Array.isArray(copia.collas)?copia.collas.length:0,
+      db:copia
+    };
+
+    try{
+      await ref.add(item);
+      await limpiarBackupsAntiguosFinal();
+      console.log('Copia automática creada',item.fechaTexto,item.motivo);
+    }catch(e){
+      console.warn('No se pudo crear la copia automática',e);
+      alert('No se pudo crear la copia automática. Revisa permisos de Firebase.');
+    }
+  }
+
+
+  /* Wrapper antiguo de copias desactivado: evita duplicados automáticos. */
+
+
+  async function cargarBackupsStandecorFinal(){
+    const ref=refBackupsStandecorFinal();
+    if(!ref)return [];
+    const snap=await ref.orderBy('createdAt','desc').limit(BACKUP_LIMIT).get();
+    const arr=[]; snap.forEach(doc=>arr.push({id:doc.id,...doc.data()}));
+    return arr;
+  }
+
+  function asegurarPanelBackupsFinal(){
+    let p=document.getElementById('backupsStandecorPanel');
+    if(!p){p=document.createElement('div');p.id='backupsStandecorPanel';document.body.appendChild(p)}
+    return p;
+  }
+
+  async function abrirPanelBackupsFinal(){
+    if(!esAdminBackupFinal()){
+      alert('Solo los administradores pueden ver las copias automáticas.');
+      return;
+    }
+    const p=asegurarPanelBackupsFinal();
+    p.style.display='flex';
+    p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><p class="muted">Cargando copias...</p></div>';
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    try{
+      await renderBackupsStandecorFinal();
+    }catch(e){
+      console.error(e);
+      p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><div class="alerta">No se pudieron cargar las copias. Revisa permisos de Firebase.</div></div>';
+      document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+    }
+  }
+
+  async function renderBackupsStandecorFinal(){
+    const p=asegurarPanelBackupsFinal();
+    const backups=await cargarBackupsStandecorFinal();
+    const puedeRestaurar=esIsraelMBackupFinal();
+
+    p.innerHTML=`<div class="backups-modal">
+      <div class="backups-head">
+        <h2>Copias automáticas</h2>
+        <button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button>
+      </div>
+      <div class="backups-actions-top">
+        <button type="button" class="backup-download" id="crearBackupAhora">Crear copia ahora</button>
+        <span class="muted">Se conservan las últimas ${BACKUP_LIMIT} copias. Solo IsraelM puede restaurar o eliminar.</span>
+      </div>
+      <div>
+        ${backups.length?backups.map(b=>`
+          <div class="backup-row">
+            <div>
+              <div class="backup-title">${esc(b.fechaTexto||formatoFechaBackupFinal(b.createdAt))} · ${esc(b.usuario||'SIN USUARIO')}</div>
+              <div class="backup-meta">
+                ${esc(b.motivo||'Copia automática')}<br>
+                ${Number(b.trabajos||0)} trabajos · ${Number(b.montajes||0)} montajes activos · ${Number(b.desmontajes||0)} desmontajes activos · ${Number(b.trabajadores||0)} trabajadores · ${Number(b.collas||0)} collas
+              </div>
+            </div>
+            <div class="backup-buttons">
+              <button type="button" class="backup-download" data-download-backup="${esc(b.id)}">Descargar</button>
+              ${puedeRestaurar?`<button type="button" class="backup-restore" data-restore-backup="${esc(b.id)}">Restaurar</button><button type="button" class="backup-delete" data-delete-backup="${esc(b.id)}">Eliminar</button>`:''}
+            </div>
+          </div>
+        `).join(''):'<p class="muted">Todavía no hay copias automáticas.</p>'}
+      </div>
+    </div>`;
+
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+    document.getElementById('crearBackupAhora').onclick=async()=>{await crearBackupStandecorFinal('Copia manual desde panel');await renderBackupsStandecorFinal()};
+    p.querySelectorAll('[data-download-backup]').forEach(btn=>btn.onclick=()=>descargarBackupFinal(btn.getAttribute('data-download-backup'),backups));
+    p.querySelectorAll('[data-restore-backup]').forEach(btn=>btn.onclick=()=>restaurarBackupFinal(btn.getAttribute('data-restore-backup'),backups));
+    p.querySelectorAll('[data-delete-backup]').forEach(btn=>btn.onclick=()=>eliminarBackupFinal(btn.getAttribute('data-delete-backup')));
+  }
+
+  function descargarBackupFinal(id,backups){
+    const b=backups.find(x=>x.id===id); if(!b)return;
+    const blob=new Blob([JSON.stringify(b.db,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='Backup_STANDECOR_'+String(b.fechaTexto||'copia').replace(/[/: ]/g,'-')+'.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function restaurarBackupFinal(id,backups){
+    if(!esIsraelMBackupFinal()){alert('Solo IsraelM puede restaurar copias.');return}
+    const b=backups.find(x=>x.id===id); if(!b||!b.db)return;
+    if(!confirm('¿Seguro que deseas restaurar esta copia?\\n\\n'+(b.fechaTexto||'')+'\\n'+(b.trabajos||0)+' trabajos\\n\\nEsta acción reemplazará los datos actuales.'))return;
+    const texto=prompt('Para confirmar escribe RESTAURAR'); if(texto!=='RESTAURAR')return;
+
+    try{
+      restaurandoBackupFinal=true;
+      db=b.db;
+      db.trabajadores=db.trabajadores||[];
+      db.collas=db.collas||[];
+      db.eventos=db.eventos||[];
+      db.actualizadoFirebase=Date.now();
+
+      localStorage.setItem(STORAGE,JSON.stringify(db));
+      const planRef=refPlanificadorStandecorFinal();
+      if(planRef){
+        await planRef.set({db:db,actualizadoFirebase:db.actualizadoFirebase,restauradoDesdeBackup:id,restauradoPor:nombreBackupUsuarioFinal()},{merge:true});
+      }
+
+      renderAll();
+      restaurandoBackupFinal=false;
+      alert('Copia restaurada correctamente.');
+      document.getElementById('backupsStandecorPanel').style.display='none';
+    }catch(e){
+      restaurandoBackupFinal=false;
+      console.error(e);
+      alert('No se pudo restaurar la copia.');
+    }
+  }
+
+  async function eliminarBackupFinal(id){
+    if(!esIsraelMBackupFinal()){alert('Solo IsraelM puede eliminar copias.');return}
+    if(!confirm('¿Eliminar esta copia automática?'))return;
+    const ref=refBackupsStandecorFinal(); if(!ref)return;
+    await ref.doc(id).delete();
+    await renderBackupsStandecorFinal();
+  }
+
+  window.abrirPanelBackupsStandecor=abrirPanelBackupsFinal;
+  window.crearBackupManualStandecor=()=>crearBackupStandecorFinal('Copia manual desde panel');
+
+  // Ocultar botón antiguo de cápsula si existe.
+  setInterval(()=>{
+    const viejo=document.getElementById('betaBackupsBtn');
+    if(viejo) viejo.style.display='none';
+  },1000);
+})();
+</script>
+
+
+<script>
+/* ===== COPIAS_AUTOMATICAS_ANTIDUPLICADOS_STANDECOR ===== */
+(function(){
+  const BACKUP_COLLECTION='standecor_backups';
+  const BACKUP_LIMIT=10;
+  const MIN_DUPLICADO_MS=120000;
+  let backupTimerAntiDup=null;
+
+  function refBackupsAntiDup(){
+    try{
+      if(window.firebase && firebase.apps && firebase.apps.length){
+        return firebase.firestore().collection(BACKUP_COLLECTION);
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function usuarioAntiDup(){try{return JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null')}catch(e){return null}}
+  function nombreUsuarioAntiDup(){const u=usuarioAntiDup();return u&&u.usuario?u.usuario:'SIN USUARIO'}
+  function esAdminAntiDup(){const u=usuarioAntiDup();return Boolean(u&&u.rol==='admin')}
+  function esIsraelMAntiDup(){const u=usuarioAntiDup();return Boolean(u&&String(u.usuario||'').toUpperCase()==='ISRAELM')}
+
+  function fechaAntiDup(ms){
+    const d=new Date(ms||Date.now());
+    return d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  }
+
+  function clonarDbAntiDup(){return JSON.parse(JSON.stringify(db||{}))}
+  function totalTrabajosAntiDup(d){return d&&Array.isArray(d.eventos)?d.eventos.length:0}
+  function montajesAntiDup(d){return (d&&Array.isArray(d.eventos)?d.eventos:[]).filter(e=>!e.terminado&&(e.montajeInicio||e.montajeFin)).length}
+  function desmontajesAntiDup(d){return (d&&Array.isArray(d.eventos)?d.eventos:[]).filter(e=>!e.terminado&&(e.desmontajeInicio||e.desmontajeFin)).length}
+
+  function firmaAntiDup(d){
+    d=d||{};
+    const ev=(d.eventos||[]).map(e=>[
+      e.id,e.feria,e.lugar,e.stand,e.montajeInicio,e.montajeFin,
+      e.desmontajeInicio,e.desmontajeFin,e.terminado,(e.ayudantes||[]).join(','),
+      e.collaId,e.cantidadColla,JSON.stringify(e.collasExtra||[])
+    ].join('|')).join('¬');
+    const tr=(d.trabajadores||[]).map(t=>[t.id,t.nombre,t.rol,t.tipo,t.estado,t.observaciones].join('|')).join('¬');
+    const co=(d.collas||[]).map(c=>[c.id,c.nombre,c.responsable,c.cantidad].join('|')).join('¬');
+    return ev+'#'+tr+'#'+co;
+  }
+
+  function origenDesdeMotivo(motivo){
+    const m=String(motivo||'').toLowerCase();
+    if(m.includes('manual'))return 'MANUAL';
+    if(m.includes('restaur'))return 'RESTAURACIÓN';
+    return 'AUTOMÁTICA';
+  }
+
+  async function ultimaCopiaAntiDup(){
+    const ref=refBackupsAntiDup();
+    if(!ref)return null;
+    const snap=await ref.orderBy('createdAt','desc').limit(1).get();
+    let out=null;
+    snap.forEach(doc=>out={id:doc.id,...doc.data()});
+    return out;
+  }
+
+  async function limpiarAntiguosAntiDup(){
+    const ref=refBackupsAntiDup();
+    if(!ref)return;
+    const snap=await ref.orderBy('createdAt','desc').get();
+    const docs=[];
+    snap.forEach(doc=>docs.push(doc));
+    for(const doc of docs.slice(BACKUP_LIMIT)){
+      await doc.ref.delete();
+    }
+  }
+
+  async function crearBackupStandecorAntiDup(motivo){
+    const ref=refBackupsAntiDup();
+    if(!ref){
+      console.warn('Copias: Firebase no está listo.');
+      return;
+    }
+
+    const copia=clonarDbAntiDup();
+    const total=totalTrabajosAntiDup(copia);
+    const trabajadores=Array.isArray(copia.trabajadores)?copia.trabajadores.length:0;
+    const collas=Array.isArray(copia.collas)?copia.collas.length:0;
+
+    if(!total && !collas){
+      console.warn('Backup omitido: base sin trabajos ni collas.');
+      return;
+    }
+
+    const ahora=Date.now();
+    const firma=firmaAntiDup(copia);
+    const ultima=await ultimaCopiaAntiDup();
+
+    if(ultima){
+      const mismaFirma=ultima.firma===firma;
+      const mismosNumeros=
+        Number(ultima.trabajos||0)===total &&
+        Number(ultima.trabajadores||0)===trabajadores &&
+        Number(ultima.collas||0)===collas;
+      const muyReciente=(ahora-Number(ultima.createdAt||0))<MIN_DUPLICADO_MS;
+
+      if((mismaFirma || mismosNumeros) && muyReciente){
+        console.log('Copia duplicada ignorada.');
+        return;
+      }
+    }
+
+    const origen=origenDesdeMotivo(motivo);
+    const item={
+      createdAt:ahora,
+      fechaTexto:fechaAntiDup(ahora),
+      usuario:nombreUsuarioAntiDup(),
+      motivo:motivo||'Cambio automático',
+      origen:origen,
+      firma:firma,
+      montajes:montajesAntiDup(copia),
+      desmontajes:desmontajesAntiDup(copia),
+      trabajos:total,
+      trabajadores:trabajadores,
+      collas:collas,
+      db:copia
+    };
+
+    await ref.add(item);
+    await limpiarAntiguosAntiDup();
+    console.log('Copia creada',item.fechaTexto,item.origen);
+  }
+
+  if(!window.__saveBackupAntiDuplicadosStandecor){
+    const saveAnterior=window.save;
+    if(typeof saveAnterior==='function'){
+      window.save=function(){
+        saveAnterior.apply(this,arguments);
+        clearTimeout(backupTimerAntiDup);
+        backupTimerAntiDup=setTimeout(()=>crearBackupStandecorAntiDup('Cambio automático'),1400);
+      };
+      window.__saveBackupAntiDuplicadosStandecor=true;
+    }
+  }
+
+  window.crearBackupManualStandecor=function(){
+    return crearBackupStandecorAntiDup('Copia manual desde panel');
+  };
+
+  async function abrirPanelBackupsAntiDup(){
+    if(!esAdminAntiDup()){
+      alert('Solo los administradores pueden ver las copias automáticas.');
+      return;
+    }
+
+    let p=document.getElementById('backupsStandecorPanel');
+    if(!p){
+      p=document.createElement('div');
+      p.id='backupsStandecorPanel';
+      document.body.appendChild(p);
+    }
+
+    p.style.display='flex';
+    p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><p class="muted">Cargando copias...</p></div>';
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+
+    const ref=refBackupsAntiDup();
+    if(!ref){
+      p.innerHTML='<div class="backups-modal"><div class="backups-head"><h2>Copias automáticas</h2><button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button></div><div class="alerta">Firebase no está listo. Cierra y vuelve a abrir la aplicación.</div></div>';
+      document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+      return;
+    }
+
+    const snap=await ref.orderBy('createdAt','desc').limit(BACKUP_LIMIT).get();
+    const backups=[];
+    snap.forEach(doc=>backups.push({id:doc.id,...doc.data()}));
+
+    const puedeRestaurar=esIsraelMAntiDup();
+
+    const escLocal=(s)=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    p.innerHTML=`<div class="backups-modal">
+      <div class="backups-head">
+        <h2>Copias automáticas</h2>
+        <button type="button" class="light" id="cerrarBackupsStandecor">Cerrar</button>
+      </div>
+      <div class="backups-actions-top">
+        <button type="button" class="backup-download" id="crearBackupAhora">Crear copia ahora</button>
+        <span class="muted">Se conservan las últimas ${BACKUP_LIMIT} copias. Solo IsraelM puede restaurar o eliminar.</span>
+      </div>
+      <div>
+        ${backups.length?backups.map(b=>{
+          const origen=(b.origen||origenDesdeMotivo(b.motivo));
+          const clase=origen==='MANUAL'?'manual':origen==='RESTAURACIÓN'?'restauracion':'auto';
+          return `<div class="backup-row">
+            <div>
+              <div class="backup-title">
+                ${escLocal(b.fechaTexto||fechaAntiDup(b.createdAt))} · ${escLocal(b.usuario||'SIN USUARIO')}
+                <span class="backup-origin ${clase}">${escLocal(origen)}</span>
+              </div>
+              <div class="backup-meta">
+                ${escLocal(b.motivo||'Copia automática')}<br>
+                ${Number(b.trabajos||0)} trabajos · ${Number(b.montajes||0)} montajes activos · ${Number(b.desmontajes||0)} desmontajes activos · ${Number(b.trabajadores||0)} trabajadores · ${Number(b.collas||0)} collas
+              </div>
+            </div>
+            <div class="backup-buttons">
+              <button type="button" class="backup-download" data-download-backup="${escLocal(b.id)}">Descargar</button>
+              ${puedeRestaurar?`<button type="button" class="backup-restore" data-restore-backup="${escLocal(b.id)}">Restaurar</button><button type="button" class="backup-delete" data-delete-backup="${escLocal(b.id)}">Eliminar</button>`:''}
+            </div>
+          </div>`;
+        }).join(''):'<p class="muted">Todavía no hay copias automáticas.</p>'}
+      </div>
+    </div>`;
+
+    document.getElementById('cerrarBackupsStandecor').onclick=()=>p.style.display='none';
+    document.getElementById('crearBackupAhora').onclick=async()=>{await crearBackupStandecorAntiDup('Copia manual desde panel');abrirPanelBackupsAntiDup();};
+
+    p.querySelectorAll('[data-download-backup]').forEach(btn=>{
+      btn.onclick=()=>{
+        const b=backups.find(x=>x.id===btn.getAttribute('data-download-backup'));
+        if(!b)return;
+        const blob=new Blob([JSON.stringify(b.db,null,2)],{type:'application/json'});
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(blob);
+        a.download='Backup_STANDECOR_'+String(b.fechaTexto||'copia').replace(/[/: ]/g,'-')+'.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+    });
+
+    p.querySelectorAll('[data-delete-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        if(!esIsraelMAntiDup()){alert('Solo IsraelM puede eliminar copias.');return}
+        if(!confirm('¿Eliminar esta copia automática?'))return;
+        await ref.doc(btn.getAttribute('data-delete-backup')).delete();
+        abrirPanelBackupsAntiDup();
+      };
+    });
+
+    p.querySelectorAll('[data-restore-backup]').forEach(btn=>{
+      btn.onclick=async()=>{
+        if(!esIsraelMAntiDup()){alert('Solo IsraelM puede restaurar copias.');return}
+        const id=btn.getAttribute('data-restore-backup');
+        const b=backups.find(x=>x.id===id);
+        if(!b||!b.db)return;
+        if(!confirm('¿Seguro que deseas restaurar esta copia?\\n\\n'+(b.fechaTexto||'')+'\\n'+(b.trabajos||0)+' trabajos\\n\\nEsta acción reemplazará los datos actuales.'))return;
+        const texto=prompt('Para confirmar escribe RESTAURAR');
+        if(texto!=='RESTAURAR')return;
+
+        db=b.db;
+        db.trabajadores=db.trabajadores||[];
+        db.collas=db.collas||[];
+        db.eventos=db.eventos||[];
+        db.actualizadoFirebase=Date.now();
+
+        localStorage.setItem(STORAGE,JSON.stringify(db));
+        await firebase.firestore().collection('standecor').doc('planificador').set({
+          db:db,
+          actualizadoFirebase:db.actualizadoFirebase,
+          restauradoDesdeBackup:id,
+          restauradoPor:nombreUsuarioAntiDup()
+        },{merge:true});
+
+        await crearBackupStandecorAntiDup('Restauración desde copia');
+        renderAll();
+        alert('Copia restaurada correctamente.');
+        p.style.display='none';
+      };
+    });
+  }
+
+  window.abrirPanelBackupsStandecor=abrirPanelBackupsAntiDup;
+})();
+</script>
+
+
+<script>
+/* ===== COPIAS_BLOQUEO_FINAL_DUPLICADOS_STANDECOR ===== */
+(function(){
+  const KEY='standecor_ultimo_backup_firma_final';
+  const MIN_MS=120000;
+
+  function firmaActualFinalCopias(){
+    try{
+      const d=db||{};
+      const ev=(d.eventos||[]).map(e=>[
+        e.id,e.feria,e.lugar,e.stand,e.montajeInicio,e.montajeFin,
+        e.desmontajeInicio,e.desmontajeFin,e.terminado,(e.ayudantes||[]).join(','),
+        e.collaId,e.cantidadColla,JSON.stringify(e.collasExtra||[])
+      ].join('|')).join('¬');
+      const tr=(d.trabajadores||[]).map(t=>[t.id,t.nombre,t.rol,t.tipo,t.estado,t.observaciones].join('|')).join('¬');
+      const co=(d.collas||[]).map(c=>[c.id,c.nombre,c.responsable,c.cantidad].join('|')).join('¬');
+      return ev+'#'+tr+'#'+co;
+    }catch(e){return String(Date.now())}
+  }
+
+  async function existeBackupRecienteMismaFirmaFinal(firma){
+    try{
+      if(!window.firebase || !firebase.apps || !firebase.apps.length)return false;
+      const snap=await firebase.firestore().collection('standecor_backups')
+        .orderBy('createdAt','desc')
+        .limit(5)
+        .get();
+
+      const ahora=Date.now();
+      let existe=false;
+      snap.forEach(doc=>{
+        const b=doc.data()||{};
+        if((ahora-Number(b.createdAt||0))<MIN_MS && b.firma===firma){
+          existe=true;
+        }
+      });
+      return existe;
+    }catch(e){
+      return false;
+    }
+  }
+
+  const crearOriginal=window.crearBackupManualStandecor;
+
+  // Refuerzo: las copias manuales se permiten, pero también evitan doble clic duplicado inmediato.
+  window.crearBackupManualStandecor=async function(){
+    const firma=firmaActualFinalCopias();
+    const ahora=Date.now();
+    let last={};
+    try{last=JSON.parse(sessionStorage.getItem(KEY)||'{}')}catch(e){}
+
+    if(last.firma===firma && ahora-Number(last.t||0)<10000){
+      console.log('Copia manual duplicada ignorada por doble clic.');
+      return;
+    }
+
+    sessionStorage.setItem(KEY,JSON.stringify({firma,t:ahora}));
+
+    if(typeof crearOriginal==='function'){
+      return crearOriginal();
+    }
+  };
+
+  // Sustituimos save una última vez desde la función base actual, pero sin arrastrar wrappers anteriores:
+  // Guarda normalmente y programa UNA sola copia automática.
+  if(!window.__saveFinalSinDuplicadosStandecor){
+    const saveActual=window.save;
+    let timer=null;
+
+    window.save=function(){
+      saveActual.apply(this,arguments);
+
+      clearTimeout(timer);
+      timer=setTimeout(async()=>{
+        try{
+          const firma=firmaActualFinalCopias();
+          const ahora=Date.now();
+          let last={};
+          try{last=JSON.parse(sessionStorage.getItem(KEY)||'{}')}catch(e){}
+
+          if(last.firma===firma && ahora-Number(last.t||0)<MIN_MS){
+            console.log('Copia automática duplicada ignorada por sesión.');
+            return;
+          }
+
+          if(await existeBackupRecienteMismaFirmaFinal(firma)){
+            sessionStorage.setItem(KEY,JSON.stringify({firma,t:ahora}));
+            console.log('Copia automática duplicada ignorada por Firebase.');
+            return;
+          }
+
+          sessionStorage.setItem(KEY,JSON.stringify({firma,t:ahora}));
+
+          // Usar la función anti-duplicados si existe en el ámbito global no es posible,
+          // así que usamos Crear copia manual global solo para disparar el flujo actual.
+          // El motivo visual seguirá quedando como copia automática por los wrappers anti-dup internos.
+          if(window.firebase && firebase.apps && firebase.apps.length){
+            const copia=JSON.parse(JSON.stringify(db||{}));
+            const usuario=(()=>{try{return JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null')}catch(e){return null}})();
+            const total=Array.isArray(copia.eventos)?copia.eventos.length:0;
+            const trabajadores=Array.isArray(copia.trabajadores)?copia.trabajadores.length:0;
+            const collas=Array.isArray(copia.collas)?copia.collas.length:0;
+            if(!total && !collas)return;
+
+            const montajes=(copia.eventos||[]).filter(e=>!e.terminado&&(e.montajeInicio||e.montajeFin)).length;
+            const desmontajes=(copia.eventos||[]).filter(e=>!e.terminado&&(e.desmontajeInicio||e.desmontajeFin)).length;
+            const d=new Date(ahora);
+            const fechaTexto=d.toLocaleDateString('es-ES')+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+
+            await firebase.firestore().collection('standecor_backups').add({
+              createdAt:ahora,
+              fechaTexto,
+              usuario:usuario&&usuario.usuario?usuario.usuario:'SIN USUARIO',
+              motivo:'Cambio automático',
+              origen:'AUTOMÁTICA',
+              firma,
+              montajes,
+              desmontajes,
+              trabajos:total,
+              trabajadores,
+              collas,
+              db:copia
+            });
+            console.log('Copia automática única creada.');
+          }
+        }catch(e){
+          console.warn('No se pudo crear copia automática única',e);
+        }
+      },1800);
+    };
+
+    window.__saveFinalSinDuplicadosStandecor=true;
+  }
 })();
 </script>
 
