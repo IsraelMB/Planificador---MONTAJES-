@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- FIX UI: eliminar montaje sin confirmación con aviso superior -->
 <!-- FIX COPIAS: restaurar sin recargar página -->
 <!-- FIX COPIAS LIMPIAS: solo crear/editar/terminar montaje y manual -->
 <!-- FIX RESTAURAR: sin confirmaciones y mensaje simple -->
@@ -9530,6 +9531,61 @@ function exportarPlantillaTrabajadoresXLSX(){
       return r;
     };
   }
+})();
+</script>
+
+
+<script>
+/* ===== ELIMINAR_MONTAJE_SIN_CONFIRMACION_STANDECOR ===== */
+(function(){
+  function avisoEliminarMontaje(msg){
+    let box=document.getElementById('restoreAvisoStandecor');
+    if(!box){
+      box=document.createElement('div');
+      box.id='restoreAvisoStandecor';
+      box.style.position='fixed';
+      box.style.left='50%';
+      box.style.top='22px';
+      box.style.transform='translateX(-50%)';
+      box.style.zIndex='2147483647';
+      box.style.padding='12px 18px';
+      box.style.borderRadius='999px';
+      box.style.fontWeight='900';
+      box.style.fontSize='13px';
+      box.style.boxShadow='0 12px 35px rgba(0,0,0,.22)';
+      document.body.appendChild(box);
+    }
+
+    box.textContent=msg;
+    box.style.background='#fff1f1';
+    box.style.color='#b42318';
+    box.style.border='1px solid #ffcaca';
+    box.style.display='block';
+
+    setTimeout(()=>{box.style.display='none'},2600);
+  }
+
+  function guardarSinBackupEliminar(){
+    localStorage.setItem(STORAGE,JSON.stringify(db));
+    if(window.guardarFirebaseStandecor && !window.aplicandoDatosFirebase){
+      window.guardarFirebaseStandecor();
+    }
+  }
+
+  window.borrarEvento=function(id){
+    db.eventosEliminados=(db.eventosEliminados&&typeof db.eventosEliminados==='object')
+      ? db.eventosEliminados
+      : {};
+
+    db.eventosEliminados[String(id)]=Date.now();
+
+    db.eventos=(db.eventos||[]).filter(e=>String(e.id)!==String(id));
+
+    guardarSinBackupEliminar();
+    renderAll();
+
+    avisoEliminarMontaje('Montaje/desmontaje eliminado');
+  };
 })();
 </script>
 
