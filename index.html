@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- AJUSTE: recuperar TERMINADOS y reducir contadores 15% -->
+<!-- AJUSTE FINAL SIN BOCETOS: ciudad negrita, contadores alineados, terminados compacto -->
+<!-- AJUSTE FINAL CONFIRMADO: planificación visual sin más bocetos -->
+<!-- AJUSTE FINAL VISUAL PLANIFICACIÓN: feria/stand iguales, cápsulas y fechas compactas -->
+<!-- FIX PLANIFICACIÓN: eliminar duplicados reales de Firebase -->
 <!-- FIX UI: eliminar montaje sin confirmación con aviso superior -->
 <!-- FIX COPIAS: restaurar sin recargar página -->
 <!-- FIX COPIAS LIMPIAS: solo crear/editar/terminar montaje y manual -->
@@ -2484,6 +2489,300 @@ const firebaseConfigStandecor = {
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+
+
+<style id="standecor-planificacion-visual-final">
+/* ===== PLANIFICACIÓN VISUAL FINAL CONFIRMADA ===== */
+
+/* Rejilla final: más aire para feria/ciudad/stand y cápsula desplazada a la derecha */
+.plan-folder-head{
+  align-items:center!important;
+  grid-template-columns:34px minmax(440px,1.95fr) 104px 185px 150px!important;
+  column-gap:16px!important;
+}
+
+/* Feria: equilibrada con el stand */
+.plan-folder-head .folder-feria{
+  color:#0B5F86!important;
+  font-size:13.4px!important;
+  font-weight:900!important;
+  line-height:1.05!important;
+  letter-spacing:.2px!important;
+  text-transform:uppercase!important;
+}
+
+/* Stand/cliente: azul STANDECOR, 10% más pequeño que la versión anterior */
+.plan-folder-head .folder-stand{
+  color:#0B5F86!important;
+  font-size:12px!important;
+  font-weight:900!important;
+  line-height:1.05!important;
+  letter-spacing:.15px!important;
+  text-transform:uppercase!important;
+}
+
+/* Ciudad/país: 10% más pequeña y sin negrita marcada */
+.plan-folder-head .folder-lugar{
+  color:#64748b!important;
+  font-size:9.9px!important;
+  font-weight:500!important;
+  line-height:1.05!important;
+  letter-spacing:.05px!important;
+  text-transform:uppercase!important;
+}
+
+/* Línea izquierda compacta */
+.plan-folder-head .folder-title-line{
+  display:flex!important;
+  align-items:center!important;
+  gap:9px!important;
+  min-width:0!important;
+  white-space:nowrap!important;
+}
+
+.plan-folder-head .folder-sub{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  margin-top:0!important;
+  min-width:0!important;
+  white-space:nowrap!important;
+}
+
+/* Cápsula: mismo tamaño actual, pero colocada más a la derecha */
+.plan-folder-head .folder-pill{
+  width:auto!important;
+  min-width:86px!important;
+  max-width:104px!important;
+  height:26px!important;
+  min-height:26px!important;
+  padding:3px 10px!important;
+  justify-content:center!important;
+  align-items:center!important;
+  font-size:10px!important;
+  line-height:1!important;
+  border-radius:999px!important;
+  letter-spacing:.25px!important;
+  justify-self:end!important;
+}
+
+/* Fechas: 10-15% más pequeñas */
+.plan-folder-head .folder-date{
+  font-size:9.6px!important;
+  font-weight:850!important;
+  line-height:1.1!important;
+  white-space:nowrap!important;
+  justify-self:start!important;
+}
+
+/* Contador/personas */
+.plan-folder-head .folder-count{
+  font-size:10.8px!important;
+  font-weight:900!important;
+  line-height:1.1!important;
+  white-space:nowrap!important;
+  justify-self:end!important;
+}
+
+/* Responsive */
+@media(max-width:1100px){
+  .plan-folder-head{
+    grid-template-columns:30px 1fr!important;
+    column-gap:8px!important;
+  }
+  .plan-folder-head .folder-pill,
+  .plan-folder-head .folder-date,
+  .plan-folder-head .folder-count{
+    grid-column:2!important;
+    justify-self:start!important;
+  }
+}
+
+@media(max-width:720px){
+  .plan-folder-head .folder-title-line{
+    display:block!important;
+    white-space:normal!important;
+  }
+  .plan-folder-head .folder-sub{
+    display:flex!important;
+    margin-top:4px!important;
+    white-space:normal!important;
+  }
+  .plan-folder-head .folder-feria{
+    font-size:12px!important;
+  }
+  .plan-folder-head .folder-stand{
+    font-size:11px!important;
+  }
+  .plan-folder-head .folder-lugar{
+    font-size:8.8px!important;
+    font-weight:500!important;
+  }
+  .plan-folder-head .folder-pill{
+    min-width:78px!important;
+    max-width:92px!important;
+    height:24px!important;
+    min-height:24px!important;
+    font-size:9px!important;
+    padding:3px 8px!important;
+  }
+  .plan-folder-head .folder-date{
+    font-size:9px!important;
+  }
+}
+</style>
+
+
+<style id="standecor-ajuste-final-contadores-terminados">
+/* ===== AJUSTE FINAL SIN BOCETOS ===== */
+
+/* Ciudad: mismo tamaño actual, pero en negrita */
+.plan-folder-head .folder-lugar{
+  font-weight:800!important;
+}
+
+/* Contador de personas/collas/avisos: más centrado y sin perderse al borde */
+.plan-folder-head .folder-count{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  min-width:135px!important;
+  padding-right:8px!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+}
+
+/* La fecha queda compacta, pero con su espacio */
+.plan-folder-head .folder-date{
+  justify-self:start!important;
+  min-width:150px!important;
+}
+
+/* En terminados quitamos protagonismo a la palabra y dejamos check + contador */
+.terminados-head{
+  justify-content:flex-start!important;
+  gap:8px!important;
+  font-weight:900!important;
+}
+
+.terminados-head #terminadosArrow{
+  font-size:14px!important;
+}
+
+/* Contador en terminados: alineado y compacto */
+.terminados-list .folder-count,
+.plan-folder.finished .folder-count{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:165px!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+}
+
+/* Evitar que el check de terminados se coma el espacio */
+.plan-folder.finished .folder-count{
+  color:#207a35!important;
+  font-weight:900!important;
+}
+
+/* Ajuste de rejilla para que el último bloque no quede cortado */
+.plan-folder-head{
+  grid-template-columns:34px minmax(420px,1.85fr) 104px 170px minmax(165px,.65fr)!important;
+  column-gap:14px!important;
+}
+
+@media(max-width:1100px){
+  .plan-folder-head{
+    grid-template-columns:30px 1fr!important;
+  }
+  .plan-folder-head .folder-count,
+  .terminados-list .folder-count,
+  .plan-folder.finished .folder-count{
+    justify-content:flex-start!important;
+    text-align:left!important;
+    min-width:0!important;
+  }
+}
+</style>
+
+
+<style id="standecor-ajuste-terminados-contadores-ok">
+/* ===== TERMINADOS + CONTADORES AJUSTADOS ===== */
+
+/* Cabecera principal: recuperar texto TERMINADOS */
+.terminados-head{
+  justify-content:flex-start!important;
+  gap:8px!important;
+  font-weight:900!important;
+}
+
+/* Información derecha: personas/collas/avisos 15% más compacta */
+.plan-folder-head .folder-count{
+  font-size:9.2px!important;
+  min-width:118px!important;
+  max-width:132px!important;
+  padding-left:4px!important;
+  padding-right:4px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+}
+
+/* En terminados también compactar y alinear */
+.terminados-list .folder-count,
+.plan-folder.finished .folder-count{
+  font-size:9.2px!important;
+  min-width:128px!important;
+  max-width:145px!important;
+  padding-left:4px!important;
+  padding-right:4px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  color:#207a35!important;
+  font-weight:900!important;
+}
+
+/* Rejilla con más aire para que no se corte el bloque derecho */
+.plan-folder-head{
+  grid-template-columns:34px minmax(420px,1.85fr) 104px 170px minmax(128px,.55fr)!important;
+  column-gap:14px!important;
+}
+
+/* Fecha mantiene ajuste compacto */
+.plan-folder-head .folder-date{
+  min-width:150px!important;
+  justify-self:start!important;
+}
+
+/* Responsive */
+@media(max-width:1100px){
+  .plan-folder-head{
+    grid-template-columns:30px 1fr!important;
+  }
+  .plan-folder-head .folder-count,
+  .terminados-list .folder-count,
+  .plan-folder.finished .folder-count{
+    justify-content:flex-start!important;
+    text-align:left!important;
+    min-width:0!important;
+    max-width:none!important;
+    overflow:visible!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="toastAlert" class="toast-alert"></div>
@@ -3227,10 +3526,10 @@ function renderEventos(){
     return `<div class="plan-folder ${terminado?'finished':''}" id="folder_${ev.id}">
       <button type="button" class="plan-folder-head" onclick="togglePlanDetalle('${ev.id}')">
         <span class="folder-arrow">›</span>
-        <span class="folder-main"><span class="folder-title-line"><span class="folder-feria">${esc(ev.feria||'SIN FERIA')}</span><span class="folder-sub">${esc(ev.lugar||'SIN LUGAR')} · ${esc(ev.stand||'SIN STAND')}</span></span></span>
+        <span class="folder-main"><span class="folder-title-line"><span class="folder-feria">${esc(ev.feria||'SIN FERIA')}</span><span class="folder-sub"><span class="folder-lugar">${esc(ev.lugar||'SIN LUGAR')}</span> · <span class="folder-stand">${esc(ev.stand||'SIN STAND')}</span></span></span></span>
         <span class="folder-pill ${tipo}">${tipoTxt}</span>
         <span class="folder-date">${esc(fecha||'SIN FECHA')}</span>
-        <span class="folder-count">${terminado?'✅ TERMINADO · ':''}${ayudas.length} pers. · ${collas.length} colla${collas.length===1?'':'s'}${avisos.length?' · ⚠ '+avisos.length:''}</span>
+        <span class="folder-count">${terminado?'✅ ':''}${ayudas.length} pers. · ${collas.length} colla${collas.length===1?'':'s'}${avisos.length?' · ⚠ '+avisos.length:''}</span>
       </button>
       <div class="plan-folder-body">
         <div class="folder-detail-grid compact">
@@ -3251,7 +3550,7 @@ function renderEventos(){
 
   let html=activos.map(e=>carpeta(e,false)).join('')||'<p class="muted">No hay montajes activos.</p>';
   html+=`<div class="terminados-panel no-print">
-    <button type="button" class="terminados-head" onclick="toggleTerminadosLista()"><span id="terminadosArrow">›</span> TERMINADOS (${terminados.length})</button>
+    <button type="button" class="terminados-head" onclick="toggleTerminadosLista()"><span id="terminadosArrow">›</span> ✅ TERMINADOS (${terminados.length})</button>
     <div id="terminadosList" class="terminados-list" style="display:none">${terminados.map(e=>carpeta(e,true)).join('')||'<p class="muted">No hay trabajos terminados.</p>'}</div>
   </div>`;
 
@@ -3264,11 +3563,9 @@ function renderEventos(){
 
 /* ===== PDF / IMPRESIÓN MENSUAL ===== */
 function obtenerMesPlanificacionPDF(){
-  const desde=byId('filtroDesde')?.value||'';
-  const hasta=byId('filtroHasta')?.value||'';
   const mesCal=byId('mesCalendario')?.value||'';
-  const base=desde||hasta||(mesCal?mesCal+'-01':'')||new Date().toISOString().slice(0,10);
-  return base.slice(0,7);
+  if(mesCal) return mesCal;
+  return new Date().toISOString().slice(0,7);
 }
 
 function fechaPerteneceMes(fecha,mes){
@@ -4062,10 +4359,10 @@ function renderPrint(eventosPersonalizados){
         return `<div class="plan-folder ${terminado?'finished':''}" id="folder_${ev.id}">
           <button type="button" class="plan-folder-head" onclick="togglePlanDetalle('${ev.id}')">
             <span class="folder-arrow">›</span>
-            <span class="folder-main"><span class="folder-title-line"><span class="folder-feria">${esc(ev.feria||'SIN FERIA')}</span><span class="folder-sub">${esc(ev.lugar||'SIN LUGAR')} · ${esc(ev.stand||'SIN STAND')}</span></span></span>
+            <span class="folder-main"><span class="folder-title-line"><span class="folder-feria">${esc(ev.feria||'SIN FERIA')}</span><span class="folder-sub"><span class="folder-lugar">${esc(ev.lugar||'SIN LUGAR')}</span> · <span class="folder-stand">${esc(ev.stand||'SIN STAND')}</span></span></span></span>
             <span class="folder-pill ${tipo}">${tipoTxt}</span>
             <span class="folder-date">${esc(fecha||'SIN FECHA')}</span>
-            <span class="folder-count">${terminado?'✅ TERMINADO · ':''}${ayudas.length} pers. · ${collas.length} colla${collas.length===1?'':'s'}${avisos.length?' · ⚠ '+avisos.length:''}</span>
+            <span class="folder-count">${terminado?'✅ ':''}${ayudas.length} pers. · ${collas.length} colla${collas.length===1?'':'s'}${avisos.length?' · ⚠ '+avisos.length:''}</span>
           </button>
           <div class="plan-folder-body">
             <div class="folder-detail-grid compact">
@@ -4086,7 +4383,7 @@ function renderPrint(eventosPersonalizados){
 
       let html=activos.map(e=>carpeta(e,false)).join('')||'<p class="muted">No hay montajes activos.</p>';
       html+=`<div class="terminados-panel no-print">
-        <button type="button" class="terminados-head" onclick="toggleTerminadosLista()"><span id="terminadosArrow">›</span> TERMINADOS (${terminados.length})</button>
+        <button type="button" class="terminados-head" onclick="toggleTerminadosLista()"><span id="terminadosArrow">›</span> ✅ TERMINADOS (${terminados.length})</button>
         <div id="terminadosList" class="terminados-list" style="display:none">${terminados.map(e=>carpeta(e,true)).join('')||'<p class="muted">No hay trabajos terminados.</p>'}</div>
       </div>`;
 
@@ -9586,6 +9883,178 @@ function exportarPlantillaTrabajadoresXLSX(){
 
     avisoEliminarMontaje('Montaje/desmontaje eliminado');
   };
+})();
+</script>
+
+
+<script>
+/* ===== FIX_DUPLICADOS_PLANIFICACION_STANDECOR ===== */
+(function(){
+  function normalDup(s){
+    return String(s||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+  }
+
+  function tipoDup(ev){
+    const tieneMontaje=Boolean(ev.montajeInicio||ev.montajeFin);
+    const tieneDesmontaje=Boolean(ev.desmontajeInicio||ev.desmontajeFin);
+    if(tieneMontaje && tieneDesmontaje) return 'MIXTO';
+    if(tieneDesmontaje) return 'DESMONTAJE';
+    return 'MONTAJE';
+  }
+
+  function claveEventoDup(ev){
+    return [
+      normalDup(ev.feria),
+      normalDup(ev.lugar),
+      normalDup(ev.stand),
+      tipoDup(ev),
+      ev.montajeInicio||'',
+      ev.montajeFin||'',
+      ev.desmontajeInicio||'',
+      ev.desmontajeFin||''
+    ].join('|');
+  }
+
+  function puntuacionEventoDup(ev){
+    let p=0;
+    p+=String(ev.observaciones||'').trim().length>0 ? 1000 : 0;
+    p+=String(ev.observaciones||'').trim().length;
+    p+=(Array.isArray(ev.ayudantes)?ev.ayudantes.length:0)*20;
+    p+=(Array.isArray(ev.collasExtra)?ev.collasExtra.length:0)*10;
+    p+=ev.collaId?10:0;
+    p+=ev.cantidadColla?5:0;
+    p+=ev.cabezaPrincipalId?5:0;
+    p+=Number(ev.actualizado||ev.updatedAt||ev.createdAt||0)/1000000000000;
+    return p;
+  }
+
+  function fusionarEventosDup(a,b){
+    const mejor=puntuacionEventoDup(a)>=puntuacionEventoDup(b)?a:b;
+    const otro=mejor===a?b:a;
+    const fusion={...otro,...mejor};
+
+    const setAyudantes=new Set();
+    (Array.isArray(otro.ayudantes)?otro.ayudantes:[]).forEach(x=>setAyudantes.add(String(x)));
+    (Array.isArray(mejor.ayudantes)?mejor.ayudantes:[]).forEach(x=>setAyudantes.add(String(x)));
+    fusion.ayudantes=[...setAyudantes].filter(Boolean);
+
+    if(!String(fusion.observaciones||'').trim() && String(otro.observaciones||'').trim()){
+      fusion.observaciones=otro.observaciones;
+    }
+
+    fusion.id=mejor.id;
+    return {fusion, eliminado:otro.id};
+  }
+
+  function eliminarDuplicadosPlanificacion(){
+    try{
+      db=db||{};
+      db.eventos=Array.isArray(db.eventos)?db.eventos:[];
+      db.eventosEliminados=(db.eventosEliminados&&typeof db.eventosEliminados==='object')?db.eventosEliminados:{};
+
+      const mapa=new Map();
+      const eliminados=[];
+
+      for(const ev of db.eventos){
+        if(!ev || !ev.id) continue;
+        const id=String(ev.id);
+        if(db.eventosEliminados[id]) continue;
+
+        const clave=claveEventoDup(ev);
+        if(!mapa.has(clave)){
+          mapa.set(clave,ev);
+        }else{
+          const existente=mapa.get(clave);
+          const res=fusionarEventosDup(existente,ev);
+          mapa.set(clave,res.fusion);
+          if(res.eliminado) eliminados.push(String(res.eliminado));
+        }
+      }
+
+      if(eliminados.length){
+        eliminados.forEach(id=>{db.eventosEliminados[id]=Date.now();});
+        db.eventos=[...mapa.values()];
+        console.warn('Duplicados de planificación eliminados:', eliminados.length);
+        return eliminados.length;
+      }
+      return 0;
+    }catch(e){
+      console.warn('No se pudieron eliminar duplicados de planificación',e);
+      return 0;
+    }
+  }
+
+  function guardarSinBackupDup(){
+    localStorage.setItem(STORAGE,JSON.stringify(db));
+    if(window.guardarFirebaseStandecor && !window.aplicandoDatosFirebase){
+      window.guardarFirebaseStandecor();
+    }
+  }
+
+  if(!window.__renderAllFixDuplicadosPlanificacion){
+    const renderAllOriginal=window.renderAll;
+    if(typeof renderAllOriginal==='function'){
+      window.renderAll=function(){
+        const n=eliminarDuplicadosPlanificacion();
+        const r=renderAllOriginal.apply(this,arguments);
+        if(n && !window.aplicandoDatosFirebase){
+          guardarSinBackupDup();
+        }
+        return r;
+      };
+      window.__renderAllFixDuplicadosPlanificacion=true;
+    }
+  }
+
+  if(!window.__saveFixDuplicadosPlanificacion){
+    const saveOriginal=window.save;
+    if(typeof saveOriginal==='function'){
+      window.save=function(){
+        eliminarDuplicadosPlanificacion();
+        return saveOriginal.apply(this,arguments);
+      };
+      window.__saveFixDuplicadosPlanificacion=true;
+    }
+  }
+
+  function avisoDup(msg){
+    let box=document.getElementById('restoreAvisoStandecor');
+    if(!box){
+      box=document.createElement('div');
+      box.id='restoreAvisoStandecor';
+      box.style.position='fixed';
+      box.style.left='50%';
+      box.style.top='22px';
+      box.style.transform='translateX(-50%)';
+      box.style.zIndex='2147483647';
+      box.style.padding='12px 18px';
+      box.style.borderRadius='999px';
+      box.style.fontWeight='900';
+      box.style.fontSize='13px';
+      box.style.boxShadow='0 12px 35px rgba(0,0,0,.22)';
+      document.body.appendChild(box);
+    }
+    box.textContent=msg;
+    box.style.background='#e9f8ee';
+    box.style.color='#207a35';
+    box.style.border='1px solid #bfe7c7';
+    box.style.display='block';
+    setTimeout(()=>{box.style.display='none'},2600);
+  }
+
+  setTimeout(()=>{
+    try{
+      const n=eliminarDuplicadosPlanificacion();
+      if(n){
+        localStorage.setItem(STORAGE,JSON.stringify(db));
+        try{renderAll()}catch(e){}
+        guardarSinBackupDup();
+        avisoDup('Duplicados de planificación corregidos');
+      }
+    }catch(e){}
+  },1800);
+
+  window.eliminarDuplicadosPlanificacionStandecor=eliminarDuplicadosPlanificacion;
 })();
 </script>
 
