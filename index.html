@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- FIX PDF MENSUAL FINAL: usa mes real del calendario y filtra por fecha de inicio -->
+<!-- FIX PDF MENSUAL: filtra solo el mes del calendario y no imprime otros meses -->
 <!-- AJUSTE: recuperar TERMINADOS y reducir contadores 15% -->
 <!-- AJUSTE FINAL SIN BOCETOS: ciudad negrita, contadores alineados, terminados compacto -->
 <!-- AJUSTE FINAL CONFIRMADO: planificación visual sin más bocetos -->
@@ -10055,6 +10057,102 @@ function exportarPlantillaTrabajadoresXLSX(){
   },1800);
 
   window.eliminarDuplicadosPlanificacionStandecor=eliminarDuplicadosPlanificacion;
+})();
+</script>
+
+
+
+<script>
+/* ===== FIX PDF MENSUAL FINAL STANDECOR =====
+   - Si el calendario muestra junio pero el input month está vacío, lo fija automáticamente.
+   - El PDF mensual filtra por FECHA DE INICIO del montaje/desmontaje.
+   - Así, si junio está seleccionado, no mete trabajos iniciados en mayo.
+*/
+(function(){
+  function mesActualSistemaPDF(){
+    return new Date().toISOString().slice(0,7);
+  }
+
+  function asegurarMesCalendarioPDF(){
+    const input=byId('mesCalendario');
+    if(input && !input.value){
+      input.value=mesActualSistemaPDF();
+      try{ renderCalendario(); }catch(e){}
+    }
+    return (input && input.value) ? input.value : mesActualSistemaPDF();
+  }
+
+  function mesPDFSeleccionadoFinal(){
+    return asegurarMesCalendarioPDF();
+  }
+
+  function fechaInicioEnMesPDF(fecha,mes){
+    return Boolean(fecha && String(fecha).slice(0,7)===mes);
+  }
+
+  function cloneSoloMontajePDF(ev){
+    return {
+      ...ev,
+      desmontajeInicio:'',
+      desmontajeFin:''
+    };
+  }
+
+  function cloneSoloDesmontajePDF(ev){
+    return {
+      ...ev,
+      montajeInicio:'',
+      montajeFin:''
+    };
+  }
+
+  window.obtenerMesPlanificacionPDF=mesPDFSeleccionadoFinal;
+
+  window.imprimirMesPDF=function(){
+    const mes=mesPDFSeleccionadoFinal();
+    const trabajos=[];
+
+    (db.eventos||[]).forEach(ev=>{
+      if(ev.terminado) return;
+
+      if(fechaInicioEnMesPDF(ev.montajeInicio,mes)){
+        trabajos.push(cloneSoloMontajePDF(ev));
+      }
+
+      if(fechaInicioEnMesPDF(ev.desmontajeInicio,mes)){
+        trabajos.push(cloneSoloDesmontajePDF(ev));
+      }
+    });
+
+    trabajos.sort((a,b)=>{
+      const fechaA=a.montajeInicio||a.desmontajeInicio||'';
+      const fechaB=b.montajeInicio||b.desmontajeInicio||'';
+      if(fechaA!==fechaB) return fechaA.localeCompare(fechaB);
+      return String(a.feria||'').localeCompare(String(b.feria||''));
+    });
+
+    if(!trabajos.length){
+      alert('No hay montajes/desmontajes iniciados en ese mes.');
+      return;
+    }
+
+    renderPrint(trabajos);
+
+    document.body.classList.remove('print-calendar');
+    document.body.classList.add('print-simple-mode');
+
+    setTimeout(()=>{
+      window.print();
+      setTimeout(()=>{
+        document.body.classList.remove('print-simple-mode');
+        renderPrint();
+      },500);
+    },120);
+  };
+
+  setTimeout(()=>{
+    try{ asegurarMesCalendarioPDF(); }catch(e){}
+  },600);
 })();
 </script>
 
