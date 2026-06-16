@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- MEJORA: reordenar personal solo IsraelM -->
+<!-- MEJORA V4: reordenar personal en render activo real, cabeza fijo -->
 <!-- FIX PDF MENSUAL FINAL: usa mes real del calendario y filtra por fecha de inicio -->
 <!-- FIX PDF MENSUAL: filtra solo el mes del calendario y no imprime otros meses -->
 <!-- AJUSTE: recuperar TERMINADOS y reducir contadores 15% -->
@@ -2785,6 +2787,101 @@ const firebaseConfigStandecor = {
 }
 </style>
 
+
+<style id="standecor-reordenar-personal-v4-css">
+/* ===== REORDENAR PERSONAL V4 ===== */
+.personal-fixed-head{cursor:default!important}
+
+.personal-reorder-list{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:5px!important;
+}
+
+.personal-reorder-item{
+  cursor:grab!important;
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  touch-action:none!important;
+  position:relative!important;
+  z-index:5!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  pointer-events:auto!important;
+  transition:background .15s ease,color .15s ease,box-shadow .15s ease,transform .15s ease,margin .15s ease!important;
+}
+
+.personal-reorder-item:hover{
+  background:#dff1fb!important;
+  color:#0B5F86!important;
+  border-color:#8fd3ee!important;
+  box-shadow:0 6px 16px rgba(20,164,227,.18)!important;
+  transform:translateX(2px)!important;
+}
+
+.personal-reorder-item:active{cursor:grabbing!important}
+
+.personal-reorder-name{
+  flex:1 1 auto!important;
+  pointer-events:none!important;
+}
+
+.personal-reorder-handle{
+  flex:0 0 auto!important;
+  opacity:.45!important;
+  font-size:13px!important;
+  pointer-events:none!important;
+}
+
+.personal-reorder-item.is-dragging{
+  background:#dff1fb!important;
+  color:#0B5F86!important;
+  border-color:#8fd3ee!important;
+  box-shadow:0 14px 28px rgba(20,164,227,.32)!important;
+  transform:scale(1.025)!important;
+  opacity:.95!important;
+  cursor:grabbing!important;
+}
+
+.personal-reorder-item.drop-before{
+  margin-top:14px!important;
+  box-shadow:0 -4px 0 #14A4E3!important;
+}
+
+.personal-reorder-item.drop-after{
+  margin-bottom:14px!important;
+  box-shadow:0 4px 0 #14A4E3!important;
+}
+</style>
+
+
+<style id="standecor-reordenar-solo-israelm-css">
+/* ===== SOLO ISRAELM PUEDE REORDENAR PERSONAL ===== */
+body:not(.israelm-reorder-admin) .personal-reorder-item{
+  cursor:default!important;
+}
+body:not(.israelm-reorder-admin) .personal-reorder-item:hover{
+  background:#f8fafc!important;
+  color:#334155!important;
+  border-color:#dde7f0!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+body:not(.israelm-reorder-admin) .personal-reorder-handle{
+  display:none!important;
+}
+body.israelm-reorder-admin .personal-reorder-handle{
+  display:inline-flex!important;
+}
+.personal-reorder-list.locked-reorder .personal-reorder-item{
+  cursor:default!important;
+}
+.personal-reorder-list.locked-reorder .personal-reorder-handle{
+  display:none!important;
+}
+</style>
+
 </head>
 <body>
 <div id="toastAlert" class="toast-alert"></div>
@@ -3517,8 +3614,17 @@ function renderEventos(){
     const fecha=tieneMontaje?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
 
     let personalHtml='';
-    if(cab)personalHtml+=`<span class="badge green">${esc(cab.nombre)}</span>`;
-    ayudas.filter(t=>!cab||t.id!==cab.id).forEach(t=>personalHtml+=`<span class="badge gray">${esc(t.nombre)}</span>`);
+    if(cab)personalHtml+=`<div class="badge green personal-fixed-head">${esc(cab.nombre)}</div>`;
+
+    const personalMovible=ayudas.filter(t=>!cab||t.id!==cab.id);
+    if(personalMovible.length){
+      personalHtml+=`<div class="personal-reorder-list ${puedeReordenarPersonalStandecor()?'can-reorder':'locked-reorder'}" data-event-id="${esc(ev.id)}">`;
+      personalMovible.forEach(t=>{
+        personalHtml+=`<div class="badge gray personal-reorder-item" data-worker-id="${esc(t.id)}" title="Arrastrar para ordenar"><span class="personal-reorder-name">${esc(t.nombre)}</span><span class="personal-reorder-handle">☰</span></div>`;
+      });
+      personalHtml+=`</div>`;
+    }
+
     if(!personalHtml)personalHtml='<p class="muted">Sin personal seleccionado.</p>';
 
     const collaHtml=collas.length?collas.map(t=>`<span class="badge blue">${esc(t)}</span>`).join(''):'<p class="muted">Sin colla.</p>';
@@ -4349,8 +4455,17 @@ function renderPrint(eventosPersonalizados){
         const fecha=tieneMontaje?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
 
         let personalHtml='';
-        if(cab)personalHtml+=`<span class="badge green">${esc(cab.nombre)}</span>`;
-        ayudas.filter(t=>!cab||t.id!==cab.id).forEach(t=>personalHtml+=`<span class="badge gray">${esc(t.nombre)}</span>`);
+        if(cab)personalHtml+=`<div class="badge green personal-fixed-head">${esc(cab.nombre)}</div>`;
+
+        const personalMovible=ayudas.filter(t=>!cab||t.id!==cab.id);
+        if(personalMovible.length){
+          personalHtml+=`<div class="personal-reorder-list ${puedeReordenarPersonalStandecor()?'can-reorder':'locked-reorder'}" data-event-id="${esc(ev.id)}">`;
+          personalMovible.forEach(t=>{
+            personalHtml+=`<div class="badge gray personal-reorder-item" data-worker-id="${esc(t.id)}" title="Arrastrar para ordenar"><span class="personal-reorder-name">${esc(t.nombre)}</span><span class="personal-reorder-handle">☰</span></div>`;
+          });
+          personalHtml+=`</div>`;
+        }
+
         if(!personalHtml)personalHtml='<p class="muted">Sin personal seleccionado.</p>';
 
         const collaHtml=collas.length?collas.map(t=>`<span class="badge blue">${esc(t)}</span>`).join(''):'<p class="muted">Sin colla.</p>';
@@ -10153,6 +10268,193 @@ function exportarPlantillaTrabajadoresXLSX(){
   setTimeout(()=>{
     try{ asegurarMesCalendarioPDF(); }catch(e){}
   },600);
+})();
+</script>
+
+
+
+<script>
+/* ===== REORDENAR PERSONAL V5 SOLO ISRAELM ===== */
+function puedeReordenarPersonalStandecor(){
+  try{
+    const ses=JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null');
+    return Boolean(ses && ses.usuario==='IsraelM' && ses.rol==='admin');
+  }catch(e){
+    return false;
+  }
+}
+
+function actualizarPermisoReordenPersonalStandecor(){
+  try{
+    document.body.classList.toggle('israelm-reorder-admin', puedeReordenarPersonalStandecor());
+  }catch(e){}
+}
+
+(function(){
+  let dragging=null;
+  let startContainer=null;
+  let startOrder='';
+  let startX=0;
+  let startY=0;
+  let moved=false;
+
+  function all(sel,root=document){return Array.from(root.querySelectorAll(sel));}
+
+  function clearStates(){
+    all('.personal-reorder-item.is-dragging,.personal-reorder-item.drop-before,.personal-reorder-item.drop-after').forEach(el=>{
+      el.classList.remove('is-dragging','drop-before','drop-after');
+    });
+  }
+
+  function orderOf(container){
+    return all('.personal-reorder-item',container).map(el=>String(el.dataset.workerId||'')).join('|');
+  }
+
+  function getTarget(container,y){
+    const items=all('.personal-reorder-item',container).filter(el=>el!==dragging);
+    let best=null;
+    let bestOffset=Number.NEGATIVE_INFINITY;
+
+    items.forEach(el=>{
+      const box=el.getBoundingClientRect();
+      const offset=y - box.top - box.height/2;
+      if(offset<0 && offset>bestOffset){
+        bestOffset=offset;
+        best=el;
+      }
+    });
+
+    return best;
+  }
+
+  function moveToY(container,y){
+    if(!dragging || !container || !puedeReordenarPersonalStandecor())return;
+
+    clearStates();
+    dragging.classList.add('is-dragging');
+
+    const target=getTarget(container,y);
+    if(target){
+      container.insertBefore(dragging,target);
+      target.classList.add('drop-before');
+    }else{
+      container.appendChild(dragging);
+      const prev=dragging.previousElementSibling;
+      if(prev && prev.classList) prev.classList.add('drop-after');
+    }
+  }
+
+  function saveOrder(container){
+    if(!container || !puedeReordenarPersonalStandecor())return;
+
+    const eventId=container.dataset.eventId;
+    const ev=(db.eventos||[]).find(x=>String(x.id)===String(eventId));
+    if(!ev || !Array.isArray(ev.ayudantes))return;
+
+    const cab=cabezaDe(ev);
+    const cabId=cab ? String(cab.id) : '';
+
+    const movable=all('.personal-reorder-item',container)
+      .map(el=>String(el.dataset.workerId||''))
+      .filter(Boolean);
+
+    const previous=ev.ayudantes.map(String).filter(Boolean);
+    const result=[];
+
+    if(cabId && previous.includes(cabId)) result.push(cabId);
+
+    movable.forEach(id=>{
+      if(id!==cabId && !result.includes(id)) result.push(id);
+    });
+
+    previous.forEach(id=>{
+      if(!result.includes(id)) result.push(id);
+    });
+
+    ev.ayudantes=result;
+    ev.actualizado=Date.now();
+
+    save();
+    renderAll();
+
+    if(typeof mostrarAvisoCentral==='function'){
+      mostrarAvisoCentral('Orden del personal actualizado');
+    }
+  }
+
+  function start(e){
+    actualizarPermisoReordenPersonalStandecor();
+    if(!puedeReordenarPersonalStandecor())return;
+
+    const item=e.target.closest && e.target.closest('.personal-reorder-item');
+    if(!item)return;
+
+    dragging=item;
+    startContainer=item.closest('.personal-reorder-list');
+    if(!startContainer)return;
+
+    startOrder=orderOf(startContainer);
+
+    const p=(e.touches && e.touches[0]) ? e.touches[0] : e;
+    startX=p.clientX;
+    startY=p.clientY;
+    moved=false;
+
+    item.classList.add('is-dragging');
+
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function move(e){
+    if(!dragging || !startContainer || !puedeReordenarPersonalStandecor())return;
+
+    const p=(e.touches && e.touches[0]) ? e.touches[0] : e;
+    const dx=Math.abs(p.clientX-startX);
+    const dy=Math.abs(p.clientY-startY);
+
+    if(dx+dy>3)moved=true;
+    if(!moved)return;
+
+    moveToY(startContainer,p.clientY);
+
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function end(e){
+    if(!dragging || !startContainer)return;
+
+    const finalOrder=orderOf(startContainer);
+    const container=startContainer;
+
+    clearStates();
+
+    dragging=null;
+    startContainer=null;
+
+    if(finalOrder!==startOrder && puedeReordenarPersonalStandecor()){
+      saveOrder(container);
+    }
+
+    if(e){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+
+  document.addEventListener('mousedown',start,true);
+  document.addEventListener('mousemove',move,true);
+  document.addEventListener('mouseup',end,true);
+
+  document.addEventListener('touchstart',start,{capture:true,passive:false});
+  document.addEventListener('touchmove',move,{capture:true,passive:false});
+  document.addEventListener('touchend',end,{capture:true,passive:false});
+
+  window.addEventListener('load',()=>{
+    actualizarPermisoReordenPersonalStandecor();
+    setInterval(actualizarPermisoReordenPersonalStandecor,1200);
+  });
 })();
 </script>
 
