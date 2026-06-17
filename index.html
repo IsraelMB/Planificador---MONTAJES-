@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- FIX: protección contra duplicados de trabajadores -->
 <!-- MEJORA: reordenar personal solo IsraelM -->
 <!-- MEJORA V4: reordenar personal en render activo real, cabeza fijo -->
 <!-- FIX PDF MENSUAL FINAL: usa mes real del calendario y filtra por fecha de inicio -->
@@ -10455,6 +10456,175 @@ function actualizarPermisoReordenPersonalStandecor(){
     actualizarPermisoReordenPersonalStandecor();
     setInterval(actualizarPermisoReordenPersonalStandecor,1200);
   });
+})();
+</script>
+
+
+<script>
+/* ===== PROTECCIÓN DUPLICADOS TRABAJADORES STANDECOR ===== */
+(function(){
+  if(window.__proteccionDuplicadosTrabajadoresStandecor) return;
+  window.__proteccionDuplicadosTrabajadoresStandecor=true;
+
+  function claveTrabajadorDuplicadoStandecor(nombre){
+    try{
+      return String(nombre||'')
+        .toUpperCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g,'')
+        .replace(/\s+/g,' ')
+        .trim();
+    }catch(e){
+      return String(nombre||'').toUpperCase().replace(/\s+/g,' ').trim();
+    }
+  }
+
+  function trabajadorReferenciasStandecor(id){
+    let n=0;
+    try{
+      (db.eventos||[]).forEach(ev=>{
+        if(Array.isArray(ev.ayudantes)){
+          n+=ev.ayudantes.map(String).filter(x=>x===String(id)).length;
+        }
+      });
+    }catch(e){}
+    return n;
+  }
+
+  function puntuacionTrabajadorStandecor(t,index){
+    let p=0;
+    const rol=String(t.rol||'').toUpperCase();
+    const tipo=String(t.tipo||'').toUpperCase();
+    const estado=String(t.estado||'').toUpperCase();
+
+    p+=trabajadorReferenciasStandecor(t.id)*100;
+    if(rol.includes('CABEZA')) p+=30;
+    if(t.observaciones) p+=6;
+    if(t.tipo) p+=4;
+    if(t.estado) p+=3;
+    if(t.rol) p+=3;
+    if(tipo.includes('SALE')) p+=2;
+    if(estado.includes('DISPONIBLE')) p+=1;
+    p+=(100000-index)/1000000;
+    return p;
+  }
+
+  function purgarDuplicadosTrabajadoresStandecor(){
+    if(!window.db || !Array.isArray(db.trabajadores)) return false;
+
+    const grupos=new Map();
+
+    db.trabajadores.forEach((t,index)=>{
+      const clave=claveTrabajadorDuplicadoStandecor(t.nombre);
+      if(!clave) return;
+      if(!grupos.has(clave)) grupos.set(clave,[]);
+      grupos.get(clave).push({t,index});
+    });
+
+    let cambio=false;
+    const reemplazos={};
+    const idsEliminar=new Set();
+
+    grupos.forEach(lista=>{
+      if(lista.length<2) return;
+
+      lista.sort((a,b)=>{
+        const pb=puntuacionTrabajadorStandecor(b.t,b.index);
+        const pa=puntuacionTrabajadorStandecor(a.t,a.index);
+        return pb-pa;
+      });
+
+      const conservar=lista[0].t;
+
+      lista.slice(1).forEach(item=>{
+        if(!item.t || !item.t.id || String(item.t.id)===String(conservar.id)) return;
+        reemplazos[String(item.t.id)]=String(conservar.id);
+        idsEliminar.add(String(item.t.id));
+        cambio=true;
+      });
+    });
+
+    if(!cambio) return false;
+
+    (db.eventos||[]).forEach(ev=>{
+      if(!Array.isArray(ev.ayudantes)) return;
+
+      const nueva=[];
+      ev.ayudantes.forEach(id=>{
+        const id2=reemplazos[String(id)] || String(id);
+        if(id2 && !nueva.includes(id2)) nueva.push(id2);
+      });
+
+      ev.ayudantes=nueva;
+    });
+
+    db.trabajadores=db.trabajadores.filter(t=>!idsEliminar.has(String(t.id)));
+
+    return true;
+  }
+
+  window.purgarDuplicadosTrabajadoresStandecor=purgarDuplicadosTrabajadoresStandecor;
+
+  if(!window.__saveSinDuplicadosTrabajadoresStandecor){
+    const savePrevio=window.save;
+    if(typeof savePrevio==='function'){
+      window.save=function(){
+        try{purgarDuplicadosTrabajadoresStandecor()}catch(e){console.warn('No se pudo purgar duplicados antes de guardar',e)}
+        return savePrevio.apply(this,arguments);
+      };
+      window.__saveSinDuplicadosTrabajadoresStandecor=true;
+    }
+  }
+
+  if(!window.__renderAllSinDuplicadosTrabajadoresStandecor){
+    const renderAllPrevio=window.renderAll;
+    if(typeof renderAllPrevio==='function'){
+      window.renderAll=function(){
+        let cambio=false;
+        try{cambio=purgarDuplicadosTrabajadoresStandecor()}catch(e){console.warn('No se pudo purgar duplicados antes de pintar',e)}
+        const r=renderAllPrevio.apply(this,arguments);
+        if(cambio){
+          try{
+            localStorage.setItem(STORAGE,JSON.stringify(db));
+            if(window.guardarFirebaseStandecor && !window.aplicandoDatosFirebase){
+              window.guardarFirebaseStandecor();
+            }
+          }catch(e){}
+        }
+        return r;
+      };
+      window.__renderAllSinDuplicadosTrabajadoresStandecor=true;
+    }
+  }
+
+  window.addEventListener('load',()=>{
+    setTimeout(()=>{
+      try{
+        const cambio=purgarDuplicadosTrabajadoresStandecor();
+        if(cambio){
+          save();
+          renderAll();
+          if(typeof mostrarAvisoCentral==='function'){
+            mostrarAvisoCentral('Trabajadores duplicados corregidos');
+          }
+        }
+      }catch(e){
+        console.warn('No se pudo ejecutar protección de duplicados',e);
+      }
+    },1400);
+  });
+
+  setInterval(()=>{
+    try{
+      if(purgarDuplicadosTrabajadoresStandecor()){
+        localStorage.setItem(STORAGE,JSON.stringify(db));
+        if(window.guardarFirebaseStandecor && !window.aplicandoDatosFirebase){
+          window.guardarFirebaseStandecor();
+        }
+        renderAll();
+      }
+    }catch(e){}
+  },8000);
 })();
 </script>
 
