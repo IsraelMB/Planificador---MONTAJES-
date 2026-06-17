@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- FIX: borrar todos los trabajadores solo IsraelM -->
 <!-- MEJORA: botón borrar todos los trabajadores -->
 <!-- FIX: protección contra duplicados de trabajadores -->
 <!-- MEJORA: reordenar personal solo IsraelM -->
@@ -2896,6 +2897,16 @@ body.israelm-reorder-admin .personal-reorder-handle{
 }
 </style>
 
+
+<style id="standecor-borrar-todos-solo-israelm-css">
+.solo-israelm-borrar-trabajadores{
+  display:none!important;
+}
+body.israelm-borrar-trabajadores-admin .solo-israelm-borrar-trabajadores{
+  display:inline-flex!important;
+}
+</style>
+
 </head>
 <body>
 <div id="toastAlert" class="toast-alert"></div>
@@ -2910,7 +2921,7 @@ body.israelm-reorder-admin .personal-reorder-handle{
     <label>&nbsp;</label>
     <button type="button" class="plantilla-icon-btn" title="Exportar plantilla Excel" onclick="exportarPlantillaTrabajadoresXLSX()"><svg class="ico"><use href="#i-export"></use></svg></button>
     <button type="button" class="plantilla-icon-btn" title="Importar plantilla Excel" onclick="document.getElementById('importPlantillaTrabajadores').click()"><svg class="ico"><use href="#i-import"></use></svg></button>
-    <button type="button" class="plantilla-icon-btn borrar-todos-trab-btn" title="Borrar todos los trabajadores" onclick="borrarTodosTrabajadoresStandecor()"><svg class="ico"><use href="#i-trash"></use></svg></button>
+    <button type="button" class="plantilla-icon-btn borrar-todos-trab-btn solo-israelm-borrar-trabajadores" title="Borrar todos los trabajadores" onclick="borrarTodosTrabajadoresStandecor()"><svg class="ico"><use href="#i-trash"></use></svg></button>
     <input id="importPlantillaTrabajadores" type="file" accept=".xlsx,.xls" style="display:none" onchange="importarPlantillaTrabajadoresXLSX(event)">
   </div>
 </div><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Tipo</th><th>Estado</th><th>Obs.</th><th>Acciones</th></tr></thead><tbody id="tablaTrabajadores"></tbody></table></div></div></div></section>
@@ -10643,9 +10654,34 @@ function actualizarPermisoReordenPersonalStandecor(){
 </script>
 
 
+
 <script>
 /* ===== BOTÓN BORRAR TODOS TRABAJADORES STANDECOR ===== */
+function esIsraelMBorrarTrabajadoresStandecor(){
+  try{
+    const ses=JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null');
+    return Boolean(ses && ses.usuario==='IsraelM' && ses.rol==='admin');
+  }catch(e){
+    return false;
+  }
+}
+
+function actualizarBotonBorrarTodosTrabajadoresStandecor(){
+  try{
+    document.body.classList.toggle('israelm-borrar-trabajadores-admin', esIsraelMBorrarTrabajadoresStandecor());
+  }catch(e){}
+}
+
 function borrarTodosTrabajadoresStandecor(){
+  actualizarBotonBorrarTodosTrabajadoresStandecor();
+
+  if(!esIsraelMBorrarTrabajadoresStandecor()){
+    if(typeof mostrarAvisoCentral==='function'){
+      mostrarAvisoCentral('Solo IsraelM puede borrar todos los trabajadores');
+    }
+    return;
+  }
+
   const total=(db.trabajadores||[]).length;
   if(!total){
     if(typeof mostrarAvisoCentral==='function') mostrarAvisoCentral('No hay trabajadores para borrar');
@@ -10678,6 +10714,11 @@ function borrarTodosTrabajadoresStandecor(){
 
   if(typeof mostrarAvisoCentral==='function') mostrarAvisoCentral('Todos los trabajadores eliminados');
 }
+
+window.addEventListener('load',()=>{
+  actualizarBotonBorrarTodosTrabajadoresStandecor();
+  setInterval(actualizarBotonBorrarTodosTrabajadoresStandecor,1200);
+});
 </script>
 
 </html>
