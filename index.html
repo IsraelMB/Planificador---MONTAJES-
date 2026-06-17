@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
+<!-- MEJORA: botón borrar todos los trabajadores -->
 <!-- FIX: protección contra duplicados de trabajadores -->
 <!-- MEJORA: reordenar personal solo IsraelM -->
 <!-- MEJORA V4: reordenar personal en render activo real, cabeza fijo -->
@@ -2883,6 +2884,18 @@ body.israelm-reorder-admin .personal-reorder-handle{
 }
 </style>
 
+
+<style id="standecor-borrar-todos-trab-css">
+.borrar-todos-trab-btn{
+  color:#b42323!important;
+}
+.borrar-todos-trab-btn:hover{
+  background:#fff1f1!important;
+  color:#8f1515!important;
+  border-color:#f3b4b4!important;
+}
+</style>
+
 </head>
 <body>
 <div id="toastAlert" class="toast-alert"></div>
@@ -2897,6 +2910,7 @@ body.israelm-reorder-admin .personal-reorder-handle{
     <label>&nbsp;</label>
     <button type="button" class="plantilla-icon-btn" title="Exportar plantilla Excel" onclick="exportarPlantillaTrabajadoresXLSX()"><svg class="ico"><use href="#i-export"></use></svg></button>
     <button type="button" class="plantilla-icon-btn" title="Importar plantilla Excel" onclick="document.getElementById('importPlantillaTrabajadores').click()"><svg class="ico"><use href="#i-import"></use></svg></button>
+    <button type="button" class="plantilla-icon-btn borrar-todos-trab-btn" title="Borrar todos los trabajadores" onclick="borrarTodosTrabajadoresStandecor()"><svg class="ico"><use href="#i-trash"></use></svg></button>
     <input id="importPlantillaTrabajadores" type="file" accept=".xlsx,.xls" style="display:none" onchange="importarPlantillaTrabajadoresXLSX(event)">
   </div>
 </div><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Rol</th><th>Tipo</th><th>Estado</th><th>Obs.</th><th>Acciones</th></tr></thead><tbody id="tablaTrabajadores"></tbody></table></div></div></div></section>
@@ -10626,6 +10640,44 @@ function actualizarPermisoReordenPersonalStandecor(){
     }catch(e){}
   },8000);
 })();
+</script>
+
+
+<script>
+/* ===== BOTÓN BORRAR TODOS TRABAJADORES STANDECOR ===== */
+function borrarTodosTrabajadoresStandecor(){
+  const total=(db.trabajadores||[]).length;
+  if(!total){
+    if(typeof mostrarAvisoCentral==='function') mostrarAvisoCentral('No hay trabajadores para borrar');
+    else alert('No hay trabajadores para borrar');
+    return;
+  }
+
+  if(!confirm('¿Borrar TODOS los trabajadores?\n\nSe eliminarán '+total+' trabajadores y se quitarán también de todos los montajes/desmontajes existentes.')) return;
+
+  if(!confirm('Confirmación final:\n\nEsta acción borrará toda la base de trabajadores.')) return;
+
+  if(!db.trabajadoresEliminados || typeof db.trabajadoresEliminados!=='object'){
+    db.trabajadoresEliminados={};
+  }
+
+  (db.trabajadores||[]).forEach(t=>{
+    if(t && t.id) db.trabajadoresEliminados[String(t.id)]=Date.now();
+  });
+
+  db.trabajadores=[];
+
+  (db.eventos||[]).forEach(ev=>{
+    if(Array.isArray(ev.ayudantes)) ev.ayudantes=[];
+    if(ev.cabezaPrincipalId) ev.cabezaPrincipalId='';
+  });
+
+  try{limpiarTrabajador()}catch(e){}
+  save();
+  renderAll();
+
+  if(typeof mostrarAvisoCentral==='function') mostrarAvisoCentral('Todos los trabajadores eliminados');
+}
 </script>
 
 </html>
