@@ -4,53 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
-<!-- FIX: borrar todos los trabajadores solo IsraelM -->
-<!-- MEJORA: botón borrar todos los trabajadores -->
-<!-- FIX: protección contra duplicados de trabajadores -->
-<!-- MEJORA: reordenar personal solo IsraelM -->
-<!-- MEJORA V4: reordenar personal en render activo real, cabeza fijo -->
-<!-- FIX PDF MENSUAL FINAL: usa mes real del calendario y filtra por fecha de inicio -->
-<!-- FIX PDF MENSUAL: filtra solo el mes del calendario y no imprime otros meses -->
-<!-- AJUSTE: recuperar TERMINADOS y reducir contadores 15% -->
-<!-- AJUSTE FINAL SIN BOCETOS: ciudad negrita, contadores alineados, terminados compacto -->
-<!-- AJUSTE FINAL CONFIRMADO: planificación visual sin más bocetos -->
-<!-- AJUSTE FINAL VISUAL PLANIFICACIÓN: feria/stand iguales, cápsulas y fechas compactas -->
-<!-- FIX PLANIFICACIÓN: eliminar duplicados reales de Firebase -->
-<!-- FIX UI: eliminar montaje sin confirmación con aviso superior -->
-<!-- FIX COPIAS: restaurar sin recargar página -->
-<!-- FIX COPIAS LIMPIAS: solo crear/editar/terminar montaje y manual -->
-<!-- FIX RESTAURAR: sin confirmaciones y mensaje simple -->
-<!-- FIX DEFINITIVO: restaurar copias automáticas directo y limpio -->
-<!-- FIX REAL COPIAS: copia antes de borrar planificación y restauración limpia -->
-<!-- FIX FORZADO RESTAURAR COPIAS: recuperación real aunque existan eliminados internos -->
-<!-- FIX FINAL RESTAURAR COPIAS: limpia eliminados y recarga tras restaurar -->
-<!-- FIX RESTAURAR COPIAS: elimina marcas internas de borrado al restaurar -->
-<!-- FIX PLANIFICACIÓN: eliminados permanentes con sincronización segura -->
-<!-- FIX COPIAS: automáticas solo por cambios en montajes/desmontajes -->
-<!-- FIX TRABAJADORES: eliminados permanentes con sincronización segura -->
-<!-- FIX FINAL COPIAS: eliminado doble disparo automático -->
-<!-- FIX COPIAS: anti-duplicados y etiquetas de origen -->
-<!-- FIX COPIAS AUTOMÁTICAS: Firebase correcto y botón en menú principal -->
-<!-- MEJORA: copias automáticas Firebase con restauración solo IsraelM -->
-<!-- FIX CRÍTICO FIREBASE: sincronización segura multi-dispositivo sin pérdida de montajes -->
-<!-- MEJORA EXCEL: formato Personal de Carpintería definitivo -->
-<!-- MEJORA EXCEL: plantilla profesional STANDECOR -->
-<!-- FIX FINAL EXPORTAR EXCEL: lee correctamente db.trabajadores y fallback desde tabla -->
-<!-- FIX DEFINITIVO EXPORTAR EXCEL: JS añadido correctamente -->
-<!-- FIX: importar/exportar plantilla XLSX funcional y botones limpios -->
-<!-- MEJORA: importar/exportar plantilla trabajadores XLSX -->
-<!-- FIX FINAL USUARIOS: Admin principal ve contraseñas actuales -->
-<!-- FIX: contraseñas visibles admin y calendario imprime en 1 página -->
-<!-- MEJORAS: contraseñas admin visibles, contador trabajadores, nuevos roles, footer y texto creado por -->
-<!-- FIX TERMINADOS: las ferias terminadas liberan personal en disponibilidad y conflictos -->
-<!-- FIX FIREBASE: protección anti-borrado al cambiar usuario/ordenador -->
-<!-- FIX CALENDARIO: al abrir muestra siempre el mes actual real -->
-<!-- LIMPIEZA D8 SEGURA: continuidad desde D7, sin cambios funcionales -->
-<!-- LIMPIEZA D7 SEGURA: continuidad desde D6, sin cambios funcionales -->
-<!-- LIMPIEZA D4 SEGURA: revisión conservadora, sin cambios funcionales -->
-<!-- LIMPIEZA D5 SEGURA: revisión interna sin cambios funcionales -->
-<!-- LIMPIEZA D3 SEGURA: limpieza interna de comentarios/espacios, sin cambios funcionales -->
-<!-- LIMPIEZA D1 SEGURA: solo orden interno/espacios, sin tocar lógica -->
+<!-- STANDECOR Firebase 2.0 Beta 6 - sincronización optimizada -->
+
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
@@ -2498,7 +2454,6 @@ const firebaseConfigStandecor = {
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 
-
 <style id="standecor-planificacion-visual-final">
 /* ===== PLANIFICACIÓN VISUAL FINAL CONFIRMADA ===== */
 
@@ -2907,6 +2862,7 @@ body.israelm-borrar-trabajadores-admin .solo-israelm-borrar-trabajadores{
 }
 </style>
 
+
 </head>
 <body>
 <div id="toastAlert" class="toast-alert"></div>
@@ -2935,6 +2891,7 @@ const nombresIniciales=['ADRIAN ALEJANDRO VEIZAGA (GORRA)','ADRIAN PRUDENTE (NOV
 let db=cargar();
 function cargar(){try{const s=localStorage.getItem(STORAGE);if(s){const d=JSON.parse(s);d.trabajadores=d.trabajadores||[];d.collas=d.collas||[];d.eventos=d.eventos||[];return d}}catch(e){}return{trabajadores:nombresIniciales.map((nombre,i)=>({id:'t'+i,nombre,rol:'Montador',tipo:'Sale a montaje',estado:'Disponible',observaciones:''})),collas:[],eventos:[]}}
 function save(){
+  try{delete db.trabajadoresEliminados}catch(e){}
   localStorage.setItem(STORAGE,JSON.stringify(db));
   if(window.guardarFirebaseStandecor && !window.aplicandoDatosFirebase){
     window.guardarFirebaseStandecor();
@@ -3784,8 +3741,10 @@ function iniciarFirebaseStandecor(){
       clearTimeout(firebaseTimerStandecor);
       firebaseTimerStandecor=setTimeout(()=>{
         try{
+          delete db.trabajadoresEliminados;
           db.actualizadoFirebase=Date.now();
-          ref.set({db:db,actualizadoFirebase:db.actualizadoFirebase},{merge:true});
+          try{delete db.trabajadoresEliminados}catch(e){}
+          ref.set({db:db,actualizadoFirebase:db.actualizadoFirebase},{merge:false});
         }catch(e){console.warn('No se pudo guardar en Firebase',e)}
       },700);
     };
@@ -3805,7 +3764,8 @@ function iniciarFirebaseStandecor(){
         return;
       }
 
-      const remoteDb=data.db;
+      if(window.standecorSnapshotTrabajadoresBloqueadoBeta3 && window.standecorSnapshotTrabajadoresBloqueadoBeta3()){firebaseCargaInicialCompletada=true;return;}
+      const remoteDb=data.db; try{delete remoteDb.trabajadoresEliminados}catch(e){}
       const localTime=Number(db.actualizadoFirebase||0);
       const remoteTime=Number(data.actualizadoFirebase||remoteDb.actualizadoFirebase||0);
 
@@ -6381,184 +6341,6 @@ function exportarPlantillaTrabajadoresXLSX(){
 
 
 <script>
-/* ===== FIX_CRITICO_SYNC_MULTI_DISPOSITIVO_STANDECOR =====
-   Evita que un móvil/tablet con datos antiguos sobrescriba Firebase.
-   En vez de reemplazar la base completa, fusiona eventos, trabajadores y collas por ID.
-*/
-(function(){
-  const SYNC_FIX_VERSION='2026-06-safe-merge';
-
-  function normalizarDbSync(d){
-    d=d||{};
-    d.trabajadores=Array.isArray(d.trabajadores)?d.trabajadores:[];
-    d.collas=Array.isArray(d.collas)?d.collas:[];
-    d.eventos=Array.isArray(d.eventos)?d.eventos:[];
-    d._syncVersion=SYNC_FIX_VERSION;
-    return d;
-  }
-
-  function contarTrabajoSync(d){
-    d=normalizarDbSync({...d});
-    return d.eventos.length + d.collas.length;
-  }
-
-  function mergeArrayPorIdSync(base, local){
-    const map=new Map();
-
-    (Array.isArray(base)?base:[]).forEach(x=>{
-      if(x && x.id) map.set(String(x.id), {...x});
-    });
-
-    (Array.isArray(local)?local:[]).forEach(x=>{
-      if(!x || !x.id)return;
-      const id=String(x.id);
-      const anterior=map.get(id)||{};
-      map.set(id,{...anterior,...x});
-    });
-
-    return [...map.values()];
-  }
-
-  function mergeDbSeguroSync(remoteDb, localDb){
-    const r=normalizarDbSync({...remoteDb});
-    const l=normalizarDbSync({...localDb});
-
-    const merged={
-      ...r,
-      ...l,
-      trabajadores:mergeArrayPorIdSync(r.trabajadores,l.trabajadores),
-      collas:mergeArrayPorIdSync(r.collas,l.collas),
-      eventos:mergeArrayPorIdSync(r.eventos,l.eventos),
-      actualizadoFirebase:Date.now(),
-      _syncVersion:SYNC_FIX_VERSION
-    };
-
-    return normalizarDbSync(merged);
-  }
-
-  function aplicarDbSeguroSync(nuevaDb){
-    window.aplicandoDatosFirebase=true;
-    db=normalizarDbSync(nuevaDb);
-    localStorage.setItem(STORAGE,JSON.stringify(db));
-    try{renderAll()}catch(e){console.warn('No se pudo renderizar tras sync',e)}
-    window.aplicandoDatosFirebase=false;
-  }
-
-  function iniciarFirebaseStandecorSeguro(){
-    try{
-      if(!window.firebase)return;
-
-      if(!firebase.apps || !firebase.apps.length){
-        firebase.initializeApp(firebaseConfigStandecor);
-      }
-
-      firebaseDbStandecor=firebase.firestore();
-      firebaseReadyStandecor=true;
-      firebaseCargaInicialCompletada=false;
-
-      const ref=firebaseDbStandecor.collection('standecor').doc('planificador');
-
-      window.guardarFirebaseStandecor=function(){
-        if(!firebaseReadyStandecor || !firebaseDbStandecor)return;
-
-        if(!firebaseCargaInicialCompletada){
-          console.warn('Guardado bloqueado: esperando carga inicial de Firebase.');
-          return;
-        }
-
-        const localDb=normalizarDbSync(db);
-
-        if(contarTrabajoSync(localDb)===0){
-          console.warn('Guardado bloqueado: base local sin trabajos/collas.');
-          alert('Protección activada: no se guardó una base vacía para evitar borrar los datos compartidos.');
-          return;
-        }
-
-        clearTimeout(firebaseTimerStandecor);
-        firebaseTimerStandecor=setTimeout(async()=>{
-          try{
-            const snap=await ref.get();
-            let finalDb=localDb;
-
-            if(snap.exists && snap.data() && snap.data().db){
-              const remoteDb=normalizarDbSync(snap.data().db);
-              finalDb=mergeDbSeguroSync(remoteDb,localDb);
-
-              // Protección fuerte: si Firebase tiene más trabajos, nunca se guarda una versión con menos.
-              if(contarTrabajoSync(finalDb)<contarTrabajoSync(remoteDb)){
-                console.warn('Guardado bloqueado: el resultado tendría menos trabajos que Firebase.');
-                return;
-              }
-            }else{
-              finalDb.actualizadoFirebase=Date.now();
-              finalDb._syncVersion=SYNC_FIX_VERSION;
-            }
-
-            db=finalDb;
-            localStorage.setItem(STORAGE,JSON.stringify(db));
-            await ref.set({db:finalDb,actualizadoFirebase:finalDb.actualizadoFirebase,syncVersion:SYNC_FIX_VERSION},{merge:true});
-          }catch(e){
-            console.warn('No se pudo guardar en Firebase con sync seguro',e);
-          }
-        },700);
-      };
-
-      ref.onSnapshot((snap)=>{
-        try{
-          if(!snap.exists || !snap.data() || !snap.data().db){
-            firebaseCargaInicialCompletada=true;
-            if(contarTrabajoSync(db)>0) window.guardarFirebaseStandecor();
-            return;
-          }
-
-          const remoteDb=normalizarDbSync(snap.data().db);
-          const localDb=normalizarDbSync(db);
-
-          if(contarTrabajoSync(remoteDb)===0 && contarTrabajoSync(localDb)>0){
-            firebaseCargaInicialCompletada=true;
-            console.warn('Firebase trae base vacía; se conserva la local.');
-            return;
-          }
-
-          const merged=mergeDbSeguroSync(remoteDb,localDb);
-
-          // Si hay diferencias de cantidad, aplicamos la unión para no perder trabajos añadidos desde otro dispositivo.
-          aplicarDbSeguroSync(merged);
-          firebaseCargaInicialCompletada=true;
-
-          // Si la unión tiene más datos que Firebase, se re-sube para consolidar.
-          if(contarTrabajoSync(merged)>contarTrabajoSync(remoteDb)){
-            window.guardarFirebaseStandecor();
-          }
-        }catch(e){
-          firebaseCargaInicialCompletada=true;
-          console.warn('Error en snapshot seguro',e);
-        }
-      });
-
-      console.log('Sync seguro STANDECOR activado',SYNC_FIX_VERSION);
-    }catch(e){
-      console.warn('No se pudo iniciar sync seguro. La app sigue con localStorage.',e);
-    }
-  }
-
-  window.iniciarFirebaseStandecor=iniciarFirebaseStandecorSeguro;
-
-  // Si la versión anterior ya inició Firebase, dejamos el override para los próximos guardados.
-  setTimeout(()=>{
-    try{
-      if(!firebaseReadyStandecor){
-        iniciarFirebaseStandecorSeguro();
-      }else{
-        console.log('Sync seguro preparado para próximos guardados.');
-      }
-    }catch(e){}
-  },1200);
-})();
-</script>
-
-
-<script>
 /* ===== COPIAS_AUTOMATICAS_FIREBASE_STANDECOR ===== */
 (function(){
   const BACKUP_LIMIT=10;
@@ -7302,135 +7084,6 @@ function exportarPlantillaTrabajadoresXLSX(){
 
 
 <script>
-/* ===== FIX_ELIMINAR_TRABAJADORES_PERMANENTE_STANDECOR ===== */
-(function(){
-  function asegurarEliminadosTrabajadores(){
-    if(!db) return;
-    if(!db.trabajadoresEliminados || typeof db.trabajadoresEliminados!=='object'){
-      db.trabajadoresEliminados={};
-    }
-  }
-
-  function trabajadorEliminado(id){
-    asegurarEliminadosTrabajadores();
-    return Boolean(db.trabajadoresEliminados && db.trabajadoresEliminados[String(id)]);
-  }
-
-  function purgarTrabajadoresEliminados(){
-    try{
-      asegurarEliminadosTrabajadores();
-      const eliminados=db.trabajadoresEliminados||{};
-      const antes=(db.trabajadores||[]).length;
-
-      db.trabajadores=(db.trabajadores||[]).filter(t=>t && t.id && !eliminados[String(t.id)]);
-
-      // También quitamos al trabajador eliminado de montajes/desmontajes existentes.
-      (db.eventos||[]).forEach(ev=>{
-        if(Array.isArray(ev.ayudantes)){
-          ev.ayudantes=ev.ayudantes.filter(id=>!eliminados[String(id)]);
-        }
-        if(ev.cabezaPrincipalId && eliminados[String(ev.cabezaPrincipalId)]){
-          ev.cabezaPrincipalId='';
-        }
-      });
-
-      return antes!==db.trabajadores.length;
-    }catch(e){
-      console.warn('No se pudieron purgar trabajadores eliminados',e);
-      return false;
-    }
-  }
-
-  // Sustituye el borrado por un borrado permanente sincronizable.
-  window.borrarTrabajador=function(id){
-    const t=(db.trabajadores||[]).find(x=>x.id===id);
-    const nombre=t && t.nombre ? t.nombre : 'este trabajador';
-
-    if(!confirm('¿Eliminar trabajador?\n\n'+nombre+'\n\nSe quitará también de los montajes donde estuviera asignado.')) return;
-
-    asegurarEliminadosTrabajadores();
-    db.trabajadoresEliminados[String(id)]=Date.now();
-
-    db.trabajadores=(db.trabajadores||[]).filter(t=>t.id!==id);
-
-    (db.eventos||[]).forEach(ev=>{
-      if(Array.isArray(ev.ayudantes)){
-        ev.ayudantes=ev.ayudantes.filter(x=>String(x)!==String(id));
-      }
-      if(String(ev.cabezaPrincipalId||'')===String(id)){
-        ev.cabezaPrincipalId='';
-      }
-    });
-
-    save();
-    renderAll();
-  };
-
-  // Evita que trabajador(id) devuelva trabajadores ya eliminados.
-  window.trabajador=function(id){
-    if(trabajadorEliminado(id)) return undefined;
-    return (db.trabajadores||[]).find(t=>t.id===id);
-  };
-
-  // Reforzar renderAll: si Firebase vuelve a traer un trabajador eliminado, se purga antes de pintar.
-  if(!window.__renderAllPurgarTrabajadoresEliminados){
-    const renderAllOriginal=window.renderAll;
-    if(typeof renderAllOriginal==='function'){
-      window.renderAll=function(){
-        const cambio=purgarTrabajadoresEliminados();
-        const r=renderAllOriginal.apply(this,arguments);
-
-        // Si hubo reaparición desde Firebase, se vuelve a guardar la base ya limpia.
-        if(cambio && !window.aplicandoDatosFirebase){
-          try{save()}catch(e){}
-        }
-
-        return r;
-      };
-      window.__renderAllPurgarTrabajadoresEliminados=true;
-    }
-  }
-
-  // Reforzar renderTrabajadores para contar/listar solo trabajadores no eliminados.
-  if(!window.__renderTrabajadoresFiltraEliminados){
-    const renderTrabajadoresOriginal=window.renderTrabajadores;
-    if(typeof renderTrabajadoresOriginal==='function'){
-      window.renderTrabajadores=function(){
-        purgarTrabajadoresEliminados();
-        return renderTrabajadoresOriginal.apply(this,arguments);
-      };
-      window.__renderTrabajadoresFiltraEliminados=true;
-    }
-  }
-
-  // Reforzar save: nunca guardar trabajadores que estén marcados como eliminados.
-  if(!window.__savePurgarTrabajadoresEliminados){
-    const saveOriginal=window.save;
-    if(typeof saveOriginal==='function'){
-      window.save=function(){
-        purgarTrabajadoresEliminados();
-        return saveOriginal.apply(this,arguments);
-      };
-      window.__savePurgarTrabajadoresEliminados=true;
-    }
-  }
-
-  // Limpieza inicial al cargar.
-  setTimeout(()=>{
-    try{
-      const cambio=purgarTrabajadoresEliminados();
-      if(cambio){
-        localStorage.setItem(STORAGE,JSON.stringify(db));
-        renderAll();
-        save();
-      }
-    }catch(e){}
-  },1200);
-})();
-</script>
-
-
-<script>
 /* ===== COPIAS_SOLO_EVENTOS_STANDECOR =====
    Desde aquí las copias automáticas SOLO se crean si cambia db.eventos:
    montajes, desmontajes, fechas, personal, collas de una feria, observaciones o terminado.
@@ -7491,24 +7144,13 @@ function exportarPlantillaTrabajadoresXLSX(){
     db.trabajadores=Array.isArray(db.trabajadores)?db.trabajadores:[];
     db.collas=Array.isArray(db.collas)?db.collas:[];
     db.eventos=Array.isArray(db.eventos)?db.eventos:[];
-    if(!db.trabajadoresEliminados || typeof db.trabajadoresEliminados!=='object'){
-      db.trabajadoresEliminados={};
-    }
+    delete db.trabajadoresEliminados;
   }
 
   function purgarTrabajadoresEliminadosSoloEventos(){
     try{
       normalizarDbSoloEventos();
-      const eliminados=db.trabajadoresEliminados||{};
-      db.trabajadores=(db.trabajadores||[]).filter(t=>t && t.id && !eliminados[String(t.id)]);
-      (db.eventos||[]).forEach(ev=>{
-        if(Array.isArray(ev.ayudantes)){
-          ev.ayudantes=ev.ayudantes.filter(id=>!eliminados[String(id)]);
-        }
-        if(ev.cabezaPrincipalId && eliminados[String(ev.cabezaPrincipalId)]){
-          ev.cabezaPrincipalId='';
-        }
-      });
+      delete db.trabajadoresEliminados;
     }catch(e){}
   }
 
@@ -7624,7 +7266,7 @@ function exportarPlantillaTrabajadoresXLSX(){
   // Guarda local/Firebase, pero solo crea copia automática si ha cambiado db.eventos.
   window.save=function(){
     normalizarDbSoloEventos();
-    purgarTrabajadoresEliminadosSoloEventos();
+    try{delete db.trabajadoresEliminados}catch(e){}
 
     const firmaAntes=ultimaFirmaEventos;
     const firmaAhora=obtenerFirmaEventos();
@@ -7896,7 +7538,7 @@ function exportarPlantillaTrabajadoresXLSX(){
        Si la copia es anterior a un borrado, no debe conservar marcas actuales de borrado.
        Por eso se usan solo las marcas guardadas dentro de la copia. */
     restaurada.eventosEliminados=(restaurada.eventosEliminados&&typeof restaurada.eventosEliminados==='object')?restaurada.eventosEliminados:{};
-    restaurada.trabajadoresEliminados=(restaurada.trabajadoresEliminados&&typeof restaurada.trabajadoresEliminados==='object')?restaurada.trabajadoresEliminados:{};
+    restaurada.trabajadoresEliminados=(restaurada.trabajadoresEliminados&&typeof restaurada.trabajadoresEliminados==='object')?restaurada.;
 
     restaurada.actualizadoFirebase=Date.now();
     restaurada.restauradoDesdeCopiaAutomatica=true;
@@ -8011,7 +7653,7 @@ function exportarPlantillaTrabajadoresXLSX(){
         if(texto!=='RESTAURAR')return;
 
         try{
-          const restaurada=prepararDbRestaurada(b.db);
+          const restaurada=prepararDbRestaurada(b.db); try{delete restaurada.trabajadoresEliminados}catch(e){}
 
           window.aplicandoDatosFirebase=true;
           db=restaurada;
@@ -8020,6 +7662,7 @@ function exportarPlantillaTrabajadoresXLSX(){
           const planRef=refPlanificadorRestoreFix();
           if(planRef){
             /* Clave: SIN merge. Así Firebase no conserva eventosEliminados antiguos. */
+            try{delete db.trabajadoresEliminados}catch(e){}
             await planRef.set({
               db:db,
               actualizadoFirebase:db.actualizadoFirebase,
@@ -8111,7 +7754,7 @@ function exportarPlantillaTrabajadoresXLSX(){
       Por eso se limpian siempre.
     */
     r.eventosEliminados={};
-    r.trabajadoresEliminados={};
+    delete r.trabajadoresEliminados;
 
     r.actualizadoFirebase=Date.now();
     r.restauradoDesdeCopiaAutomatica=true;
@@ -8355,7 +7998,7 @@ function exportarPlantillaTrabajadoresXLSX(){
       Si no se limpian, la app vuelve a borrar visualmente lo restaurado.
     */
     r.eventosEliminados={};
-    r.trabajadoresEliminados={};
+    delete r.trabajadoresEliminados;
 
     r.actualizadoFirebase=Date.now()+5000;
     r.restauradoDesdeCopiaAutomatica=true;
@@ -8680,7 +8323,7 @@ function exportarPlantillaTrabajadoresXLSX(){
     r.collas=Array.isArray(r.collas)?r.collas:[];
     r.eventos=Array.isArray(r.eventos)?r.eventos:[];
     r.eventosEliminados={};
-    r.trabajadoresEliminados={};
+    delete r.trabajadoresEliminados;
     r.actualizadoFirebase=Date.now()+10000;
     r.restauradoPor=nombreFix();
     r.restauradoEn=r.actualizadoFirebase;
@@ -8693,7 +8336,7 @@ function exportarPlantillaTrabajadoresXLSX(){
     c.collas=Array.isArray(c.collas)?c.collas:[];
     c.eventos=Array.isArray(c.eventos)?c.eventos:[];
     c.eventosEliminados=(c.eventosEliminados&&typeof c.eventosEliminados==='object')?c.eventosEliminados:{};
-    c.trabajadoresEliminados=(c.trabajadoresEliminados&&typeof c.trabajadoresEliminados==='object')?c.trabajadoresEliminados:{};
+    c.trabajadoresEliminados=(c.trabajadoresEliminados&&typeof c.trabajadoresEliminados==='object')?c.;
     return c;
   }
 
@@ -8827,6 +8470,7 @@ function exportarPlantillaTrabajadoresXLSX(){
       db=restaurada;
       localStorage.setItem(STORAGE,JSON.stringify(db));
 
+      try{delete restaurada.trabajadoresEliminados}catch(e){}
       await f.collection('standecor').doc('planificador').set({
         db:restaurada,
         actualizadoFirebase:restaurada.actualizadoFirebase,
@@ -9029,7 +8673,7 @@ function exportarPlantillaTrabajadoresXLSX(){
       collas:Array.isArray(c.collas)?c.collas:[],
       eventos:Array.isArray(c.eventos)?c.eventos:[],
       eventosEliminados:{},
-      trabajadoresEliminados:{},
+      
       actualizadoFirebase:Date.now()+20000,
       restauradoDesdeCopiaAutomatica:true,
       restauradoPor:nombreDirecto(),
@@ -9076,13 +8720,14 @@ function exportarPlantillaTrabajadoresXLSX(){
       window.__restaurandoBackupStandecor=true;
       sessionStorage.setItem('standecor_skip_auto_backup_until',String(Date.now()+30000));
 
-      const restaurada=prepararDbDirecto(backup.db);
+      const restaurada=prepararDbDirecto(backup.db); try{delete restaurada.trabajadoresEliminados}catch(e){}
 
       // Aplicar inmediatamente en la app.
       db=restaurada;
       localStorage.setItem(STORAGE,JSON.stringify(db));
 
       // Sobrescribir Firebase completo. Sin merge.
+      try{delete restaurada.trabajadoresEliminados}catch(e){}
       await f.collection('standecor').doc('planificador').set({
         db:restaurada,
         actualizadoFirebase:restaurada.actualizadoFirebase,
@@ -9093,6 +8738,7 @@ function exportarPlantillaTrabajadoresXLSX(){
 
       // Segunda escritura corta para ganar a listeners antiguos.
       await new Promise(r=>setTimeout(r,300));
+      try{delete restaurada.trabajadoresEliminados}catch(e){}
       await f.collection('standecor').doc('planificador').set({
         db:restaurada,
         actualizadoFirebase:restaurada.actualizadoFirebase,
@@ -9278,7 +8924,7 @@ function exportarPlantillaTrabajadoresXLSX(){
       collas:Array.isArray(c.collas)?c.collas:[],
       eventos:Array.isArray(c.eventos)?c.eventos:[],
       eventosEliminados:{},
-      trabajadoresEliminados:{},
+      
       actualizadoFirebase:Date.now()+20000,
       restauradoDesdeCopiaAutomatica:true,
       restauradoPor:nombreSinConfirm(),
@@ -9345,6 +8991,7 @@ function exportarPlantillaTrabajadoresXLSX(){
       db=restaurada;
       localStorage.setItem(STORAGE,JSON.stringify(db));
 
+      try{delete restaurada.trabajadoresEliminados}catch(e){}
       await f.collection('standecor').doc('planificador').set({
         db:restaurada,
         actualizadoFirebase:restaurada.actualizadoFirebase,
@@ -9355,6 +9002,7 @@ function exportarPlantillaTrabajadoresXLSX(){
 
       await new Promise(r=>setTimeout(r,250));
 
+      try{delete restaurada.trabajadoresEliminados}catch(e){}
       await f.collection('standecor').doc('planificador').set({
         db:restaurada,
         actualizadoFirebase:restaurada.actualizadoFirebase,
@@ -9563,7 +9211,7 @@ function exportarPlantillaTrabajadoresXLSX(){
     c.collas=Array.isArray(c.collas)?c.collas:[];
     c.eventos=Array.isArray(c.eventos)?c.eventos:[];
     c.eventosEliminados=(c.eventosEliminados&&typeof c.eventosEliminados==='object')?c.eventosEliminados:{};
-    c.trabajadoresEliminados=(c.trabajadoresEliminados&&typeof c.trabajadoresEliminados==='object')?c.trabajadoresEliminados:{};
+    c.trabajadoresEliminados=(c.trabajadoresEliminados&&typeof c.trabajadoresEliminados==='object')?c.;
     return c;
   }
 
@@ -9575,7 +9223,7 @@ function exportarPlantillaTrabajadoresXLSX(){
       collas:Array.isArray(c.collas)?c.collas:[],
       eventos:Array.isArray(c.eventos)?c.eventos:[],
       eventosEliminados:{},
-      trabajadoresEliminados:{},
+      
       actualizadoFirebase:Date.now()+20000,
       restauradoDesdeCopiaAutomatica:true,
       restauradoPor:nombreClean(),
@@ -9771,6 +9419,7 @@ function exportarPlantillaTrabajadoresXLSX(){
       db=restaurada;
       localStorage.setItem(STORAGE,JSON.stringify(db));
 
+      try{delete restaurada.trabajadoresEliminados}catch(e){}
       await f.collection('standecor').doc('planificador').set({
         db:restaurada,
         actualizadoFirebase:restaurada.actualizadoFirebase,
@@ -10202,7 +9851,6 @@ function exportarPlantillaTrabajadoresXLSX(){
 </script>
 
 
-
 <script>
 /* ===== FIX PDF MENSUAL FINAL STANDECOR =====
    - Si el calendario muestra junio pero el input month está vacío, lo fija automáticamente.
@@ -10296,7 +9944,6 @@ function exportarPlantillaTrabajadoresXLSX(){
   },600);
 })();
 </script>
-
 
 
 <script>
@@ -10486,239 +10133,513 @@ function actualizarPermisoReordenPersonalStandecor(){
 
 
 <script>
-/* ===== PROTECCIÓN DUPLICADOS TRABAJADORES STANDECOR ===== */
+/* ===== FIREBASE 2.0 BETA 3: BORRADO TRABAJADORES PERSISTENTE ===== */
 (function(){
-  if(window.__proteccionDuplicadosTrabajadoresStandecor) return;
-  window.__proteccionDuplicadosTrabajadoresStandecor=true;
-
-  function claveTrabajadorDuplicadoStandecor(nombre){
+  function sesionIsraelMTrabajadoresB3(){
     try{
-      return String(nombre||'')
-        .toUpperCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g,'')
-        .replace(/\s+/g,' ')
-        .trim();
+      const ses=JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null');
+      return Boolean(ses && ses.usuario==='IsraelM' && ses.rol==='admin');
     }catch(e){
-      return String(nombre||'').toUpperCase().replace(/\s+/g,' ').trim();
+      return false;
     }
   }
 
-  function trabajadorReferenciasStandecor(id){
-    let n=0;
+  window.esIsraelMBorrarTrabajadoresStandecor=function(){
+    return sesionIsraelMTrabajadoresB3();
+  };
+
+  window.actualizarBotonBorrarTodosTrabajadoresStandecor=function(){
     try{
-      (db.eventos||[]).forEach(ev=>{
-        if(Array.isArray(ev.ayudantes)){
-          n+=ev.ayudantes.map(String).filter(x=>x===String(id)).length;
-        }
-      });
+      document.body.classList.toggle('israelm-borrar-trabajadores-admin', sesionIsraelMTrabajadoresB3());
     }catch(e){}
-    return n;
+  };
+
+  function limpiarMapaTrabajadoresB3(){
+    try{ delete db.trabajadoresEliminados; }catch(e){}
   }
 
-  function puntuacionTrabajadorStandecor(t,index){
-    let p=0;
-    const rol=String(t.rol||'').toUpperCase();
-    const tipo=String(t.tipo||'').toUpperCase();
-    const estado=String(t.estado||'').toUpperCase();
-
-    p+=trabajadorReferenciasStandecor(t.id)*100;
-    if(rol.includes('CABEZA')) p+=30;
-    if(t.observaciones) p+=6;
-    if(t.tipo) p+=4;
-    if(t.estado) p+=3;
-    if(t.rol) p+=3;
-    if(tipo.includes('SALE')) p+=2;
-    if(estado.includes('DISPONIBLE')) p+=1;
-    p+=(100000-index)/1000000;
-    return p;
-  }
-
-  function purgarDuplicadosTrabajadoresStandecor(){
-    if(!window.db || !Array.isArray(db.trabajadores)) return false;
-
-    const grupos=new Map();
-
-    db.trabajadores.forEach((t,index)=>{
-      const clave=claveTrabajadorDuplicadoStandecor(t.nombre);
-      if(!clave) return;
-      if(!grupos.has(clave)) grupos.set(clave,[]);
-      grupos.get(clave).push({t,index});
-    });
-
-    let cambio=false;
-    const reemplazos={};
-    const idsEliminar=new Set();
-
-    grupos.forEach(lista=>{
-      if(lista.length<2) return;
-
-      lista.sort((a,b)=>{
-        const pb=puntuacionTrabajadorStandecor(b.t,b.index);
-        const pa=puntuacionTrabajadorStandecor(a.t,a.index);
-        return pb-pa;
-      });
-
-      const conservar=lista[0].t;
-
-      lista.slice(1).forEach(item=>{
-        if(!item.t || !item.t.id || String(item.t.id)===String(conservar.id)) return;
-        reemplazos[String(item.t.id)]=String(conservar.id);
-        idsEliminar.add(String(item.t.id));
-        cambio=true;
-      });
-    });
-
-    if(!cambio) return false;
-
+  function quitarTrabajadorDeMontajesB3(id){
     (db.eventos||[]).forEach(ev=>{
-      if(!Array.isArray(ev.ayudantes)) return;
+      if(Array.isArray(ev.ayudantes)){
+        ev.ayudantes=ev.ayudantes.filter(x=>String(x)!==String(id));
+      }
+      if(String(ev.cabezaPrincipalId||'')===String(id)){
+        ev.cabezaPrincipalId='';
+      }
+    });
+  }
 
-      const nueva=[];
-      ev.ayudantes.forEach(id=>{
-        const id2=reemplazos[String(id)] || String(id);
-        if(id2 && !nueva.includes(id2)) nueva.push(id2);
-      });
+  function guardarBorradoTrabajadoresB3(){
+    limpiarMapaTrabajadoresB3();
+    db.actualizadoFirebase=Date.now()+30000;
+    localStorage.setItem(STORAGE,JSON.stringify(db));
 
-      ev.ayudantes=nueva;
+    if(typeof window.guardarFirebaseStandecor==='function'){
+      setTimeout(()=>{try{window.guardarFirebaseStandecor()}catch(e){}},100);
+      setTimeout(()=>{try{window.guardarFirebaseStandecor()}catch(e){}},900);
+    }
+  }
+
+  window.trabajador=function(id){
+    return (db.trabajadores||[]).find(t=>String(t.id)===String(id));
+  };
+
+  // Sin mensaje de confirmación: elimina directamente desde el botón.
+  window.borrarTrabajador=function(id){
+    limpiarMapaTrabajadoresB3();
+
+    db.trabajadores=(db.trabajadores||[]).filter(t=>String(t.id)!==String(id));
+    quitarTrabajadorDeMontajesB3(id);
+
+    guardarBorradoTrabajadoresB3();
+    renderAll();
+
+    if(typeof mostrarAvisoCentral==='function'){
+      mostrarAvisoCentral('Trabajador eliminado');
+    }
+  };
+
+  window.borrarTodosTrabajadoresStandecor=function(){
+    actualizarBotonBorrarTodosTrabajadoresStandecor();
+
+    if(!sesionIsraelMTrabajadoresB3()){
+      if(typeof mostrarAvisoCentral==='function') mostrarAvisoCentral('Solo IsraelM puede borrar todos los trabajadores');
+      return;
+    }
+
+    const total=(db.trabajadores||[]).length;
+    if(!total){
+      if(typeof mostrarAvisoCentral==='function') mostrarAvisoCentral('No hay trabajadores para borrar');
+      return;
+    }
+
+    window.__borradoTotalTrabajadoresAutorizadoStandecor=true;
+    window.__permitirCeroTrabajadoresFirebase20=true;
+
+    limpiarMapaTrabajadoresB3();
+
+    db.trabajadores=[];
+    (db.eventos||[]).forEach(ev=>{
+      if(Array.isArray(ev.ayudantes)) ev.ayudantes=[];
+      if(ev.cabezaPrincipalId) ev.cabezaPrincipalId='';
     });
 
-    db.trabajadores=db.trabajadores.filter(t=>!idsEliminar.has(String(t.id)));
+    try{limpiarTrabajador()}catch(e){}
 
-    return true;
-  }
+    guardarBorradoTrabajadoresB3();
+    renderAll();
 
-  window.purgarDuplicadosTrabajadoresStandecor=purgarDuplicadosTrabajadoresStandecor;
-
-  if(!window.__saveSinDuplicadosTrabajadoresStandecor){
-    const savePrevio=window.save;
-    if(typeof savePrevio==='function'){
-      window.save=function(){
-        try{purgarDuplicadosTrabajadoresStandecor()}catch(e){console.warn('No se pudo purgar duplicados antes de guardar',e)}
-        return savePrevio.apply(this,arguments);
-      };
-      window.__saveSinDuplicadosTrabajadoresStandecor=true;
+    if(typeof mostrarAvisoCentral==='function'){
+      mostrarAvisoCentral('Todos los trabajadores eliminados');
     }
-  }
 
-  if(!window.__renderAllSinDuplicadosTrabajadoresStandecor){
-    const renderAllPrevio=window.renderAll;
-    if(typeof renderAllPrevio==='function'){
-      window.renderAll=function(){
-        let cambio=false;
-        try{cambio=purgarDuplicadosTrabajadoresStandecor()}catch(e){console.warn('No se pudo purgar duplicados antes de pintar',e)}
-        const r=renderAllPrevio.apply(this,arguments);
-        if(cambio){
-          try{
-            localStorage.setItem(STORAGE,JSON.stringify(db));
-            if(window.guardarFirebaseStandecor && !window.aplicandoDatosFirebase){
-              window.guardarFirebaseStandecor();
-            }
-          }catch(e){}
-        }
-        return r;
-      };
-      window.__renderAllSinDuplicadosTrabajadoresStandecor=true;
-    }
+    setTimeout(()=>{
+      window.__borradoTotalTrabajadoresAutorizadoStandecor=false;
+      window.__permitirCeroTrabajadoresFirebase20=false;
+    },15000);
+  };
+
+  function enlazarBotonBorrarTodosB3(){
+    actualizarBotonBorrarTodosTrabajadoresStandecor();
+
+    document.querySelectorAll('.borrar-todos-trab-btn').forEach(btn=>{
+      if(btn.__borrarTodosB3)return;
+      btn.__borrarTodosB3=true;
+      btn.addEventListener('click',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        window.borrarTodosTrabajadoresStandecor();
+      },true);
+    });
   }
 
   window.addEventListener('load',()=>{
-    setTimeout(()=>{
-      try{
-        const cambio=purgarDuplicadosTrabajadoresStandecor();
-        if(cambio){
-          save();
-          renderAll();
-          if(typeof mostrarAvisoCentral==='function'){
-            mostrarAvisoCentral('Trabajadores duplicados corregidos');
-          }
-        }
-      }catch(e){
-        console.warn('No se pudo ejecutar protección de duplicados',e);
-      }
-    },1400);
+    enlazarBotonBorrarTodosB3();
+    setInterval(enlazarBotonBorrarTodosB3,1000);
   });
+})();
+</script>
+<script>
+/* ===== STANDECOR FIREBASE 2.0 - BLINDAJE INICIAL ===== */
+(function(){
+  if(window.__standecorFirebase20BlindajeInicial) return;
+  window.__standecorFirebase20BlindajeInicial=true;
 
-  setInterval(()=>{
+  let ultimaFirmaGuardadaFirebase20='';
+
+  function limpiarDbFirebase20(){
     try{
-      if(purgarDuplicadosTrabajadoresStandecor()){
-        localStorage.setItem(STORAGE,JSON.stringify(db));
-        if(window.guardarFirebaseStandecor && !window.aplicandoDatosFirebase){
-          window.guardarFirebaseStandecor();
-        }
-        renderAll();
+      if(window.db){
+        delete db.trabajadoresEliminados;
+        db.trabajadores=Array.isArray(db.trabajadores)?db.trabajadores:[];
+        db.collas=Array.isArray(db.collas)?db.collas:[];
+        db.eventos=Array.isArray(db.eventos)?db.eventos:[];
       }
     }catch(e){}
-  },8000);
+  }
+
+  function firmaFirebase20(){
+    try{
+      const c=JSON.parse(JSON.stringify(db||{}));
+      delete c.trabajadoresEliminados;
+      delete c.actualizadoFirebase;
+      delete c.avisosOcultos;
+      delete c.restauradoDesdeBackup;
+      delete c.restauradoEn;
+      delete c.restauradoPor;
+      return JSON.stringify(c);
+    }catch(e){ return ''; }
+  }
+
+  function basePeligrosaFirebase20(){
+    try{
+      return !window.__permitirCeroTrabajadoresFirebase20 &&
+             !window.__borradoTotalTrabajadoresAutorizadoStandecor &&
+             Array.isArray(db.eventos) && db.eventos.length>0 &&
+             (!Array.isArray(db.trabajadores) || db.trabajadores.length===0);
+    }catch(e){ return false; }
+  }
+
+  if(typeof window.save==='function' && !window.__saveFirebase20Blindado){
+    const saveAnterior=window.save;
+    window.save=function(){
+      limpiarDbFirebase20();
+      if(basePeligrosaFirebase20()){
+        console.warn('Firebase 2.0: bloqueado save con planificación y 0 trabajadores.');
+        return;
+      }
+      return saveAnterior.apply(this,arguments);
+    };
+    window.__saveFirebase20Blindado=true;
+  }
+
+  function blindarGuardarFirebase(){
+    if(typeof window.guardarFirebaseStandecor==='function' && !window.guardarFirebaseStandecor.__firebase20){
+      const anterior=window.guardarFirebaseStandecor;
+      const nueva=function(){
+        limpiarDbFirebase20();
+        if(basePeligrosaFirebase20()){
+          console.warn('Firebase 2.0: bloqueado guardado Firebase con planificación y 0 trabajadores.');
+          return;
+        }
+        const firma=firmaFirebase20();
+        if(firma && firma===ultimaFirmaGuardadaFirebase20) return;
+        ultimaFirmaGuardadaFirebase20=firma;
+        return anterior.apply(this,arguments);
+      };
+      nueva.__firebase20=true;
+      window.guardarFirebaseStandecor=nueva;
+    }
+  }
+
+  if(!window.__storageFirebase20Blindado){
+    const original=Storage.prototype.setItem;
+    Storage.prototype.setItem=function(k,v){
+      try{
+        if(typeof STORAGE!=='undefined' && k===STORAGE && typeof v==='string' && v.includes('trabajadoresEliminados')){
+          const data=JSON.parse(v);
+          delete data.trabajadoresEliminados;
+          v=JSON.stringify(data);
+        }
+      }catch(e){}
+      return original.call(this,k,v);
+    };
+    window.__storageFirebase20Blindado=true;
+  }
+
+  window.addEventListener('load',()=>{
+    limpiarDbFirebase20();
+    blindarGuardarFirebase();
+    setInterval(()=>{
+      limpiarDbFirebase20();
+      blindarGuardarFirebase();
+    },1500);
+  });
 })();
 </script>
 
 
+<script>
+/* ===== FIREBASE 2.0 BETA 2 - LIMPIEZA FINAL TRABAJADORES ===== */
+(function(){
+  if(window.__firebase20Beta2Trabajadores) return;
+  window.__firebase20Beta2Trabajadores=true;
+
+  function limpiar(){
+    try{
+      if(window.db){
+        delete db.trabajadoresEliminados;
+      }
+    }catch(e){}
+  }
+
+  function actualizarAdmin(){
+    try{
+      const ses=JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null');
+      document.body.classList.toggle('israelm-borrar-trabajadores-admin', Boolean(ses && ses.usuario==='IsraelM' && ses.rol==='admin'));
+    }catch(e){}
+  }
+
+  if(typeof window.guardarFirebaseStandecor==='function' && !window.guardarFirebaseStandecor.__beta2Trabajadores){
+    const anterior=window.guardarFirebaseStandecor;
+    const nueva=function(){
+      limpiar();
+      return anterior.apply(this,arguments);
+    };
+    nueva.__beta2Trabajadores=true;
+    window.guardarFirebaseStandecor=nueva;
+  }
+
+  if(typeof window.save==='function' && !window.__saveBeta2Trabajadores){
+    const anteriorSave=window.save;
+    window.save=function(){
+      limpiar();
+      return anteriorSave.apply(this,arguments);
+    };
+    window.__saveBeta2Trabajadores=true;
+  }
+
+  window.addEventListener('load',()=>{
+    limpiar();
+    actualizarAdmin();
+    setInterval(()=>{
+      limpiar();
+      actualizarAdmin();
+    },1200);
+  });
+})();
+</script>
+
 
 <script>
-/* ===== BOTÓN BORRAR TODOS TRABAJADORES STANDECOR ===== */
-function esIsraelMBorrarTrabajadoresStandecor(){
-  try{
-    const ses=JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null');
-    return Boolean(ses && ses.usuario==='IsraelM' && ses.rol==='admin');
-  }catch(e){
-    return false;
+/* ===== FIREBASE 2.0 BETA 3 - BLOQUEO SNAPSHOT TRAS BORRADO ===== */
+(function(){
+  if(window.__firebase20Beta3BloqueoSnapshotBorrado) return;
+  window.__firebase20Beta3BloqueoSnapshotBorrado=true;
+
+  const key='standecor_bloquear_snapshot_trabajadores_hasta';
+
+  function bloquearSnapshots(ms){
+    try{sessionStorage.setItem(key,String(Date.now()+ms));}catch(e){}
   }
-}
 
-function actualizarBotonBorrarTodosTrabajadoresStandecor(){
-  try{
-    document.body.classList.toggle('israelm-borrar-trabajadores-admin', esIsraelMBorrarTrabajadoresStandecor());
-  }catch(e){}
-}
+  function snapshotBloqueado(){
+    try{return Date.now()<Number(sessionStorage.getItem(key)||0)}catch(e){return false}
+  }
 
-function borrarTodosTrabajadoresStandecor(){
-  actualizarBotonBorrarTodosTrabajadoresStandecor();
+  const borrarUno=window.borrarTrabajador;
+  if(typeof borrarUno==='function' && !borrarUno.__beta3BloqueaSnapshot){
+    window.borrarTrabajador=function(id){
+      bloquearSnapshots(12000);
+      return borrarUno.apply(this,arguments);
+    };
+    window.borrarTrabajador.__beta3BloqueaSnapshot=true;
+  }
 
-  if(!esIsraelMBorrarTrabajadoresStandecor()){
-    if(typeof mostrarAvisoCentral==='function'){
-      mostrarAvisoCentral('Solo IsraelM puede borrar todos los trabajadores');
+  const borrarTodos=window.borrarTodosTrabajadoresStandecor;
+  if(typeof borrarTodos==='function' && !borrarTodos.__beta3BloqueaSnapshot){
+    window.borrarTodosTrabajadoresStandecor=function(){
+      bloquearSnapshots(15000);
+      return borrarTodos.apply(this,arguments);
+    };
+    window.borrarTodosTrabajadoresStandecor.__beta3BloqueaSnapshot=true;
+  }
+
+  // Parche suave sobre renderAll: no hace nada especial, solo deja disponible bandera global.
+  window.standecorSnapshotTrabajadoresBloqueadoBeta3=snapshotBloqueado;
+})();
+</script>
+
+
+<script>
+/* ===== FIREBASE 2.0 BETA 4 - RESTAURACIÓN SIN trabajadoresEliminados ===== */
+(function(){
+  if(window.__firebase20Beta4RestoreSinTrabajadoresEliminados) return;
+  window.__firebase20Beta4RestoreSinTrabajadoresEliminados=true;
+
+  function limpiar(obj){
+    try{
+      if(obj && typeof obj==='object'){
+        delete obj.trabajadoresEliminados;
+        if(obj.db) delete obj.db.trabajadoresEliminados;
+      }
+    }catch(e){}
+    return obj;
+  }
+
+  function limpiarActual(){
+    try{
+      if(window.db){
+        limpiar(db);
+        localStorage.setItem(STORAGE,JSON.stringify(db));
+      }
+    }catch(e){}
+  }
+
+  async function escribirFirebaseLimpio(){
+    try{
+      if(!window.firebase || !firebase.apps || !firebase.apps.length || !window.db) return;
+      limpiarActual();
+      const ref=firebase.firestore().collection('standecor').doc('planificador');
+      await ref.set({
+        db:db,
+        actualizadoFirebase:db.actualizadoFirebase || Date.now(),
+        syncVersion:'firebase-2.0-beta4-clean'
+      },{merge:false});
+    }catch(e){
+      console.warn('Beta 4 no pudo limpiar Firebase',e);
     }
-    return;
   }
 
-  const total=(db.trabajadores||[]).length;
-  if(!total){
-    if(typeof mostrarAvisoCentral==='function') mostrarAvisoCentral('No hay trabajadores para borrar');
-    else alert('No hay trabajadores para borrar');
-    return;
-  }
+  // Limpiar automáticamente si detecta que el campo reaparece.
+  window.addEventListener('load',()=>{
+    setTimeout(()=>{
+      limpiarActual();
+      if(window.db && Object.prototype.hasOwnProperty.call(db,'trabajadoresEliminados')){
+        escribirFirebaseLimpio();
+      }
+    },1200);
 
-  if(!confirm('¿Borrar TODOS los trabajadores?\n\nSe eliminarán '+total+' trabajadores y se quitarán también de todos los montajes/desmontajes existentes.')) return;
-
-  if(!confirm('Confirmación final:\n\nEsta acción borrará toda la base de trabajadores.')) return;
-
-  if(!db.trabajadoresEliminados || typeof db.trabajadoresEliminados!=='object'){
-    db.trabajadoresEliminados={};
-  }
-
-  (db.trabajadores||[]).forEach(t=>{
-    if(t && t.id) db.trabajadoresEliminados[String(t.id)]=Date.now();
+    setInterval(()=>{
+      try{
+        if(window.db && Object.prototype.hasOwnProperty.call(db,'trabajadoresEliminados')){
+          limpiarActual();
+          escribirFirebaseLimpio();
+        }
+      }catch(e){}
+    },3000);
   });
+})();
+</script>
 
-  db.trabajadores=[];
 
-  (db.eventos||[]).forEach(ev=>{
-    if(Array.isArray(ev.ayudantes)) ev.ayudantes=[];
-    if(ev.cabezaPrincipalId) ev.cabezaPrincipalId='';
+<script>
+/* ===== FIREBASE 2.0 BETA 5 - OPTIMIZACIÓN DE GUARDADO ===== */
+(function(){
+  if(window.__firebase20Beta5Optimizacion) return;
+  window.__firebase20Beta5Optimizacion=true;
+
+  let ultimaFirmaEnviadaBeta5='';
+  let timerBeta5=null;
+
+  function limpiarDbBeta5(obj){
+    try{
+      const d=obj||db;
+      if(d && typeof d==='object'){
+        delete d.trabajadoresEliminados;
+        d.trabajadores=Array.isArray(d.trabajadores)?d.trabajadores:[];
+        d.collas=Array.isArray(d.collas)?d.collas:[];
+        d.eventos=Array.isArray(d.eventos)?d.eventos:[];
+      }
+    }catch(e){}
+    return obj||db;
+  }
+
+  function firmaBeta5(obj){
+    try{
+      const c=JSON.parse(JSON.stringify(obj||db||{}));
+      delete c.trabajadoresEliminados;
+      delete c.actualizadoFirebase;
+      delete c.avisosOcultos;
+      delete c.restauradoDesdeBackup;
+      delete c.restauradoDesdeCopiaAutomatica;
+      delete c.restauradoEn;
+      delete c.restauradoPor;
+      delete c.syncVersion;
+      delete c._syncVersion;
+
+      (c.trabajadores||[]).sort((a,b)=>String(a.id||'').localeCompare(String(b.id||'')));
+      (c.collas||[]).sort((a,b)=>String(a.id||'').localeCompare(String(b.id||'')));
+      (c.eventos||[]).sort((a,b)=>String(a.id||'').localeCompare(String(b.id||'')));
+
+      return JSON.stringify(c);
+    }catch(e){
+      return '';
+    }
+  }
+
+  function baseVaciaBeta5(){
+    try{
+      return (!Array.isArray(db.eventos) || db.eventos.length===0) &&
+             (!Array.isArray(db.collas) || db.collas.length===0);
+    }catch(e){
+      return true;
+    }
+  }
+
+  function trabajadoresCeroPeligrosoBeta5(){
+    try{
+      return !window.__permitirCeroTrabajadoresFirebase20 &&
+             !window.__borradoTotalTrabajadoresAutorizadoStandecor &&
+             Array.isArray(db.eventos) && db.eventos.length>0 &&
+             (!Array.isArray(db.trabajadores) || db.trabajadores.length===0);
+    }catch(e){
+      return false;
+    }
+  }
+
+  function blindarGuardar(){
+    if(typeof window.guardarFirebaseStandecor!=='function') return;
+    if(window.guardarFirebaseStandecor.__beta5Optimizada) return;
+
+    const anterior=window.guardarFirebaseStandecor;
+
+    const nueva=function(){
+      limpiarDbBeta5();
+
+      if(baseVaciaBeta5()){
+        console.warn('Firebase 2.0 Beta 5: guardado bloqueado, base sin trabajos/collas.');
+        return;
+      }
+
+      if(trabajadoresCeroPeligrosoBeta5()){
+        console.warn('Firebase 2.0 Beta 5: guardado bloqueado, planificación con 0 trabajadores.');
+        return;
+      }
+
+      const firma=firmaBeta5(db);
+      if(firma && firma===ultimaFirmaEnviadaBeta5){
+        return;
+      }
+
+      clearTimeout(timerBeta5);
+      timerBeta5=setTimeout(()=>{
+        ultimaFirmaEnviadaBeta5=firmaBeta5(db);
+        anterior.apply(this,arguments);
+      },350);
+    };
+
+    nueva.__beta5Optimizada=true;
+    window.guardarFirebaseStandecor=nueva;
+  }
+
+  function blindarSave(){
+    if(typeof window.save!=='function') return;
+    if(window.save.__beta5Optimizada) return;
+
+    const saveAnterior=window.save;
+
+    const nuevoSave=function(){
+      limpiarDbBeta5();
+      return saveAnterior.apply(this,arguments);
+    };
+
+    nuevoSave.__beta5Optimizada=true;
+    window.save=nuevoSave;
+  }
+
+  function iniciar(){
+    limpiarDbBeta5();
+    blindarSave();
+    blindarGuardar();
+  }
+
+  window.addEventListener('load',()=>{
+    iniciar();
+    setTimeout(iniciar,1000);
+    setInterval(iniciar,2500);
   });
-
-  try{limpiarTrabajador()}catch(e){}
-  save();
-  renderAll();
-
-  if(typeof mostrarAvisoCentral==='function') mostrarAvisoCentral('Todos los trabajadores eliminados');
-}
-
-window.addEventListener('load',()=>{
-  actualizarBotonBorrarTodosTrabajadoresStandecor();
-  setInterval(actualizarBotonBorrarTodosTrabajadoresStandecor,1200);
-});
+})();
 </script>
 
 </html>
