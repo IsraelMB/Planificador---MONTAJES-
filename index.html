@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
-<!-- STANDECOR Firebase 2.0 Beta 6 - sincronización optimizada -->
+<!-- STANDECOR Firebase 2.0 Beta 11 - candidata final GitHub -->
 
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2300,7 +2300,7 @@ const firebaseConfigStandecor = {
 </script>
 
 
-<!-- ===== BETA A: OPTIMIZACIÓN VISUAL MÓVIL FORMULARIO - SOLO CSS ===== -->
+
 <style id="standecorMobileFormVisualA">
 @media (max-width:720px){
   /* Ajuste suave: solo mejora visual del formulario en móvil. No toca datos, JS ni Firebase. */
@@ -3695,115 +3695,6 @@ function imprimirMesPDF(){
   },120);
 }
 
-
-/* ===== FIREBASE SYNC BETA - PROTECCIÓN ANTI-BORRADO ===== */
-let firebaseDbStandecor=null;
-let firebaseReadyStandecor=false;
-let firebaseTimerStandecor=null;
-let firebaseCargaInicialCompletada=false;
-window.aplicandoDatosFirebase=false;
-
-function datosTrabajoStandecor(d){
-  if(!d)return 0;
-  return (Array.isArray(d.eventos)?d.eventos.length:0) +
-         (Array.isArray(d.collas)?d.collas.length:0);
-}
-
-function esBaseVaciaStandecor(d){
-  return datosTrabajoStandecor(d)===0;
-}
-
-function iniciarFirebaseStandecor(){
-  try{
-    if(!window.firebase || firebaseReadyStandecor)return;
-    firebase.initializeApp(firebaseConfigStandecor);
-    firebaseDbStandecor=firebase.firestore();
-    firebaseReadyStandecor=true;
-
-    const ref=firebaseDbStandecor.collection('standecor').doc('planificador');
-
-    window.guardarFirebaseStandecor=function(){
-      if(!firebaseReadyStandecor || !firebaseDbStandecor)return;
-
-      /* Seguridad: no guardar hasta que Firebase haya cargado primero */
-      if(!firebaseCargaInicialCompletada){
-        console.warn('Guardado bloqueado: esperando carga inicial de Firebase.');
-        return;
-      }
-
-      /* Seguridad: evitar que un navegador vacío borre la base compartida */
-      if(esBaseVaciaStandecor(db)){
-        console.warn('Guardado bloqueado: base local vacía. Se evita sobrescribir Firebase.');
-        alert('Protección activada: no se guardó una base vacía para evitar borrar los datos compartidos.');
-        return;
-      }
-
-      clearTimeout(firebaseTimerStandecor);
-      firebaseTimerStandecor=setTimeout(()=>{
-        try{
-          delete db.trabajadoresEliminados;
-          db.actualizadoFirebase=Date.now();
-          try{delete db.trabajadoresEliminados}catch(e){}
-          ref.set({db:db,actualizadoFirebase:db.actualizadoFirebase},{merge:false});
-        }catch(e){console.warn('No se pudo guardar en Firebase',e)}
-      },700);
-    };
-
-    ref.onSnapshot((snap)=>{
-      if(!snap.exists){
-        firebaseCargaInicialCompletada=true;
-        if(!esBaseVaciaStandecor(db)){
-          window.guardarFirebaseStandecor();
-        }
-        return;
-      }
-
-      const data=snap.data()||{};
-      if(!data.db){
-        firebaseCargaInicialCompletada=true;
-        return;
-      }
-
-      if(window.standecorSnapshotTrabajadoresBloqueadoBeta3 && window.standecorSnapshotTrabajadoresBloqueadoBeta3()){firebaseCargaInicialCompletada=true;return;}
-      const remoteDb=data.db; try{delete remoteDb.trabajadoresEliminados}catch(e){}
-      const localTime=Number(db.actualizadoFirebase||0);
-      const remoteTime=Number(data.actualizadoFirebase||remoteDb.actualizadoFirebase||0);
-
-      /*
-        Si llega una base remota vacía, NO la aplicamos sobre una base local con datos.
-        Esto evita el borrado masivo accidental al cambiar de usuario/ordenador.
-      */
-      if(esBaseVaciaStandecor(remoteDb) && !esBaseVaciaStandecor(db)){
-        firebaseCargaInicialCompletada=true;
-        console.warn('Firebase trae base vacía; se conserva la base local con datos.');
-        return;
-      }
-
-      if(remoteTime && remoteTime<=localTime){
-        firebaseCargaInicialCompletada=true;
-        return;
-      }
-
-      window.aplicandoDatosFirebase=true;
-      db=remoteDb;
-      db.trabajadores=db.trabajadores||[];
-      db.collas=db.collas||[];
-      db.eventos=db.eventos||[];
-      db.actualizadoFirebase=remoteTime||Date.now();
-      localStorage.setItem(STORAGE,JSON.stringify(db));
-      renderAll();
-      window.aplicandoDatosFirebase=false;
-      firebaseCargaInicialCompletada=true;
-    });
-
-    /* Ya no se guarda automáticamente al arrancar.
-       Primero se espera a recibir Firebase para no pisar datos con localStorage vacío. */
-  }catch(e){
-    console.warn('Firebase no iniciado. La app sigue con localStorage.',e);
-  }
-}
-
-document.addEventListener('DOMContentLoaded',()=>{try{byId('mesCalendario').value=mesActualCalendario();renderAll();iniciarFirebaseStandecor()}catch(err){console.error('Error al iniciar:',err);alert('Hay un error en el código. Revisa la consola del navegador.')}});
 
 /* ===== ÚLTIMA VERSIÓN REAL DE IMPRESIÓN CON OBSERVACIONES ===== */
 /* ===== IMPRESIÓN: OBSERVACIONES DEBAJO DE COLLA ===== */
@@ -8673,7 +8564,7 @@ function exportarPlantillaTrabajadoresXLSX(){
       collas:Array.isArray(c.collas)?c.collas:[],
       eventos:Array.isArray(c.eventos)?c.eventos:[],
       eventosEliminados:{},
-      
+
       actualizadoFirebase:Date.now()+20000,
       restauradoDesdeCopiaAutomatica:true,
       restauradoPor:nombreDirecto(),
@@ -8924,7 +8815,7 @@ function exportarPlantillaTrabajadoresXLSX(){
       collas:Array.isArray(c.collas)?c.collas:[],
       eventos:Array.isArray(c.eventos)?c.eventos:[],
       eventosEliminados:{},
-      
+
       actualizadoFirebase:Date.now()+20000,
       restauradoDesdeCopiaAutomatica:true,
       restauradoPor:nombreSinConfirm(),
@@ -9223,7 +9114,7 @@ function exportarPlantillaTrabajadoresXLSX(){
       collas:Array.isArray(c.collas)?c.collas:[],
       eventos:Array.isArray(c.eventos)?c.eventos:[],
       eventosEliminados:{},
-      
+
       actualizadoFirebase:Date.now()+20000,
       restauradoDesdeCopiaAutomatica:true,
       restauradoPor:nombreClean(),
@@ -10514,130 +10405,397 @@ function actualizarPermisoReordenPersonalStandecor(){
 
 
 <script>
-/* ===== FIREBASE 2.0 BETA 5 - OPTIMIZACIÓN DE GUARDADO ===== */
+/* ===== STANDECOR FIREBASE 2.0 BETA 8 - MÓDULO ÚNICO ===== */
 (function(){
-  if(window.__firebase20Beta5Optimizacion) return;
-  window.__firebase20Beta5Optimizacion=true;
+  if(window.__standecorFirebaseBeta8) return;
+  window.__standecorFirebaseBeta8=true;
 
-  let ultimaFirmaEnviadaBeta5='';
-  let timerBeta5=null;
+  let dbFire=null;
+  let refPlan=null;
+  let cargaInicial=false;
+  let aplicandoRemoto=false;
+  let guardando=false;
+  let timer=null;
+  let firmaActual='';
+  let ultimoGuardado=0;
 
-  function limpiarDbBeta5(obj){
+  function copia(obj){
+    try{return JSON.parse(JSON.stringify(obj||{}))}catch(e){return {}}
+  }
+
+  function limpiar(d){
+    d=d||{};
+    delete d.trabajadoresEliminados;
+    d.trabajadores=Array.isArray(d.trabajadores)?d.trabajadores:[];
+    d.collas=Array.isArray(d.collas)?d.collas:[];
+    d.eventos=Array.isArray(d.eventos)?d.eventos:[];
+    return d;
+  }
+
+  function firma(d){
+    const c=copia(limpiar(copia(d||db||{})));
+    delete c.actualizadoFirebase;
+    delete c.avisosOcultos;
+    delete c.restauradoDesdeBackup;
+    delete c.restauradoDesdeCopiaAutomatica;
+    delete c.restauradoEn;
+    delete c.restauradoPor;
+    delete c.syncVersion;
+    delete c._syncVersion;
+
+    (c.trabajadores||[]).sort((a,b)=>String(a.id||'').localeCompare(String(b.id||'')));
+    (c.collas||[]).sort((a,b)=>String(a.id||'').localeCompare(String(b.id||'')));
+    (c.eventos||[]).sort((a,b)=>String(a.id||'').localeCompare(String(b.id||'')));
+
+    try{return JSON.stringify(c)}catch(e){return ''}
+  }
+
+  function tieneBase(d){
+    d=limpiar(d||{});
+    return d.eventos.length>0 || d.collas.length>0 || d.trabajadores.length>0;
+  }
+
+  function bloqueoCeroTrabajadores(d){
+    d=limpiar(d||{});
+    return !window.__permitirCeroTrabajadoresFirebase20 &&
+           !window.__borradoTotalTrabajadoresAutorizadoStandecor &&
+           d.eventos.length>0 &&
+           d.trabajadores.length===0;
+  }
+
+  function elegir(local, remoto, remoteTime){
+    local=limpiar(copia(local));
+    remoto=limpiar(copia(remoto));
+
+    const localTime=Number(local.actualizadoFirebase||0);
+    const rt=Number(remoteTime||remoto.actualizadoFirebase||0);
+
+    if(!tieneBase(remoto) && tieneBase(local)) return local;
+    if(bloqueoCeroTrabajadores(remoto) && local.trabajadores.length>0) return local;
+    if(tieneBase(remoto) && (rt>localTime || !tieneBase(local))) return remoto;
+
+    return local;
+  }
+
+  function guardarLocal(){
     try{
-      const d=obj||db;
-      if(d && typeof d==='object'){
-        delete d.trabajadoresEliminados;
-        d.trabajadores=Array.isArray(d.trabajadores)?d.trabajadores:[];
-        d.collas=Array.isArray(d.collas)?d.collas:[];
-        d.eventos=Array.isArray(d.eventos)?d.eventos:[];
+      limpiar(db);
+      localStorage.setItem(STORAGE,JSON.stringify(db));
+    }catch(e){}
+  }
+
+  window.guardarFirebaseStandecor=function(){
+    if(!refPlan || !cargaInicial || aplicandoRemoto || guardando) return;
+
+    limpiar(db);
+
+    if(!tieneBase(db)){
+      console.warn('Firebase Beta 8: guardado bloqueado, base vacía.');
+      return;
+    }
+
+    if(bloqueoCeroTrabajadores(db)){
+      console.warn('Firebase Beta 8: guardado bloqueado, planificación con 0 trabajadores.');
+      return;
+    }
+
+    const f=firma(db);
+    if(f && f===firmaActual) return;
+
+    clearTimeout(timer);
+    timer=setTimeout(async()=>{
+      try{
+        if(guardando || aplicandoRemoto) return;
+        guardando=true;
+
+        limpiar(db);
+        db.actualizadoFirebase=Date.now();
+        guardarLocal();
+
+        firmaActual=firma(db);
+        ultimoGuardado=Date.now();
+
+        await refPlan.set({
+          db:limpiar(copia(db)),
+          actualizadoFirebase:db.actualizadoFirebase,
+          syncVersion:'firebase-2.0-beta8'
+        },{merge:false});
+
+        if(window.STANDECOR_DIAG) window.STANDECOR_DIAG.firebaseSave=(window.STANDECOR_DIAG.firebaseSave||0)+1;
+      }catch(e){
+        console.warn('Firebase Beta 8: no se pudo guardar',e);
+      }finally{
+        guardando=false;
+      }
+    },500);
+  };
+
+  window.iniciarFirebaseStandecor=function(){
+    try{
+      if(!window.firebase) return;
+
+      if(!firebase.apps || !firebase.apps.length){
+        firebase.initializeApp(firebaseConfigStandecor);
+      }
+
+      dbFire=firebase.firestore();
+      refPlan=dbFire.collection('standecor').doc('planificador');
+
+      refPlan.onSnapshot(snap=>{
+        try{
+          if(window.STANDECOR_DIAG) window.STANDECOR_DIAG.snapshots=(window.STANDECOR_DIAG.snapshots||0)+1;
+
+          if(!snap.exists || !snap.data() || !snap.data().db){
+            cargaInicial=true;
+            if(tieneBase(db)) window.guardarFirebaseStandecor();
+            return;
+          }
+
+          const data=snap.data()||{};
+          const remoto=limpiar(data.db);
+          const seleccionado=elegir(db,remoto,Number(data.actualizadoFirebase||0));
+          const fSel=firma(seleccionado);
+          const fLocal=firma(db);
+
+          cargaInicial=true;
+
+          if(fSel===fLocal){
+            firmaActual=fSel;
+            return;
+          }
+
+          aplicandoRemoto=true;
+          window.aplicandoDatosFirebase=true;
+
+          db=limpiar(seleccionado);
+          db.actualizadoFirebase=Number(data.actualizadoFirebase||db.actualizadoFirebase||Date.now());
+          guardarLocal();
+          firmaActual=firma(db);
+
+          try{renderAll()}catch(e){console.warn('Firebase Beta 8: no se pudo renderizar',e)}
+
+          window.aplicandoDatosFirebase=false;
+          aplicandoRemoto=false;
+        }catch(e){
+          console.warn('Firebase Beta 8 snapshot falló',e);
+          cargaInicial=true;
+          window.aplicandoDatosFirebase=false;
+          aplicandoRemoto=false;
+        }
+      });
+    }catch(e){
+      console.warn('Firebase Beta 8 no iniciado. La app sigue local.',e);
+      cargaInicial=true;
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    try{
+      if(byId('mesCalendario')) byId('mesCalendario').value=mesActualCalendario();
+      limpiar(db);
+      guardarLocal();
+      renderAll();
+      window.iniciarFirebaseStandecor();
+    }catch(err){
+      console.error('Error al iniciar Beta 8:',err);
+      alert('Hay un error en el código. Revisa la consola del navegador.');
+    }
+  });
+})();
+</script>
+
+
+<script>
+/* ===== STANDECOR FIREBASE 2.0 BETA 9 - RENDIMIENTO ===== */
+(function(){
+  if(window.__standecorBeta9Rendimiento) return;
+  window.__standecorBeta9Rendimiento=true;
+
+  let renderTimer=null;
+  let ultimoRender=0;
+
+  function limpiarTrabajadoresEliminados(){
+    try{
+      if(window.db && Object.prototype.hasOwnProperty.call(db,'trabajadoresEliminados')){
+        delete db.trabajadoresEliminados;
       }
     }catch(e){}
-    return obj||db;
   }
 
-  function firmaBeta5(obj){
-    try{
-      const c=JSON.parse(JSON.stringify(obj||db||{}));
-      delete c.trabajadoresEliminados;
-      delete c.actualizadoFirebase;
-      delete c.avisosOcultos;
-      delete c.restauradoDesdeBackup;
-      delete c.restauradoDesdeCopiaAutomatica;
-      delete c.restauradoEn;
-      delete c.restauradoPor;
-      delete c.syncVersion;
-      delete c._syncVersion;
+  function envolverRenderAll(){
+    if(typeof window.renderAll!=='function') return;
+    if(window.renderAll.__beta9Rendimiento) return;
 
-      (c.trabajadores||[]).sort((a,b)=>String(a.id||'').localeCompare(String(b.id||'')));
-      (c.collas||[]).sort((a,b)=>String(a.id||'').localeCompare(String(b.id||'')));
-      (c.eventos||[]).sort((a,b)=>String(a.id||'').localeCompare(String(b.id||'')));
+    const original=window.renderAll;
+    window.renderAll=function(){
+      const args=arguments;
+      const ctx=this;
+      const ahora=Date.now();
 
-      return JSON.stringify(c);
-    }catch(e){
-      return '';
-    }
+      if(ahora-ultimoRender<80){
+        clearTimeout(renderTimer);
+        renderTimer=setTimeout(function(){
+          ultimoRender=Date.now();
+          limpiarTrabajadoresEliminados();
+          original.apply(ctx,args);
+        },90);
+        return;
+      }
+
+      ultimoRender=ahora;
+      limpiarTrabajadoresEliminados();
+      return original.apply(ctx,args);
+    };
+
+    window.renderAll.__beta9Rendimiento=true;
   }
 
-  function baseVaciaBeta5(){
-    try{
-      return (!Array.isArray(db.eventos) || db.eventos.length===0) &&
-             (!Array.isArray(db.collas) || db.collas.length===0);
-    }catch(e){
-      return true;
-    }
-  }
-
-  function trabajadoresCeroPeligrosoBeta5(){
-    try{
-      return !window.__permitirCeroTrabajadoresFirebase20 &&
-             !window.__borradoTotalTrabajadoresAutorizadoStandecor &&
-             Array.isArray(db.eventos) && db.eventos.length>0 &&
-             (!Array.isArray(db.trabajadores) || db.trabajadores.length===0);
-    }catch(e){
-      return false;
-    }
-  }
-
-  function blindarGuardar(){
+  function envolverFirebase(){
     if(typeof window.guardarFirebaseStandecor!=='function') return;
-    if(window.guardarFirebaseStandecor.__beta5Optimizada) return;
+    if(window.guardarFirebaseStandecor.__beta9Rendimiento) return;
 
-    const anterior=window.guardarFirebaseStandecor;
+    const original=window.guardarFirebaseStandecor;
+    let timer=null;
+    let ultimaFirma='';
 
-    const nueva=function(){
-      limpiarDbBeta5();
+    function firma(){
+      try{
+        const c=JSON.parse(JSON.stringify(window.db||{}));
+        delete c.trabajadoresEliminados;
+        delete c.actualizadoFirebase;
+        delete c.avisosOcultos;
+        delete c.restauradoDesdeBackup;
+        delete c.restauradoEn;
+        delete c.restauradoPor;
+        delete c.syncVersion;
+        delete c._syncVersion;
+        return JSON.stringify(c);
+      }catch(e){return ''}
+    }
 
-      if(baseVaciaBeta5()){
-        console.warn('Firebase 2.0 Beta 5: guardado bloqueado, base sin trabajos/collas.');
-        return;
-      }
+    window.guardarFirebaseStandecor=function(){
+      limpiarTrabajadoresEliminados();
 
-      if(trabajadoresCeroPeligrosoBeta5()){
-        console.warn('Firebase 2.0 Beta 5: guardado bloqueado, planificación con 0 trabajadores.');
-        return;
-      }
+      const f=firma();
+      if(f && f===ultimaFirma) return;
 
-      const firma=firmaBeta5(db);
-      if(firma && firma===ultimaFirmaEnviadaBeta5){
-        return;
-      }
-
-      clearTimeout(timerBeta5);
-      timerBeta5=setTimeout(()=>{
-        ultimaFirmaEnviadaBeta5=firmaBeta5(db);
-        anterior.apply(this,arguments);
-      },350);
+      clearTimeout(timer);
+      timer=setTimeout(function(){
+        ultimaFirma=firma();
+        return original.apply(window,arguments);
+      },250);
     };
 
-    nueva.__beta5Optimizada=true;
-    window.guardarFirebaseStandecor=nueva;
+    window.guardarFirebaseStandecor.__beta9Rendimiento=true;
   }
 
-  function blindarSave(){
+  function envolverSave(){
     if(typeof window.save!=='function') return;
-    if(window.save.__beta5Optimizada) return;
+    if(window.save.__beta9Rendimiento) return;
 
-    const saveAnterior=window.save;
-
-    const nuevoSave=function(){
-      limpiarDbBeta5();
-      return saveAnterior.apply(this,arguments);
+    const original=window.save;
+    window.save=function(){
+      limpiarTrabajadoresEliminados();
+      return original.apply(this,arguments);
     };
 
-    nuevoSave.__beta5Optimizada=true;
-    window.save=nuevoSave;
+    window.save.__beta9Rendimiento=true;
   }
 
   function iniciar(){
-    limpiarDbBeta5();
-    blindarSave();
-    blindarGuardar();
+    limpiarTrabajadoresEliminados();
+    envolverRenderAll();
+    envolverSave();
+    envolverFirebase();
   }
 
-  window.addEventListener('load',()=>{
+  window.addEventListener('load',function(){
     iniciar();
-    setTimeout(iniciar,1000);
-    setInterval(iniciar,2500);
+    setTimeout(iniciar,800);
+    setTimeout(iniciar,2000);
+  });
+})();
+</script>
+\n
+<script>
+/* ===== STANDECOR FIREBASE 2.0 BETA 10 - ESTADO FINAL MOTOR ===== */
+(function(){
+  if(window.__standecorBeta10MotorFinal) return;
+  window.__standecorBeta10MotorFinal=true;
+
+  window.STANDECOR_FIREBASE_2_VERSION='Beta 11 candidata final GitHub';
+
+  function limpiarMotor(){
+    try{
+      if(window.db){
+        delete db.trabajadoresEliminados;
+        db.trabajadores=Array.isArray(db.trabajadores)?db.trabajadores:[];
+        db.collas=Array.isArray(db.collas)?db.collas:[];
+        db.eventos=Array.isArray(db.eventos)?db.eventos:[];
+      }
+    }catch(e){}
+  }
+
+  window.STANDECOR_ESTADO_MOTOR=function(){
+    limpiarMotor();
+    return {
+      version:window.STANDECOR_FIREBASE_2_VERSION,
+      trabajadores:(window.db&&Array.isArray(db.trabajadores))?db.trabajadores.length:0,
+      eventos:(window.db&&Array.isArray(db.eventos))?db.eventos.length:0,
+      collas:(window.db&&Array.isArray(db.collas))?db.collas.length:0,
+      tieneTrabajadoresEliminados:Boolean(window.db&&Object.prototype.hasOwnProperty.call(db,'trabajadoresEliminados')),
+      firebaseSave:typeof window.guardarFirebaseStandecor==='function',
+      renderAll:typeof window.renderAll==='function',
+      save:typeof window.save==='function'
+    };
+  };
+
+  window.addEventListener('load',function(){
+    limpiarMotor();
+    setTimeout(limpiarMotor,800);
+    setTimeout(limpiarMotor,2000);
+  });
+})();
+</script>
+
+
+
+<script>
+/* ===== STANDECOR FIREBASE 2.0 BETA 11 - VERIFICACIÓN FINAL GITHUB ===== */
+(function(){
+  if(window.__standecorBeta11FinalGithub) return;
+  window.__standecorBeta11FinalGithub=true;
+
+  window.STANDECOR_FIREBASE_2_VERSION='Beta 11 candidata final GitHub';
+
+  function limpiar(){
+    try{
+      if(window.db){
+        delete db.trabajadoresEliminados;
+        db.trabajadores=Array.isArray(db.trabajadores)?db.trabajadores:[];
+        db.collas=Array.isArray(db.collas)?db.collas:[];
+        db.eventos=Array.isArray(db.eventos)?db.eventos:[];
+      }
+    }catch(e){}
+  }
+
+  window.STANDECOR_ESTADO_FINAL=function(){
+    limpiar();
+    return {
+      version:window.STANDECOR_FIREBASE_2_VERSION,
+      trabajadores:Array.isArray(db.trabajadores)?db.trabajadores.length:0,
+      eventos:Array.isArray(db.eventos)?db.eventos.length:0,
+      collas:Array.isArray(db.collas)?db.collas.length:0,
+      trabajadoresEliminados:Boolean(window.db&&Object.prototype.hasOwnProperty.call(db,'trabajadoresEliminados')),
+      firebase:Boolean(typeof window.guardarFirebaseStandecor==='function'),
+      snapshot:'único'
+    };
+  };
+
+  window.addEventListener('load',()=>{
+    limpiar();
+    setTimeout(limpiar,1000);
+    setTimeout(limpiar,3000);
   });
 })();
 </script>
