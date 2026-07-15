@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
-<!-- STANDECOR Planner 3.0.2 -->
+<!-- STANDECOR Planner 3.0.3 -->
 
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2865,47 +2865,61 @@ body.israelm-borrar-trabajadores-admin .solo-israelm-borrar-trabajadores{
 
 
 
-<style id="standecor-auth-privacy-302">
-html.standecor-auth-checking body > *{
+
+<style id="standecor-auth-privacy-303">
+html.standecor-auth-checking body > *:not(#standecorSplashScreen){
   visibility:hidden!important;
 }
 
-html.standecor-auth-checking body::before{
-  content:'STANDECOR';
+#standecorSplashScreen{
   position:fixed;
   inset:0;
-  z-index:2147483646;
+  z-index:2147483647;
   display:flex;
   align-items:center;
   justify-content:center;
   background:linear-gradient(135deg,#0B5F86,#14A4E3);
+  opacity:1;
+  visibility:visible;
+  transition:opacity .28s ease, visibility .28s ease;
+}
+
+#standecorSplashScreen.splash-hidden{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+
+.splash-logo-standecor{
+  position:relative;
+  display:inline-block;
   color:white;
   font-family:'Plus Jakarta Sans',Arial,sans-serif;
-  font-size:64px;
+  text-shadow:0 8px 24px rgba(0,0,0,.18);
+  animation:standecorSplashIn .38s ease both;
+}
+
+.splash-logo-main{
+  font-size:72px;
+  line-height:.95;
   font-weight:900;
-  letter-spacing:3px;
+  letter-spacing:2px;
+  white-space:nowrap;
+}
+
+.splash-logo-com{
+  position:absolute;
+  right:2px;
+  top:100%;
+  margin-top:8px;
+  font-size:24px;
   line-height:1;
-  text-shadow:0 6px 20px rgba(0,0,0,.18);
-  animation:standecorSplashFadeIn .35s ease both;
-}
-
-html.standecor-auth-checking body::after{
-  content:'.com';
-  position:fixed;
-  left:50%;
-  top:50%;
-  z-index:2147483647;
-  transform:translate(92px,42px);
-  color:white;
-  font-family:'Plus Jakarta Sans',Arial,sans-serif;
-  font-size:18px;
   font-weight:800;
-  letter-spacing:.5px;
-  opacity:.9;
-  animation:standecorSplashFadeIn .45s ease both;
+  letter-spacing:.4px;
+  opacity:.95;
 }
 
-html.standecor-auth-locked body > *:not(#loginBetaOverlay){
+html.standecor-auth-locked body > *:not(#loginBetaOverlay):not(#standecorSplashScreen){
   display:none!important;
 }
 
@@ -2914,26 +2928,26 @@ html.standecor-auth-locked #loginBetaOverlay{
   visibility:visible!important;
 }
 
-@keyframes standecorSplashFadeIn{
+@keyframes standecorSplashIn{
   from{
     opacity:0;
-    transform:scale(.96);
+    transform:translateY(8px) scale(.96);
   }
   to{
     opacity:1;
-    transform:scale(1);
+    transform:translateY(0) scale(1);
   }
 }
 
 @media(max-width:720px){
-  html.standecor-auth-checking body::before{
-    font-size:46px;
-    letter-spacing:2px;
+  .splash-logo-main{
+    font-size:52px;
+    letter-spacing:1.5px;
   }
 
-  html.standecor-auth-checking body::after{
-    font-size:15px;
-    transform:translate(65px,32px);
+  .splash-logo-com{
+    font-size:18px;
+    margin-top:6px;
   }
 
   #betaBackupsBtn{
@@ -2942,17 +2956,18 @@ html.standecor-auth-locked #loginBetaOverlay{
 }
 
 @media(max-width:430px){
-  html.standecor-auth-checking body::before{
-    font-size:38px;
-    letter-spacing:1.5px;
+  .splash-logo-main{
+    font-size:42px;
+    letter-spacing:1px;
   }
 
-  html.standecor-auth-checking body::after{
-    font-size:13px;
-    transform:translate(52px,27px);
+  .splash-logo-com{
+    font-size:15px;
+    margin-top:5px;
   }
 }
 </style>
+
 
 <script>
 document.documentElement.classList.add('standecor-auth-checking');
@@ -3045,6 +3060,14 @@ document.documentElement.classList.add('standecor-auth-checking');
 
 </head>
 <body>
+
+<div id="standecorSplashScreen" aria-hidden="true">
+  <div class="splash-logo-standecor">
+    <div class="splash-logo-main">STANDECOR</div>
+    <div class="splash-logo-com">.com</div>
+  </div>
+</div>
+
 <div id="toastAlert" class="toast-alert"></div>
 <header><div class="topbar"><div class="brand-area"><div class="standecor-text-logo"><span class="logo-main">STANDECOR</span><span class="logo-dotcom">.com</span></div><div class="brand-title"><div class="brand-badge"><h1>PLANIFICADOR DE MONTAJES</h1><div class="brand-by">Creado por IsraelM</div></div></div></div><div class="no-print"><button class="light top-icon-btn" title="Exportar copia" onclick="exportarDatos()"><svg class="ico"><use href="#i-export"></use></svg></button><button class="light top-icon-btn" title="Importar copia" onclick="document.getElementById('importFile').click()"><svg class="ico"><use href="#i-import"></use></svg></button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importarDatos(event)"></div></div></header>
 <nav class="no-print"><button class="tab-btn active" onclick="showTab('planificacion',this)"><svg class="ico"><use href="#i-plan"></use></svg> PLANIFICACIÓN</button><button class="tab-btn" onclick="showTab('calendario',this)"><svg class="ico"><use href="#i-calendar"></use></svg> CALENDARIO</button><button class="tab-btn" onclick="showTab('trabajadores',this)"><svg class="ico"><use href="#i-users"></use></svg> TRABAJADORES</button><button class="tab-btn" onclick="showTab('collas',this)"><svg class="ico"><use href="#i-handshake"></use></svg> COLLAS</button><button class="tab-btn" onclick="showTab('disponibles',this)"><svg class="ico"><use href="#i-available"></use></svg> DISPONIBLES</button><button class="tab-btn" onclick="showTab('avisos',this)"><svg class="ico"><use href="#i-alert"></use></svg> AVISOS</button><button class="tab-btn nav-backups-btn" id="navBackupsStandecorBtn" type="button" onclick="abrirPanelBackupsStandecor()"><span style="font-size:15px;line-height:1">☁</span> COPIAS</button></nav>
@@ -10460,7 +10483,7 @@ function actualizarPermisoReordenPersonalStandecor(){
   if(window.__standecorFirebase30) return;
   window.__standecorFirebase30=true;
 
-  window.STANDECOR_FIREBASE_2_VERSION='STANDECOR Planner 3.0.2';
+  window.STANDECOR_FIREBASE_2_VERSION='STANDECOR Planner 3.0.3';
 
   let firestore=null;
   let ref=null;
@@ -10681,7 +10704,7 @@ function actualizarPermisoReordenPersonalStandecor(){
   window.STANDECOR_FIREBASE30_ESTADO=function(){
     limpiar(db);
     return {
-      version:'STANDECOR Planner 3.0.2',
+      version:'STANDECOR Planner 3.0.3',
       cargaInicial,
       tieneRef:Boolean(ref),
       trabajadores:db.trabajadores.length,
@@ -10721,6 +10744,11 @@ function actualizarPermisoReordenPersonalStandecor(){
 
     if(overlay){
       document.documentElement.classList.remove('standecor-auth-checking');
+      const splash=document.getElementById('standecorSplashScreen');
+      if(splash){
+        splash.classList.add('splash-hidden');
+        setTimeout(()=>{try{splash.remove()}catch(e){}},320);
+      }
       document.documentElement.classList.add('standecor-auth-locked');
       return;
     }
