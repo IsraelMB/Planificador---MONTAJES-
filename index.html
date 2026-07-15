@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
-<!-- STANDECOR Firebase 3.0 - sincronización real multi-dispositivo -->
+<!-- STANDECOR Planner 3.0.1 -->
 
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2863,6 +2863,128 @@ body.israelm-borrar-trabajadores-admin .solo-israelm-borrar-trabajadores{
 </style>
 
 
+
+<style id="standecor-auth-privacy-301">
+html.standecor-auth-checking body > *{
+  visibility:hidden!important;
+}
+html.standecor-auth-checking body::before{
+  content:'STANDECOR';
+  position:fixed;
+  inset:0;
+  z-index:2147483646;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg,#0B5F86,#14A4E3);
+  color:white;
+  font-family:'Plus Jakarta Sans',Arial,sans-serif;
+  font-size:30px;
+  font-weight:900;
+  letter-spacing:2px;
+}
+html.standecor-auth-locked body > *:not(#loginBetaOverlay){
+  display:none!important;
+}
+html.standecor-auth-locked #loginBetaOverlay{
+  display:flex!important;
+  visibility:visible!important;
+}
+@media(max-width:720px){
+  #betaBackupsBtn{
+    display:none!important;
+  }
+}
+</style>
+<script>
+document.documentElement.classList.add('standecor-auth-checking');
+</script>
+
+
+<style id="standecor-calendar-one-page-301">
+@media print{
+  @page{
+    size:A4 landscape;
+    margin:3mm;
+  }
+
+  html,
+  body.print-calendar{
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+
+  body.print-calendar main{
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:194mm!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+  }
+
+  body.print-calendar #tab-calendario{
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:194mm!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    page-break-after:avoid!important;
+    break-after:avoid-page!important;
+  }
+
+  body.print-calendar #tab-calendario .card{
+    width:100%!important;
+    height:194mm!important;
+    min-height:0!important;
+    max-height:194mm!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    page-break-inside:avoid!important;
+    break-inside:avoid-page!important;
+    page-break-after:avoid!important;
+    break-after:avoid-page!important;
+  }
+
+  body.print-calendar #calendario{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    max-height:184mm!important;
+    overflow:hidden!important;
+    page-break-inside:avoid!important;
+    break-inside:avoid-page!important;
+  }
+
+  body.print-calendar .calendar-grid{
+    min-height:0!important;
+    max-height:178mm!important;
+    overflow:hidden!important;
+    page-break-inside:avoid!important;
+    break-inside:avoid-page!important;
+  }
+
+  body.print-calendar .calendar-print-month{
+    flex:0 0 auto!important;
+    margin:0 auto 5px!important;
+  }
+
+  body.print-calendar #tab-calendario::after,
+  body.print-calendar #calendario::after{
+    content:none!important;
+    display:none!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div id="toastAlert" class="toast-alert"></div>
@@ -2935,7 +3057,7 @@ function getEventoForm(){
   const collas=getCollasSeleccionadas ? getCollasSeleccionadas() : [];
   return{
     id:idActual || 'e'+Date.now(),
-    feria:byId('feria').value.trim(),
+    feria:byId('feria').value.trim().toUpperCase(),
     lugar:byId('lugar').value.trim(),
     stand:byId('stand').value.trim(),
     montajeInicio:byId('montajeInicio').value,
@@ -3470,10 +3592,32 @@ function imprimirCalendario(){
   renderCalendario();
   document.body.classList.remove('print-simple-mode');
   document.body.classList.add('print-calendar');
+
+  const textosRetirados=[];
+  try{
+    const walker=document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      null
+    );
+    let nodo;
+    while((nodo=walker.nextNode())){
+      if(String(nodo.nodeValue||'').trim()==='\\n'){
+        textosRetirados.push({nodo,valor:nodo.nodeValue});
+        nodo.nodeValue='';
+      }
+    }
+  }catch(e){}
+
   setTimeout(()=>{
     window.print();
-    setTimeout(()=>document.body.classList.remove('print-calendar'),500);
-  },120);
+    setTimeout(()=>{
+      document.body.classList.remove('print-calendar');
+      textosRetirados.forEach(x=>{
+        try{x.nodo.nodeValue=x.valor}catch(e){}
+      });
+    },500);
+  },160);
 }
 
 
@@ -10258,7 +10402,7 @@ function actualizarPermisoReordenPersonalStandecor(){
   if(window.__standecorFirebase30) return;
   window.__standecorFirebase30=true;
 
-  window.STANDECOR_FIREBASE_2_VERSION='Firebase 3.0 sync real';
+  window.STANDECOR_FIREBASE_2_VERSION='STANDECOR Planner 3.0.1';
 
   let firestore=null;
   let ref=null;
@@ -10479,7 +10623,7 @@ function actualizarPermisoReordenPersonalStandecor(){
   window.STANDECOR_FIREBASE30_ESTADO=function(){
     limpiar(db);
     return {
-      version:'Firebase 3.0',
+      version:'STANDECOR Planner 3.0.1',
       cargaInicial,
       tieneRef:Boolean(ref),
       trabajadores:db.trabajadores.length,
@@ -10490,6 +10634,110 @@ function actualizarPermisoReordenPersonalStandecor(){
       trabajadoresEliminados:Boolean(Object.prototype.hasOwnProperty.call(db,'trabajadoresEliminados'))
     };
   };
+})();
+</script>
+
+
+<script>
+/* ===== STANDECOR PLANNER 3.0.1 - SESIÓN Y PRIVACIDAD ===== */
+(function(){
+  if(window.__standecorPlanner301Sesion) return;
+  window.__standecorPlanner301Sesion=true;
+
+  const SESSION_KEY='standecor_beta_user_session';
+  const INACTIVIDAD_MS=4*60*1000;
+  let timerInactividad=null;
+
+  function sesionActual(){
+    try{
+      return JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
+    }catch(e){
+      return null;
+    }
+  }
+
+  function actualizarCortina(){
+    const overlay=document.getElementById('loginBetaOverlay');
+    const barra=document.getElementById('betaUserBar');
+    const sesion=sesionActual();
+
+    if(overlay){
+      document.documentElement.classList.remove('standecor-auth-checking');
+      document.documentElement.classList.add('standecor-auth-locked');
+      return;
+    }
+
+    if(sesion && barra){
+      document.documentElement.classList.remove(
+        'standecor-auth-checking',
+        'standecor-auth-locked'
+      );
+      return;
+    }
+
+    if(!sesion){
+      document.documentElement.classList.add('standecor-auth-checking');
+    }
+  }
+
+  function cerrarPorInactividad(){
+    if(!sesionActual()) return;
+    try{
+      localStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(SESSION_KEY);
+    }catch(e){}
+    location.reload();
+  }
+
+  function reiniciarTemporizador(){
+    if(!sesionActual()){
+      clearTimeout(timerInactividad);
+      timerInactividad=null;
+      return;
+    }
+    clearTimeout(timerInactividad);
+    timerInactividad=setTimeout(cerrarPorInactividad,INACTIVIDAD_MS);
+  }
+
+  const eventos=['mousedown','mousemove','keydown','click','touchstart','pointerdown','scroll'];
+  eventos.forEach(nombre=>{
+    window.addEventListener(nombre,reiniciarTemporizador,{
+      capture:true,
+      passive:true
+    });
+  });
+
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden) reiniciarTemporizador();
+  });
+
+  const observer=new MutationObserver(()=>{
+    actualizarCortina();
+    reiniciarTemporizador();
+  });
+
+  function iniciar(){
+    actualizarCortina();
+    reiniciarTemporizador();
+    if(document.body){
+      observer.observe(document.body,{childList:true,subtree:true});
+    }
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',iniciar,{once:true});
+  }else{
+    iniciar();
+  }
+
+  window.addEventListener('storage',e=>{
+    if(e.key===SESSION_KEY){
+      actualizarCortina();
+      reiniciarTemporizador();
+    }
+  });
+
+  setInterval(actualizarCortina,500);
 })();
 </script>
 
