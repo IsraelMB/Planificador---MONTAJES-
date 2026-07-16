@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
-<!-- STANDECOR Planner 3.0.3 -->
+<!-- STANDECOR Planner 3.0.4 -->
 
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -4088,6 +4088,8 @@ function renderPrint(eventosPersonalizados){
     setTimeout(()=>document.getElementById('loginBetaUser')?.focus(),50);
   }
 
+  window.mostrarLoginBeta=mostrarLoginBeta;
+
   async function loginBeta(){
     await cargarUsuariosBeta();
     const usuario=(document.getElementById('loginBetaUser')?.value||'').trim();
@@ -4164,6 +4166,13 @@ function renderPrint(eventosPersonalizados){
 
   async function bootUsuariosBeta(){
     injectUsuariosBetaCSS();
+
+    // Planner 3.0.4: mostrar el acceso inmediatamente.
+    // Firebase puede seguir cargando en segundo plano.
+    if(!getSession()){
+      mostrarLoginBeta();
+    }
+
     let intentos=0;
     const espera=setInterval(async()=>{
       intentos++;
@@ -10483,7 +10492,7 @@ function actualizarPermisoReordenPersonalStandecor(){
   if(window.__standecorFirebase30) return;
   window.__standecorFirebase30=true;
 
-  window.STANDECOR_FIREBASE_2_VERSION='STANDECOR Planner 3.0.3';
+  window.STANDECOR_FIREBASE_2_VERSION='STANDECOR Planner 3.0.4';
 
   let firestore=null;
   let ref=null;
@@ -10704,7 +10713,7 @@ function actualizarPermisoReordenPersonalStandecor(){
   window.STANDECOR_FIREBASE30_ESTADO=function(){
     limpiar(db);
     return {
-      version:'STANDECOR Planner 3.0.3',
+      version:'STANDECOR Planner 3.0.4',
       cargaInicial,
       tieneRef:Boolean(ref),
       trabajadores:db.trabajadores.length,
@@ -10824,6 +10833,80 @@ function actualizarPermisoReordenPersonalStandecor(){
   });
 
   setInterval(actualizarCortina,500);
+})();
+</script>
+
+
+<script>
+/* ===== STANDECOR PLANNER 3.0.4 - SEGURO ANTI-BLOQUEO LOGIN ===== */
+(function(){
+  if(window.__standecorSplashFailsafe304) return;
+  window.__standecorSplashFailsafe304=true;
+
+  function ocultarSplash(){
+    const splash=document.getElementById('standecorSplashScreen');
+    if(splash){
+      splash.classList.add('splash-hidden');
+      setTimeout(()=>{try{splash.remove()}catch(e){}},320);
+    }
+  }
+
+  function comprobar(){
+    const overlay=document.getElementById('loginBetaOverlay');
+    const sesion=localStorage.getItem('standecor_beta_user_session');
+
+    if(overlay){
+      document.documentElement.classList.remove('standecor-auth-checking');
+      document.documentElement.classList.add('standecor-auth-locked');
+      ocultarSplash();
+      return true;
+    }
+
+    if(sesion){
+      document.documentElement.classList.remove(
+        'standecor-auth-checking',
+        'standecor-auth-locked'
+      );
+      ocultarSplash();
+      return true;
+    }
+
+    return false;
+  }
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    // Primer intento inmediato.
+    comprobar();
+
+    // El login debe existir casi de inmediato.
+    let intentos=0;
+    const reloj=setInterval(()=>{
+      intentos++;
+
+      if(comprobar()){
+        clearInterval(reloj);
+        return;
+      }
+
+      // Fallback: forzar creación del login si el módulo ya está disponible.
+      if(intentos>=5 && typeof window.mostrarLoginBeta==='function'){
+        try{window.mostrarLoginBeta()}catch(e){}
+      }
+
+      // Nunca dejar la pantalla azul bloqueada indefinidamente.
+      if(intentos>=30){
+        clearInterval(reloj);
+        try{
+          if(typeof window.mostrarLoginBeta==='function'){
+            window.mostrarLoginBeta();
+          }
+        }catch(e){}
+        comprobar();
+        ocultarSplash();
+        document.documentElement.classList.remove('standecor-auth-checking');
+      }
+    },100);
+  });
 })();
 </script>
 
