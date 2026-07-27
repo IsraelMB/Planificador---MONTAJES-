@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
-<!-- STANDECOR Planner 3.0.5 -->
+<!-- STANDECOR Planner 3.0.6 -->
 
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2273,6 +2273,14 @@ body.user-viewer button[onclick^="toggleTerminado"]{display:none!important}
 /*3.0.5 ocultar nube móvil*/
 @media(max-width:720px){
 #cloudSyncBtn,#btnCloud,.cloud-sync-btn,.cloud-btn,.user-cloud,.sync-cloud,[title*="Cloud"],[title*="nube"],[aria-label*="cloud"],[aria-label*="nube"]{display:none!important;}
+}
+
+
+/* ===== STANDECOR PLANNER 3.0.6 - CORRECCIÓN MÓVIL Y TEXTO RESIDUAL ===== */
+@media (max-width:720px){
+  #betaBackupsBtn{
+    display:none !important;
+  }
 }
 
 </style>
@@ -10490,15 +10498,13 @@ function actualizarPermisoReordenPersonalStandecor(){
 </script>
 
 
-\n
-
 <script>
 /* ===== STANDECOR FIREBASE 3.0 - SYNC REAL MULTI-DISPOSITIVO ===== */
 (function(){
   if(window.__standecorFirebase30) return;
   window.__standecorFirebase30=true;
 
-  window.STANDECOR_FIREBASE_2_VERSION='STANDECOR Planner 3.0.4';
+  window.STANDECOR_FIREBASE_2_VERSION='STANDECOR Planner 3.0.6';
 
   let firestore=null;
   let ref=null;
@@ -10719,7 +10725,7 @@ function actualizarPermisoReordenPersonalStandecor(){
   window.STANDECOR_FIREBASE30_ESTADO=function(){
     limpiar(db);
     return {
-      version:'STANDECOR Planner 3.0.4',
+      version:'STANDECOR Planner 3.0.6',
       cargaInicial,
       tieneRef:Boolean(ref),
       trabajadores:db.trabajadores.length,
