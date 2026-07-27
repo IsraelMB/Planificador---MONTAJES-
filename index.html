@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
-<!-- STANDECOR Planner 3.0.4 -->
+<!-- STANDECOR Planner 3.0.5 -->
 
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2267,6 +2267,12 @@ body.user-viewer button[onclick^="toggleTerminado"]{display:none!important}
 /* ===== COPIAS LIMPIAS: SOLO AUTOMÁTICA / MANUAL ===== */
 .backup-origin.preborrado{
   display:none!important;
+}
+
+
+/*3.0.5 ocultar nube móvil*/
+@media(max-width:720px){
+#cloudSyncBtn,#btnCloud,.cloud-sync-btn,.cloud-btn,.user-cloud,.sync-cloud,[title*="Cloud"],[title*="nube"],[aria-label*="cloud"],[aria-label*="nube"]{display:none!important;}
 }
 
 </style>
