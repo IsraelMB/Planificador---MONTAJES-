@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>STANDECOR - Planificador de Montajes</title>
-<!-- STANDECOR Planner 3.0.6 -->
+<!-- STANDECOR Planner 3.0.7 -->
 
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -6563,6 +6563,14 @@ function exportarPlantillaTrabajadoresXLSX(){
   async function eliminarBackup(id){if(!esIsraelMBackup()){alert('Solo IsraelM puede eliminar copias.');return}if(!confirm('¿Eliminar esta copia automática?'))return;const ref=refBackupsStandecor();if(!ref)return;await ref.doc(id).delete();await renderBackupsStandecor()}
 
   function instalarBotonBackups(){
+    // STANDECOR Planner 3.0.7:
+    // En móvil el botón de la nube no debe existir.
+    if(window.innerWidth<=720){
+      const existente=document.getElementById('betaBackupsBtn');
+      if(existente) existente.remove();
+      return;
+    }
+
     const u=usuarioBackupActual(); if(!u||u.rol!=='admin')return;
     const bar=document.getElementById('betaUserBar'); if(!bar||document.getElementById('betaBackupsBtn'))return;
     const btn=document.createElement('button'); btn.type='button'; btn.id='betaBackupsBtn'; btn.title='Copias automáticas'; btn.textContent='☁'; btn.onclick=abrirPanelBackups;
@@ -10504,7 +10512,7 @@ function actualizarPermisoReordenPersonalStandecor(){
   if(window.__standecorFirebase30) return;
   window.__standecorFirebase30=true;
 
-  window.STANDECOR_FIREBASE_2_VERSION='STANDECOR Planner 3.0.6';
+  window.STANDECOR_FIREBASE_2_VERSION='STANDECOR Planner 3.0.7';
 
   let firestore=null;
   let ref=null;
@@ -10725,7 +10733,7 @@ function actualizarPermisoReordenPersonalStandecor(){
   window.STANDECOR_FIREBASE30_ESTADO=function(){
     limpiar(db);
     return {
-      version:'STANDECOR Planner 3.0.6',
+      version:'STANDECOR Planner 3.0.7',
       cargaInicial,
       tieneRef:Boolean(ref),
       trabajadores:db.trabajadores.length,
