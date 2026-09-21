@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>STANDECOR - Planificador de Montajes</title>
-<!-- STANDECOR Planner 3.0.7 -->
+<title>STANDECOR Planner 3.2 Beta 6</title>
+<!-- STANDECOR Planner 3.2 Beta 6 | Base estable: 3.0.7 -->
 
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3072,7 +3072,166 @@ document.documentElement.classList.add('standecor-auth-checking');
 }
 </style>
 
-</head>
+<style id="standecor-calendar-fit-a4">
+#standecorCalendarA4{
+  position:absolute!important;left:-100000px!important;top:0!important;
+  display:block!important;width:285mm!important;height:198mm!important;
+  margin:0!important;padding:0!important;box-sizing:border-box!important;
+  background:white!important;color:#0B5F86!important;
+}
+#standecorCalendarA4 .a4-content{
+  position:absolute!important;top:0!important;left:0!important;
+  margin:0!important;padding:0!important;transform-origin:top left!important;
+}
+#standecorCalendarA4 *{box-sizing:border-box!important;print-color-adjust:exact!important;-webkit-print-color-adjust:exact!important;}
+#standecorCalendarA4 .a4-month{font-size:20px!important;font-weight:900!important;text-align:center!important;margin:0 0 8px!important;line-height:1.2!important;}
+#standecorCalendarA4 .calendar-weekdays{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:4px!important;margin:0 0 4px!important;padding:0!important;width:100%!important;}
+#standecorCalendarA4 .weekday-head{font-size:10px!important;padding:0 3px!important;line-height:1.2!important;}
+#standecorCalendarA4 .calendar-grid{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;grid-auto-rows:auto!important;gap:4px!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;flex:none!important;}
+#standecorCalendarA4 .day-box{min-height:23mm!important;height:auto!important;max-height:none!important;padding:4px!important;border-radius:6px!important;overflow:visible!important;min-width:0!important;}
+#standecorCalendarA4 .day-num{font-size:14px!important;line-height:1.1!important;margin:0 0 3px!important;}
+#standecorCalendarA4 .event-mini{font-size:10px!important;line-height:1.12!important;padding:3px 4px!important;margin:3px 0!important;border-radius:4px!important;white-space:normal!important;overflow-wrap:anywhere!important;overflow:visible!important;height:auto!important;max-height:none!important;}
+#standecorCalendarA4 .day-tag{font-size:7px!important;line-height:1.1!important;top:4px!important;right:4px!important;padding:2px 3px!important;}
+@media print{
+  @page standecorCalendarPage{size:A4 landscape;margin:5mm;}
+  body.print-calendar{page:standecorCalendarPage!important;}
+  body.print-calendar > *{display:none!important;}
+  body.print-calendar > #standecorCalendarA4{display:block!important;position:relative!important;left:0!important;top:0!important;break-inside:avoid!important;page-break-inside:avoid!important;}
+}
+
+</style>
+<style id="calendar-paper-control-style">
+#tab-calendario .section-head{flex-wrap:wrap;}
+#tab-calendario .calendar-print-controls{display:flex;align-items:center;justify-content:flex-end;gap:9px;margin-left:auto;}
+#tab-calendario .calendar-paper-label{margin:0;color:var(--azul-oscuro);font-size:12px;font-weight:800;}
+#tab-calendario #calendarPaperSize{width:auto;min-width:145px;height:36px;margin:0;padding:6px 10px;border:1px solid #b8e4f4;border-radius:12px;background:#eef8fc;color:var(--azul-oscuro);font-family:inherit;font-size:12px;font-weight:700;box-shadow:0 2px 7px rgba(15,23,42,.06);cursor:pointer;}
+#tab-calendario #calendarPaperSize:focus-visible{outline:2px solid var(--azul);outline-offset:2px;}
+#tab-calendario .calendar-print-controls .action-btn{flex-shrink:0;}
+</style>
+<style id="calendar-compact-empty-weeks">
+#standecorCalendarA4 .day-box.a4-empty-week{min-height:0!important;padding:3px 4px!important;}
+#standecorCalendarA4 .day-box.a4-empty-week .day-num{margin:0!important;}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="screen">
+<style id="standecor-design-32">
+/* 3.2 Beta 1: acabado visual inspirado en GEMI 2 +; solo pantalla. */
+@media screen{
+ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;color:#1e293b;}
+ body main,body nav,body input,body select,body textarea,body button{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif!important;}
+ body main h2{font-size:20px;font-weight:700;letter-spacing:-.35px;}
+ body main h3{font-size:14px;font-weight:600;letter-spacing:0;}
+ body main label{font-weight:600;font-size:11px;color:#526477;}
+ body main .card{border-radius:18px!important;box-shadow:0 6px 22px rgba(15,23,42,.055)!important;border-color:#dfe8ef;}
+ body main input:not([type=checkbox]):not([type=radio]),body main select,body main textarea{
+  font-size:13px;font-weight:400;color:#1e293b;background-color:#fff;
+  border:1px solid #d9e2ec;border-radius:10px!important;padding:10px 11px;
+  transition:border-color .15s,box-shadow .15s;
+ }
+ body main input:hover,body main select:hover,body main textarea:hover{border-color:#b8d5e3;}
+ body main input:focus-visible,body main select:focus-visible,body main textarea:focus-visible{
+  outline:none;border-color:#14A4E3;box-shadow:0 0 0 3px rgba(20,164,227,.14);
+ }
+ body main .tab select:not([multiple]):not([size]),body main #tab-planificacion select:not([multiple]):not([size]){
+  appearance:none!important;padding-right:32px!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230B5F86' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")!important;
+  background-repeat:no-repeat!important;background-position:right 10px center!important;
+ }
+ body main input::placeholder,body main textarea::placeholder{color:#94a3b8;font-weight:400;}
+ body main input[type=checkbox],body main input[type=radio]{accent-color:#14A4E3;}
+ body nav .tab-btn{font-weight:600!important;border-radius:12px!important;box-shadow:0 2px 7px rgba(15,23,42,.06)!important;}
+ body main button{font-weight:600;letter-spacing:0;}
+ body main button:hover{transform:translateY(-1px);}
+ body main button:hover .ico{transform:none;}
+ body main button.secondary{background:#f3f6f8;color:#475569;border:1px solid #d9e2ec;box-shadow:none;}
+ body main button.secondary:hover{background:#e9eff3;}
+ body main button:focus-visible,body nav button:focus-visible{outline:2px solid #14A4E3;outline-offset:3px;}
+ body main .plan-folder{border-radius:14px!important;border-color:#dfe8ef;box-shadow:0 2px 8px rgba(15,23,42,.035)!important;}
+ body main .plan-folder-head{box-shadow:none!important;}
+ body main .plan-folder-head:hover{transform:none;box-shadow:none!important;background:#f7fbfd;}
+ body main .plan-folder-head .folder-feria{font-weight:700!important;letter-spacing:0!important;line-height:1.25!important;}
+ body main .plan-folder-head .folder-stand{font-weight:600!important;letter-spacing:0!important;}
+ body main .plan-folder-head .folder-lugar{font-weight:500!important;}
+ body main .folder-date,body main .folder-count{font-weight:600!important;}
+ body main .folder-pill{border-radius:8px!important;font-weight:600!important;letter-spacing:.15px!important;}
+ body main .selected-chip{font-size:11px;font-weight:500;border-radius:8px;box-shadow:none;}
+ body main .worker-name{font-weight:600;line-height:1.35;}
+ body main .worker-meta{font-weight:400;line-height:1.4;}
+ body main .worker-option{border-color:#e3ebf1;padding:9px;border-radius:10px!important;}
+ body main .worker-option:hover{background:#f7fbfd;}
+ body main .badge{font-weight:600;border-radius:8px;line-height:1.3;letter-spacing:0;}
+ body main th{font-weight:600;}body main td{line-height:1.4;}
+ body main .event-mini{font-weight:600;line-height:1.25;}
+ body main .weekday-head{font-weight:600;letter-spacing:.4px;}
+ body main .day-num{font-weight:700;}
+ body #tab-calendario #calendarPaperSize{padding-right:32px;color:#0B5F86;background-color:#eef8fc;font-weight:600;}
+ @media(prefers-reduced-motion:reduce){body main *,body nav *{transition:none!important;}}
+}
+
+
+</style>
+<style id="standecor-gemi-selects">
+/* Mismo acabado de las listas abiertas de GEMI 2 +. */
+#standecor-gemi-list{
+ position:fixed!important;inset:auto;margin:0!important;padding:5px!important;
+ box-sizing:border-box;overflow-y:auto;overscroll-behavior:contain;
+ background:#fff!important;border:1px solid #bde7fb!important;border-radius:12px!important;
+ box-shadow:0 8px 24px #0f172a22!important;z-index:2147483647;
+ font-family:'Inter',system-ui,sans-serif!important;color:#1e293b;
+}
+#standecor-gemi-list [role=option]{padding:10px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;line-height:1.4;overflow-wrap:anywhere;}
+#standecor-gemi-list [role=option]:hover,#standecor-gemi-list [aria-selected=true],#standecor-gemi-list .gemi-active{background:#EAF7FD;color:#0B5F86;}
+#standecor-gemi-list [aria-disabled=true]{opacity:.45;cursor:default;}
+@media screen{
+ body select:not([multiple]):not([size]){cursor:pointer;font-family:'Inter',system-ui,sans-serif!important;}
+ body select[aria-expanded=true]{border-color:#14A4E3!important;box-shadow:0 0 0 3px rgba(20,164,227,.14)!important;outline:none;}
+}
+@media print{#standecor-gemi-list{display:none!important;}}
+
+</style>
+<style>#standecor-gemi-date{
+ position:fixed!important;inset:auto;margin:0!important;padding:8px!important;box-sizing:border-box;
+ overflow-y:auto;background:#fff!important;color:#1e293b!important;border:1px solid #bde7fb!important;border-radius:14px!important;
+ box-shadow:0 8px 24px #0f172a22!important;font-family:'Inter',system-ui,sans-serif!important;z-index:2147483647;
+}
+#standecor-gemi-date *{box-sizing:border-box;}
+#standecor-gemi-date button{font-family:inherit!important;font-size:11px!important;font-weight:500!important;color:#1e293b!important;background:transparent!important;border:0!important;border-radius:8px!important;box-shadow:none!important;padding:0!important;margin:0!important;min-width:0!important;min-height:0!important;width:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;transform:none!important;cursor:pointer;}
+#standecor-gemi-date button:hover{background:#EAF7FD!important;color:#0B5F86!important;}
+#standecor-gemi-date button:focus-visible{outline:2px solid #14A4E3;outline-offset:-2px;}
+#standecor-gemi-date button:disabled{opacity:.35;cursor:default;}
+#standecor-gemi-date .gd-head{display:grid;grid-template-columns:26px minmax(0,1fr) 26px;align-items:center;gap:3px;margin-bottom:6px;}
+#standecor-gemi-date .gd-head strong{font-size:11px;font-weight:600;text-align:center;text-transform:capitalize;color:#0B5F86;}
+#standecor-gemi-date .gd-head button{height:26px!important;background:#EAF7FD!important;color:#0B5F86!important;font-size:19px!important;}
+#standecor-gemi-date .gd-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;}
+#standecor-gemi-date .gd-days>span{text-align:center;font-size:9px;font-weight:600;color:#64748b;line-height:22px;}
+#standecor-gemi-date .gd-days button{height:var(--date-cell,26px)!important;}
+#standecor-gemi-date .gd-months{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;}
+#standecor-gemi-date .gd-months button{height:30px!important;text-transform:capitalize;}
+#standecor-gemi-date button.gd-other{color:#94a3b8!important;}
+#standecor-gemi-date button.gd-selected{background:#14A4E3!important;color:white!important;font-weight:700!important;}
+#standecor-gemi-date .gd-foot{display:flex;justify-content:space-between;border-top:1px solid #d9e2ec;margin-top:7px;padding-top:7px;gap:6px;}
+#standecor-gemi-date .gd-foot button{width:auto!important;padding:5px 8px!important;background:#EAF7FD!important;color:#0B5F86!important;}
+@media print{#standecor-gemi-date{display:none!important;}}
+</style><style id="standecor-overlap-border-only">
+.day-box.overlap-day{background:#fff!important;box-shadow:none!important;}
+.day-box.weekend.overlap-day{background:#f1f5f9!important;box-shadow:none!important;}
+</style>
+<style id="standecor-memory-suggestions">/* Mismo acabado de las listas abiertas de GEMI 2 +. */
+#standecor-suggestions{
+ position:fixed!important;inset:auto;margin:0!important;padding:5px!important;
+ box-sizing:border-box;overflow-y:auto;overscroll-behavior:contain;
+ background:#fff!important;border:1px solid #bde7fb!important;border-radius:12px!important;
+ box-shadow:0 8px 24px #0f172a22!important;z-index:2147483647;
+ font-family:'Inter',system-ui,sans-serif!important;color:#1e293b;
+}
+#standecor-suggestions [role=option]{padding:10px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;line-height:1.4;overflow-wrap:anywhere;}
+#standecor-suggestions [role=option]:hover,#standecor-suggestions [aria-selected=true],#standecor-suggestions .gemi-active{background:#EAF7FD;color:#0B5F86;}
+#standecor-suggestions [aria-disabled=true]{opacity:.45;cursor:default;}
+@media screen{
+ body select:not([multiple]):not([size]){cursor:pointer;font-family:'Inter',system-ui,sans-serif!important;}
+ body select[aria-expanded=true]{border-color:#14A4E3!important;box-shadow:0 0 0 3px rgba(20,164,227,.14)!important;outline:none;}
+}
+@media print{#standecor-suggestions{display:none!important;}}
+</style></head>
 <body>
 
 <div id="standecorSplashScreen" aria-hidden="true">
@@ -3087,7 +3246,7 @@ document.documentElement.classList.add('standecor-auth-checking');
 <nav class="no-print"><button class="tab-btn active" onclick="showTab('planificacion',this)"><svg class="ico"><use href="#i-plan"></use></svg> PLANIFICACIÓN</button><button class="tab-btn" onclick="showTab('calendario',this)"><svg class="ico"><use href="#i-calendar"></use></svg> CALENDARIO</button><button class="tab-btn" onclick="showTab('trabajadores',this)"><svg class="ico"><use href="#i-users"></use></svg> TRABAJADORES</button><button class="tab-btn" onclick="showTab('collas',this)"><svg class="ico"><use href="#i-handshake"></use></svg> COLLAS</button><button class="tab-btn" onclick="showTab('disponibles',this)"><svg class="ico"><use href="#i-available"></use></svg> DISPONIBLES</button><button class="tab-btn" onclick="showTab('avisos',this)"><svg class="ico"><use href="#i-alert"></use></svg> AVISOS</button><button class="tab-btn nav-backups-btn" id="navBackupsStandecorBtn" type="button" onclick="abrirPanelBackupsStandecor()"><span style="font-size:15px;line-height:1">☁</span> COPIAS</button></nav>
 <main>
 <section id="tab-planificacion" class="tab active"><div class="grid"><div class="card span-4 no-print"><h2>Nuevo montaje / desmontaje</h2><input type="hidden" id="eventoId"><label>Feria</label><input list="feriasList" autocomplete="off" oninput="autocompletarLugar()" id="feria" oninput="mayus(this)" placeholder="FERIA"><div class="form-row"><div><label>Ciudad / país</label><input list="lugaresList" autocomplete="off" id="lugar" oninput="mayus(this)"></div><div><label>Stand / cliente</label><input list="standsList" autocomplete="off" id="stand" oninput="mayus(this)"></div></div><h3>Montaje</h3><div class="form-row"><div><label>Inicio montaje</label><input type="date" id="montajeInicio"></div><div><label>Final montaje</label><input type="date" id="montajeFin"></div></div><h3>Desmontaje</h3><div class="form-row"><div><label>Inicio desmontaje</label><input type="date" id="desmontajeInicio"></div><div><label>Final desmontaje</label><input type="date" id="desmontajeFin"></div></div><div class="form-row"><div><label>Colla externa</label><select id="colla"></select></div><div><label>Cantidad colla</label><input id="cantidadColla" type="number" min="1" placeholder="Ej: 4"></div></div><div id="extraCollas"></div><div class="actions"><button class="secondary" onclick="agregarCollaExtra()" type="button">+ Añadir otra colla</button></div><label>Buscar trabajadores</label><input id="buscarAsignar" oninput="renderWorkerPicker();mayus(this)" placeholder="BUSCAR"><div id="workerPicker" class="worker-picker"></div><div id="seleccionPreview" class="selected-preview"></div><label>Observaciones</label><textarea id="observaciones" oninput="mayus(this)"></textarea><div id="formAvisos"></div><div class="actions"><button class="success" onclick="guardarEvento()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarFormulario()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2>Planificación</h2><div class="filters no-print"><div><label>Buscar</label><input id="buscarPlan" oninput="mayus(this);renderAll()"></div><div><label>Desde</label><input type="date" id="filtroDesde" onchange="renderAll()"></div><div><label>Hasta</label><input type="date" id="filtroHasta" onchange="renderAll()"></div><div><label>&nbsp;</label><button type="button" class="small pdf-mensual-btn" title="Imprimir trabajos del mes / Guardar como PDF" onclick="imprimirMesPDF()"><svg class="ico"><use href="#i-print"></use></svg> PDF mensual</button></div></div><div class="table-wrap pantalla-planificacion"><table><thead><tr><th>Feria</th><th>Lugar</th><th>Stand / cliente</th><th>Trabajo</th><th>Personal</th><th>Colla</th><th>Avisos</th><th class="no-print">Acciones</th></tr></thead><tbody id="tablaEventos"></tbody></table></div><div id="printPlanificacion" class="print-board"></div></div></div></section>
-<section id="tab-calendario" class="tab"><div class="card"><div class="section-head no-print"><h2>Calendario mensual</h2><button class="small action-btn" title="Imprimir calendario" onclick="imprimirCalendario()"><svg class="ico"><use href="#i-print"></use></svg></button></div><div class="filters"><div><label>Mes</label><input type="month" id="mesCalendario" onchange="renderCalendario()"></div></div><div id="calendario"></div><div class="calendar-print-month" id="calendarPrintMonth"></div></div></section>
+<section id="tab-calendario" class="tab"><div class="card"><div class="section-head no-print"><h2>Calendario mensual</h2><div class="calendar-print-controls"><label class="calendar-paper-label" for="calendarPaperSize">Papel</label><select id="calendarPaperSize" aria-label="Tamaño de papel del calendario"><option value="A4">A4 horizontal</option><option value="A3">A3 horizontal</option></select><button class="small action-btn" title="Imprimir calendario" onclick="imprimirCalendario()"><svg class="ico"><use href="#i-print"></use></svg></button></div></div><div class="filters"><div><label>Mes</label><input type="month" id="mesCalendario" onchange="renderCalendario()"></div></div><div id="calendario"></div><div class="calendar-print-month" id="calendarPrintMonth"></div></div></section>
 <section id="tab-trabajadores" class="tab"><div class="grid"><div class="card span-4"><h2>Trabajador</h2><input type="hidden" id="trabajadorId"><label>Nombre</label><input id="trabNombre" oninput="mayus(this)"><label>Rol</label><select id="trabRol"><option>Cabeza de equipo</option><option>Ayudante</option><option>Montador</option><option>Encargado</option><option>Maquinista</option><option>Logística</option><option>Transportista</option><option>CNC</option></select><label>Tipo</label><select id="trabTipo"><option>Sale a montaje</option><option>Taller</option><option>Oficina técnica</option></select><label>Estado</label><select id="trabEstado"><option>Disponible</option><option>Enfermo</option><option>Castigado</option><option>Baja temporal</option><option>No puede salir</option></select><label>Observaciones</label><textarea id="trabObs" oninput="mayus(this)"></textarea><div class="actions"><button class="success" onclick="guardarTrabajador()"><svg class="ico"><use href="#i-save"></use></svg> Guardar</button><button class="secondary" onclick="limpiarTrabajador()"><svg class="ico"><use href="#i-clear"></use></svg> Limpiar</button></div></div><div class="card span-8"><h2 class="trabajadores-head">Base de trabajadores <span id="contadorTrabajadores" class="contador-trabajadores">0 trabajadores</span></h2><div class="filters">
   <div><label>Buscar</label><input id="buscarTrab" oninput="mayus(this);renderTrabajadores()"></div>
   <div class="plantilla-actions no-print">
@@ -3105,9 +3264,89 @@ document.documentElement.classList.add('standecor-auth-checking');
 <script>
 const STORAGE='standecor_planificador_montajes_beta_1';
 const nombresIniciales=['ADRIAN ALEJANDRO VEIZAGA (GORRA)','ADRIAN PRUDENTE (NOVITA)','ALEJANDRO CASTILLO','ALEJANDRO HOYOS (BILBAO)','ALEX COSTA','ALEXIS ANARIBA','ARNOLD GUZMAN','BRUCE LEE','CANCO','CARLOS ALBERTO AMOEDO (ARGENTINO)','CARLOS CAIZA','CARLOS SEGURA CARTAGENA','CRISTIAN (CHILENO)','DANI CAMPOS','DANIEL ANGEL PORTUGUEZ (PORTU)','DANIEL BELLIDO','EBER MISAEL ( LAGARTIJA)','EDSON ARAUJO LA FUENTE (ROBOCOP)','EDUARDO PATRICIO','ENRIC RIPOLL BELLIDO','ENRIQUE RIPOLL','ERIC BRU','EVERT RONALD SAGARDIA','FLORENCIO','FRANCESC VILA PLANA','FRANCISCO ROSALES (KIYO)','ISRAEL MARAÑON','JAIME CUEVA','JAVIER (MIRIAM)','JESUS','JHOASIL','JOEL FERNANDO YAÑEZ (GRANDU)','JOHAN CRUZ','JOHN STICK','JOSE ANTONIO ARCE (TOÑIN)','JOSE MANUEL (JOSITO)','JOSE NICOLAS (MANOLITO)','JUAN DE DIOS','MIGUEL ANGEL BUENO MARTOS','NELSON DANIEL COCCHI (CHECHA)','OUMAR','RAYMOND DASSI','REIFER','SARAY LOPEZ','SERGIO ZENTENO (GATO)','SILVIA MEDINA','VANESA','VASILE MOISA','VICENTE','XAVIE MAÑAS'];
+/* Identidad visual de ferias, v1. Paleta e índice estables entre dispositivos.
+   No modifica la presentación ni recalcula identidades ya guardadas. */
+const STANDECOR_VISUAL_PALETTE_V1=Object.freeze([
+  '#2563A6','#167D9A','#16877C','#36845B','#637D3B','#9A792B',
+  '#B46B30','#BB5847','#A94662','#914F82','#7758A2','#565EAA',
+  '#426E96','#387F89','#528579','#74834F','#A08346','#AB6854',
+  '#985770','#7E638F','#626E91','#547C80','#7E7460','#8A6262'
+]);
+function claveFeriaVisual(nombre){
+  return String(nombre == null ? '' : nombre).normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'').toUpperCase()
+    .replace(/\b(?:19|20)\d{2}\b/g,'')
+    .replace(/[^A-Z0-9]+/g,' ').trim().replace(/\s+/g,' ');
+}
+function identidadVisualFeria(nombre){
+  const clave=claveFeriaVisual(nombre);
+  let hash=2166136261;
+  for(let i=0;i<clave.length;i++) hash=Math.imul(hash^clave.charCodeAt(i),16777619)>>>0;
+  const colorIndex=hash%STANDECOR_VISUAL_PALETTE_V1.length;
+  return {color:STANDECOR_VISUAL_PALETTE_V1[colorIndex],colorIndex,version:1};
+}
+function colorVisualFeria(evento){
+  const color=evento && evento.visual && evento.visual.color;
+  // Solo admitir colores hexadecimales al insertarlos en el estilo HTML.
+  return typeof color==='string' && /^#[0-9a-f]{6}$/i.test(color)
+    ? color : identidadVisualFeria(evento && evento.feria).color;
+}
+function asegurarIdentidadVisualFerias(datos){
+  if(!datos || !Array.isArray(datos.eventos))return false;
+  const grupos=new Map(),usados=new Set(),asignados=new Map();
+  const normalizarLugar=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
+  const clave=ev=>claveFeriaVisual(ev.feria)+'|'+normalizarLugar(ev.lugar);
+  const valido=v=>v && /^#[0-9a-f]{6}$/i.test(v.color||'');
+  datos.eventos.forEach(ev=>{
+    if(!ev||typeof ev!=='object'||Array.isArray(ev))return;
+    const k=clave(ev);if(!grupos.has(k))grupos.set(k,[]);grupos.get(k).push(ev);
+  });
+  const keys=[...grupos.keys()].sort();
+  // Reservar primero identidades v2 persistidas y después colores antiguos libres.
+  for(const version of [2,1])for(const k of keys){
+    if(asignados.has(k))continue;
+    const candidatos=grupos.get(k).map(e=>e.visual).filter(v=>valido(v)&&(version===2?v.version>=2:!(v.version>=2)))
+      .sort((a,b)=>a.color.toUpperCase()<b.color.toUpperCase()?-1:a.color.toUpperCase()>b.color.toUpperCase()?1:0);
+    const v=candidatos.find(v=>!usados.has(v.color.toUpperCase()));
+    if(v){const color=v.color.toUpperCase();asignados.set(k,{color,colorIndex:STANDECOR_VISUAL_PALETTE_V1.includes(color)?STANDECOR_VISUAL_PALETTE_V1.indexOf(color):24+parseInt(color.slice(1),16),version:2});usados.add(color);}
+  }
+  const rgb=c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16));
+  const distancia=(a,b)=>{const x=rgb(a),y=rgb(b);return x.reduce((sum,n,i)=>sum+(n-y[i])**2,0);};
+  for(const k of keys){
+    if(asignados.has(k))continue;
+    // Elegir el tono libre más separado de los ya usados, con desempate estable.
+    let pool=STANDECOR_VISUAL_PALETTE_V1.map((color,colorIndex)=>({color,colorIndex,version:2})).filter(v=>!usados.has(v.color));
+    if(!pool.length){
+      // Ampliación determinista: la identidad no vuelve a repetirse al agotar 24 tonos.
+      let hash=2166136261;for(const c of k)hash=Math.imul(hash^c.charCodeAt(0),16777619)>>>0;
+      for(let n=0;pool.length<48;n++){
+        const hue=((hash%360)+n*137.508)%360,s=.52,l=.44;
+        const a=s*Math.min(l,1-l),f=t=>{const x=(t+hue/30)%12;return Math.round(255*(l-a*Math.max(-1,Math.min(x-3,9-x,1))));};
+        const color='#'+[f(0),f(8),f(4)].map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase();
+        if(!usados.has(color)&&!pool.some(v=>v.color===color))pool.push({color,colorIndex:24+(parseInt(color.slice(1),16)),version:2});
+      }
+    }
+    pool.sort((a,b)=>{
+      const score=v=>usados.size?Math.min(...[...usados].map(c=>distancia(v.color,c))):0;
+      return score(b)-score(a)||a.colorIndex-b.colorIndex;
+    });
+    const v=pool[0];asignados.set(k,v);usados.add(v.color);
+  }
+  let cambiado=false;
+  for(const k of keys)for(const ev of grupos.get(k)){
+    const v=asignados.get(k),old=ev.visual;
+    if(!old||old.color!==v.color||old.colorIndex!==v.colorIndex||old.version!==2){
+      ev.visual={...(old&&typeof old==='object'?old:{}),...v};cambiado=true;
+    }
+  }
+  return cambiado;
+}
+
+
 let db=cargar();
-function cargar(){try{const s=localStorage.getItem(STORAGE);if(s){const d=JSON.parse(s);d.trabajadores=d.trabajadores||[];d.collas=d.collas||[];d.eventos=d.eventos||[];return d}}catch(e){}return{trabajadores:nombresIniciales.map((nombre,i)=>({id:'t'+i,nombre,rol:'Montador',tipo:'Sale a montaje',estado:'Disponible',observaciones:''})),collas:[],eventos:[]}}
+function cargar(){try{const s=localStorage.getItem(STORAGE);if(s){const d=JSON.parse(s);d.trabajadores=d.trabajadores||[];d.collas=d.collas||[];d.eventos=d.eventos||[];asegurarIdentidadVisualFerias(d);return d}}catch(e){}return{trabajadores:nombresIniciales.map((nombre,i)=>({id:'t'+i,nombre,rol:'Montador',tipo:'Sale a montaje',estado:'Disponible',observaciones:''})),collas:[],eventos:[]}}
 function save(){
+  asegurarIdentidadVisualFerias(db);
   try{delete db.trabajadoresEliminados}catch(e){}
   localStorage.setItem(STORAGE,JSON.stringify(db));
   if(window.guardarFirebaseStandecor && !window.aplicandoDatosFirebase){
@@ -3389,7 +3628,7 @@ function renderCalendario(){
   let[y,m]=mes.split('-').map(Number);let last=new Date(y,m,0).getDate();byId('calendarPrintMonth').textContent=nombresMeses[m-1]+' '+y;
   let html=`<div class="calendar-weekdays">${diasSemana.map((d,i)=>`<div class="weekday-head ${i>=5?'weekend-head':''}">${d}</div>`).join('')}</div><div class="calendar-grid">`;
   let huecosInicio=(new Date(y,m-1,1).getDay()+6)%7;for(let h=0;h<huecosInicio;h++)html+='<div class="day-box empty-day"></div>';
-  for(let d=1;d<=last;d++){const f=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const fechaObj=new Date(y,m-1,d);const esFinde=fechaObj.getDay()===0||fechaObj.getDay()===6;const eventosActivos=db.eventos.filter(e=>!e.terminado);const mo=eventosActivos.filter(e=>e.montajeInicio&&e.montajeFin&&f>=e.montajeInicio&&f<=e.montajeFin);const de=eventosActivos.filter(e=>e.desmontajeInicio&&e.desmontajeFin&&f>=e.desmontajeInicio&&f<=e.desmontajeFin);const todosDia=[...mo,...de];const feriasLugaresUnicos=[...new Set(todosDia.map(e=>normal((e.feria||'')+'|'+(e.lugar||''))))].filter(Boolean);const haySolape=feriasLugaresUnicos.length>1;html+=`<div class="day-box ${esFinde?'weekend':''} ${haySolape?'overlap-day':''}"><div class="day-num">${d}</div>${haySolape?'<div class="day-tag">SOLAPE</div>':''}${mo.map(e=>`<div class="event-mini montaje-mini">MONTAJE<br>${esc(e.feria)}<br>${esc(e.lugar||'')}<br>${esc(e.stand)}</div>`).join('')}${de.map(e=>`<div class="event-mini desmontaje-mini">DESMONTAJE<br>${esc(e.feria)}<br>${esc(e.lugar||'')}<br>${esc(e.stand)}</div>`).join('')}</div>`}html+='</div>';byId('calendario').innerHTML=html;
+  for(let d=1;d<=last;d++){const f=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const fechaObj=new Date(y,m-1,d);const esFinde=fechaObj.getDay()===0||fechaObj.getDay()===6;const eventosActivos=db.eventos.filter(e=>!e.terminado);const mo=eventosActivos.filter(e=>e.montajeInicio&&e.montajeFin&&f>=e.montajeInicio&&f<=e.montajeFin);const de=eventosActivos.filter(e=>e.desmontajeInicio&&e.desmontajeFin&&f>=e.desmontajeInicio&&f<=e.desmontajeFin);const todosDia=[...mo,...de];const feriasLugaresUnicos=[...new Set(todosDia.map(e=>normal((e.feria||'')+'|'+(e.lugar||''))))].filter(Boolean);const haySolape=feriasLugaresUnicos.length>1;html+=`<div class="day-box ${esFinde?'weekend':''} ${haySolape?'overlap-day':''}"><div class="day-num">${d}</div>${haySolape?'<div class="day-tag">SOLAPE</div>':''}${mo.map(e=>`<div class="event-mini montaje-mini" style="border-left-color:${colorVisualFeria(e)}">MONTAJE<br>${esc(e.feria)}<br>${esc(e.lugar||'')}<br>${esc(e.stand)}</div>`).join('')}${de.map(e=>`<div class="event-mini desmontaje-mini" style="border-left-color:${colorVisualFeria(e)}">DESMONTAJE<br>${esc(e.feria)}<br>${esc(e.lugar||'')}<br>${esc(e.stand)}</div>`).join('')}</div>`}html+='</div>';byId('calendario').innerHTML=html;
 }
 
 function guardarTrabajador(){const id=byId('trabajadorId').value||'t'+Date.now();const t={id,nombre:byId('trabNombre').value.trim(),rol:byId('trabRol').value,tipo:byId('trabTipo').value,estado:byId('trabEstado').value,observaciones:byId('trabObs').value.trim()};if(!t.nombre)return alert('Falta nombre');const i=db.trabajadores.findIndex(x=>x.id===id);if(i>=0)db.trabajadores[i]=t;else db.trabajadores.push(t);save();limpiarTrabajador();renderAll()}
@@ -3619,6 +3858,8 @@ const getEventoFormOriginal=getEventoForm;
 getEventoForm=function(){
   const ev=getEventoFormOriginal();
   ev.cabezaPrincipalId=byId('cabezaPrincipal')?.value||'';
+  const anterior=db.eventos.find(e=>e.id===ev.id);
+  ev.visual=anterior && anterior.visual!=null ? anterior.visual : identidadVisualFeria(ev.feria);
   return ev;
 };
 
@@ -3687,34 +3928,13 @@ function imprimirCalendario(){
   renderCalendario();
   document.body.classList.remove('print-simple-mode');
   document.body.classList.add('print-calendar');
-
-  const textosRetirados=[];
-  try{
-    const walker=document.createTreeWalker(
-      document.body,
-      NodeFilter.SHOW_TEXT,
-      null
-    );
-    let nodo;
-    while((nodo=walker.nextNode())){
-      if(String(nodo.nodeValue||'').trim()==='\\n'){
-        textosRetirados.push({nodo,valor:nodo.nodeValue});
-        nodo.nodeValue='';
-      }
-    }
-  }catch(e){}
-
-  setTimeout(()=>{
-    window.print();
-    setTimeout(()=>{
-      document.body.classList.remove('print-calendar');
-      textosRetirados.forEach(x=>{
-        try{x.nodo.nodeValue=x.valor}catch(e){}
-      });
-    },500);
-  },160);
+  const imprimir=()=>{
+    try{prepararCalendarioA4();window.print();}
+    finally{limpiarCalendarioA4();document.body.classList.remove('print-calendar');}
+  };
+  if(document.fonts && document.fonts.ready)document.fonts.ready.then(imprimir);
+  else setTimeout(imprimir,160);
 }
-
 
 /* ===== AVISOS DESCARTABLES ===== */
 function asegurarAvisosOcultos(){
@@ -3855,7 +4075,7 @@ function renderEventos(){
 
     return `<div class="plan-folder ${terminado?'finished':''}" id="folder_${ev.id}">
       <button type="button" class="plan-folder-head" onclick="togglePlanDetalle('${ev.id}')">
-        <span class="folder-arrow">›</span>
+        <span class="folder-arrow" style="background-color:${colorVisualFeria(ev)}66;color:${colorVisualFeria(ev)}">›</span>
         <span class="folder-main"><span class="folder-title-line"><span class="folder-feria">${esc(ev.feria||'SIN FERIA')}</span><span class="folder-sub"><span class="folder-lugar">${esc(ev.lugar||'SIN LUGAR')}</span> · <span class="folder-stand">${esc(ev.stand||'SIN STAND')}</span></span></span></span>
         <span class="folder-pill ${tipo}">${tipoTxt}</span>
         <span class="folder-date">${esc(fecha||'SIN FECHA')}</span>
@@ -4600,7 +4820,7 @@ function renderPrint(eventosPersonalizados){
 
         return `<div class="plan-folder ${terminado?'finished':''}" id="folder_${ev.id}">
           <button type="button" class="plan-folder-head" onclick="togglePlanDetalle('${ev.id}')">
-            <span class="folder-arrow">›</span>
+            <span class="folder-arrow" style="background-color:${colorVisualFeria(ev)}66;color:${colorVisualFeria(ev)}">›</span>
             <span class="folder-main"><span class="folder-title-line"><span class="folder-feria">${esc(ev.feria||'SIN FERIA')}</span><span class="folder-sub"><span class="folder-lugar">${esc(ev.lugar||'SIN LUGAR')}</span> · <span class="folder-stand">${esc(ev.stand||'SIN STAND')}</span></span></span></span>
             <span class="folder-pill ${tipo}">${tipoTxt}</span>
             <span class="folder-date">${esc(fecha||'SIN FECHA')}</span>
@@ -10668,6 +10888,13 @@ function actualizarPermisoReordenPersonalStandecor(){
 
           if(firmaSeleccionada===firmaLocal){
             ultimaFirma=firmaLocal;
+            // Persistir únicamente la identidad añadida a una base antigua equivalente.
+            const remotoConVisual=copia(remoteDb);
+            if(asegurarIdentidadVisualFerias(remotoConVisual) && firma(remotoConVisual)===firmaLocal){
+              ultimaFirma=firma(remoteDb);
+              guardarLocal();
+              window.guardarFirebaseStandecor();
+            }
             return;
           }
 
@@ -10677,13 +10904,15 @@ function actualizarPermisoReordenPersonalStandecor(){
           db=limpiar(seleccionado);
           db.actualizadoFirebase=Number(seleccionado.actualizadoFirebase||remoteTime||Date.now());
 
-          guardarLocal();
           ultimaFirma=firma(db);
+          const identidadAnadida=asegurarIdentidadVisualFerias(db);
+          guardarLocal();
 
           try{renderAll()}catch(e){console.warn('Firebase 3.0: renderAll falló',e)}
 
           window.aplicandoDatosFirebase=false;
           aplicandoRemoto=false;
+          if(identidadAnadida) window.guardarFirebaseStandecor();
 
           console.log('Firebase 3.0 recibido', new Date(remoteTime||Date.now()).toLocaleTimeString());
         }catch(e){
@@ -10705,6 +10934,7 @@ function actualizarPermisoReordenPersonalStandecor(){
     const saveOriginal=window.save;
     window.save=function(){
       limpiar(db);
+      asegurarIdentidadVisualFerias(db);
       guardarLocal();
 
       if(window.guardarFirebaseStandecor && !window.aplicandoDatosFirebase){
@@ -10930,4 +11160,271 @@ function actualizarPermisoReordenPersonalStandecor(){
 })();
 </script>
 
-</html>
+<script>
+/* Impresión aislada: medir todo el mes antes de escalar, sin recortar ferias. */
+function prepararCalendarioA4(){
+  document.getElementById('standecorCalendarA4')?.remove();
+  const root=document.createElement('div');
+  root.id='standecorCalendarA4';
+  const a3=document.getElementById('calendarPaperSize')?.value==='A3';
+  root.style.setProperty('width',a3?'408mm':'285mm','important');
+  root.style.setProperty('height',a3?'285mm':'198mm','important');
+  const paper=document.createElement('style');
+  paper.textContent='@media print{@page standecorCalendarPage{size:'+(a3?'A3':'A4')+' landscape;margin:5mm;}}';
+  root.appendChild(paper);
+  const sheet=document.createElement('div');
+  sheet.className='a4-content';
+  const title=document.createElement('div');
+  title.className='a4-month';
+  title.textContent=document.getElementById('calendarPrintMonth').textContent;
+  sheet.appendChild(title);
+  const calendar=document.getElementById('calendario').cloneNode(true);
+  calendar.removeAttribute('id');
+  // Compactar filas completas sin eventos, conservando las siete columnas.
+  const days=Array.from(calendar.querySelectorAll('.calendar-grid > .day-box'));
+  for(let i=0;i<days.length;i+=7){
+    const week=days.slice(i,i+7);
+    if(week.every(day=>!day.querySelector('.event-mini'))){
+      week.forEach(day=>day.classList.add('a4-empty-week'));
+    }
+  }
+  sheet.appendChild(calendar);
+  root.appendChild(sheet);
+  document.body.appendChild(root);
+  let scale=1;
+  const width=root.clientWidth,height=root.clientHeight;
+  // Mes totalmente vacío: repartir la altura disponible para poder hacer anotaciones.
+  if(!calendar.querySelector('.event-mini')){
+    days.forEach(day=>{
+      day.classList.remove('a4-empty-week');
+      day.style.setProperty('min-height','0','important');
+    });
+    sheet.style.setProperty('width',width+'px','important');
+    const grid=calendar.querySelector('.calendar-grid');
+    if(grid && days.length){
+      const top=grid.getBoundingClientRect().top-sheet.getBoundingClientRect().top;
+      grid.style.setProperty('height',Math.max(0,height-top-3)+'px','important');
+      grid.style.setProperty('grid-template-rows','repeat('+Math.ceil(days.length/7)+',minmax(0,1fr))','important');
+    }
+    return;
+  }
+
+  // Al reducir, aumentar el ancho lógico aprovecha toda la hoja y evita saltos extra.
+  for(let i=0;i<12;i++){
+    sheet.style.setProperty('width',(width/scale)+'px','important');
+    const measured=Math.max(sheet.scrollHeight,sheet.getBoundingClientRect().height);
+    const next=Math.min(1,(height-2)/measured);
+    if(next>=scale)break;
+    scale=next;
+  }
+  scale=Math.min(scale,(height-2)/sheet.scrollHeight,(width-1)/sheet.scrollWidth);
+  // Repartir el espacio sobrante empezando por las semanas más pequeñas.
+  // Las alturas necesarias para mostrar ferias nunca se reducen aquí.
+  const grid=calendar.querySelector('.calendar-grid');
+  const spare=Math.max(0,(height-3)/scale-sheet.scrollHeight);
+  if(grid && days.length && spare>1){
+    const rowHeights=[];
+    for(let i=0;i<days.length;i+=7){
+      rowHeights.push(Math.max(...days.slice(i,i+7).map(day=>day.getBoundingClientRect().height)));
+    }
+    let low=Math.min(...rowHeights),high=Math.max(...rowHeights)+spare;
+    for(let i=0;i<40;i++){
+      const middle=(low+high)/2;
+      const needed=rowHeights.reduce((sum,h)=>sum+Math.max(0,middle-h),0);
+      if(needed>spare)high=middle;else low=middle;
+    }
+    grid.style.setProperty('grid-template-rows',rowHeights.map(h=>Math.max(h,low).toFixed(3)+'px').join(' '),'important');
+    scale=Math.min(scale,(height-2)/sheet.scrollHeight);
+  }
+  sheet.style.transform='scale('+scale+')';
+}
+function limpiarCalendarioA4(){
+  document.getElementById('standecorCalendarA4')?.remove();
+}
+window.addEventListener('beforeprint',()=>{
+  if(document.body.classList.contains('print-calendar'))prepararCalendarioA4();
+});
+window.addEventListener('afterprint',limpiarCalendarioA4);
+
+</script>
+<script>
+/* Listas GEMI: conservar los select originales y sus eventos de negocio. */
+(()=>{
+ let select=null,panel=null,active=-1,search='',searchTime=0;
+ const eligible=e=>e instanceof HTMLSelectElement && !e.disabled && !e.multiple && e.size<=1;
+ const enabled=o=>!o.disabled&&!o.hidden&&!(o.parentElement instanceof HTMLOptGroupElement&&o.parentElement.disabled);
+ function close(){
+  if(select){select.removeAttribute('aria-controls');select.removeAttribute('aria-activedescendant');select.setAttribute('aria-expanded','false');}
+  panel?.remove();panel=null;select=null;
+ }
+ function highlight(){
+  panel.querySelectorAll('[role=option]').forEach(el=>el.classList.toggle('gemi-active',Number(el.dataset.index)===active));
+  const el=panel.querySelector('[data-index="'+active+'"]');
+  if(el){select.setAttribute('aria-activedescendant',el.id);el.scrollIntoView({block:'nearest'});}
+ }
+ function choose(i){
+  if(!select||select.disabled||!enabled(select.options[i]))return;
+  const target=select,changed=target.selectedIndex!==i;
+  target.selectedIndex=i;close();target.focus();
+  if(changed){target.dispatchEvent(new Event('input',{bubbles:true}));target.dispatchEvent(new Event('change',{bubbles:true}));}
+ }
+ function open(target){
+  close();select=target;target.focus();search='';
+  panel=document.createElement('div');panel.id='standecor-gemi-list';panel.setAttribute('role','listbox');panel.setAttribute('popover','manual');
+  panel.setAttribute('aria-label',target.getAttribute('aria-label')||target.labels?.[0]?.textContent||'Opciones');
+  active=target.selectedIndex;
+  Array.from(target.options).forEach((o,i)=>{
+   if(o.hidden)return;
+   const row=document.createElement('div');row.id='standecor-gemi-option-'+i;row.dataset.index=i;
+   row.setAttribute('role','option');row.setAttribute('aria-selected',String(i===target.selectedIndex));row.setAttribute('aria-disabled',String(!enabled(o)));
+   row.textContent=o.textContent;row.addEventListener('pointerdown',e=>e.preventDefault());row.addEventListener('click',()=>choose(i));panel.append(row);
+  });
+  // Dentro de un diálogo modal, el panel debe pertenecer al mismo diálogo.
+  (target.closest('dialog[open]')||document.body).append(panel);
+  if(panel.showPopover)panel.showPopover();
+  const r=target.getBoundingClientRect(),w=Math.min(Math.max(r.width,180),innerWidth-16);
+  panel.style.width=w+'px';panel.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px';
+  const below=innerHeight-r.bottom-12,above=r.top-12,up=below<180&&above>below;
+  panel.style.maxHeight=Math.max(50,Math.min(250,up?above:below))+'px';
+  panel.style.top=(up?Math.max(8,r.top-panel.getBoundingClientRect().height-5):r.bottom+5)+'px';
+  target.setAttribute('aria-controls',panel.id);target.setAttribute('aria-expanded','true');highlight();
+ }
+ document.addEventListener('pointerdown',e=>{
+  if(eligible(e.target)&&e.button===0){e.preventDefault();if(select===e.target)close();else open(e.target);}
+  else if(panel&&!panel.contains(e.target))close();
+ });
+ document.addEventListener('keydown',e=>{
+  if(!eligible(e.target))return;
+  const k=e.key;
+  if(!panel){if(['ArrowDown','ArrowUp','Enter',' '].includes(k)){e.preventDefault();open(e.target);}return;}
+  if(select!==e.target)return;
+  if(k==='Escape'){e.preventDefault();e.stopPropagation();close();return;}
+  if(k==='Tab'){close();return;}
+  if(k==='Enter'||k===' '){e.preventDefault();choose(active);return;}
+  const options=Array.from(select.options),valid=options.map((o,i)=>enabled(o)?i:-1).filter(i=>i>=0);
+  if(['ArrowDown','ArrowUp','Home','End'].includes(k)){
+   e.preventDefault();let pos=valid.indexOf(active);
+   active=k==='Home'?valid[0]:k==='End'?valid.at(-1):valid[Math.max(0,Math.min(valid.length-1,pos+(k==='ArrowDown'?1:-1)))];highlight();
+  }else if(k.length===1&&!e.ctrlKey&&!e.metaKey&&!e.altKey){
+   e.preventDefault();search=Date.now()-searchTime>700?k:search+k;searchTime=Date.now();
+   const found=valid.find(i=>options[i].textContent.trim().toLocaleLowerCase().startsWith(search.toLocaleLowerCase()));
+   if(found!==undefined){active=found;highlight();}
+  }
+ });
+ document.addEventListener('focusin',e=>{if(panel&&e.target!==select&&!panel.contains(e.target))close();});
+ document.addEventListener('scroll',e=>{if(panel&&e.target!==panel&&!panel.contains(e.target))close();},true);
+ window.addEventListener('resize',close);window.addEventListener('beforeprint',close);
+ new MutationObserver(()=>{if(select&&(!select.isConnected||select.disabled))close();}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['disabled']});
+})();
+
+</script>
+<script>/* Calendarios compactos; los campos originales conservan valor y eventos. */
+(()=>{
+ let input=null,panel=null,month=null,returnFocus=false;
+ const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+ const supported=e=>e instanceof HTMLInputElement&&['date','month'].includes(e.type)&&!e.disabled&&!e.readOnly;
+ function close(focus=false){const old=input;panel?.remove();panel=null;input=null;if(focus)old?.focus();}
+ function allowed(value){return (!input.min||value>=input.min)&&(!input.max||value<=input.max);}
+ function choose(value){
+  if(!allowed(value))return;const target=input,changed=target.value!==value;
+  target.value=value;close(true);
+  if(changed){target.dispatchEvent(new Event('input',{bubbles:true}));target.dispatchEvent(new Event('change',{bubbles:true}));}
+ }
+ function button(text,label,action){const b=document.createElement('button');b.type='button';b.textContent=text;b.setAttribute('aria-label',label);b.onclick=action;return b;}
+ function position(){
+  if(!input?.isConnected){close();return;}
+  const r=input.getBoundingClientRect(),width=Math.min(r.width,innerWidth-16);
+  panel.style.width=width+'px';panel.style.left=Math.max(8,Math.min(r.left,innerWidth-width-8))+'px';
+  panel.style.setProperty('--date-cell',Math.max(18,Math.min(32,(width-28)/7))+'px');
+  panel.style.maxHeight=(innerHeight-16)+'px';
+  panel.style.top=Math.max(8,Math.min(r.bottom+5,innerHeight-panel.getBoundingClientRect().height-8))+'px';
+ }
+ function draw(){
+  panel.replaceChildren();const header=document.createElement('div');header.className='gd-head';
+  const name=document.createElement('strong');name.textContent=input.type==='month'?String(month.getFullYear()):month.toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+  name.setAttribute('aria-live','polite');
+  const move=n=>{month=new Date(month.getFullYear(),month.getMonth()+(input.type==='month'?12*n:n),1);draw();panel.querySelector(n<0?'.gd-prev':'.gd-next').focus();};
+  const prev=button('‹','Anterior',()=>move(-1)),next=button('›','Siguiente',()=>move(1));prev.className='gd-prev';next.className='gd-next';header.append(prev,name,next);panel.append(header);
+  const grid=document.createElement('div');grid.className=input.type==='month'?'gd-months':'gd-days';
+  if(input.type==='month'){
+   for(let m=0;m<12;m++){const value=month.getFullYear()+'-'+String(m+1).padStart(2,'0'),label=new Date(month.getFullYear(),m,1).toLocaleDateString('es-ES',{month:'short'});const b=button(label,label+' '+month.getFullYear(),()=>choose(value));b.disabled=!allowed(value);b.classList.toggle('gd-selected',input.value===value);grid.append(b);}
+  }else{
+   ['L','M','X','J','V','S','D'].forEach(s=>{const el=document.createElement('span');el.textContent=s;grid.append(el);});
+   const offset=(month.getDay()+6)%7;
+   for(let i=0;i<42;i++){
+    const d=new Date(month.getFullYear(),month.getMonth(),i-offset+1),value=iso(d),b=button(String(d.getDate()),d.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),()=>choose(value));
+    b.dataset.date=value;b.disabled=!allowed(value);b.classList.toggle('gd-other',d.getMonth()!==month.getMonth());b.classList.toggle('gd-selected',input.value===value);if(input.value===value)b.setAttribute('aria-pressed','true');if(value===iso(new Date()))b.setAttribute('aria-current','date');grid.append(b);
+   }
+  }
+  panel.append(grid);const footer=document.createElement('div');footer.className='gd-foot';
+  const today=iso(new Date()).slice(0,input.type==='month'?7:10),now=button('Hoy','Seleccionar hoy',()=>choose(today));now.disabled=!allowed(today);footer.append(now,button('Cerrar','Cerrar calendario',()=>close(true)));panel.append(footer);position();
+ }
+ function open(target){
+  close();input=target;const parts=(target.value||iso(new Date())).split('-').map(Number);month=new Date(parts[0],parts[1]-1,1);
+  panel=document.createElement('div');panel.id='standecor-gemi-date';panel.setAttribute('popover','manual');panel.setAttribute('role','dialog');panel.setAttribute('aria-label',target.type==='month'?'Elegir mes':'Elegir fecha');
+  (target.closest('dialog[open]')||document.body).append(panel);if(panel.showPopover)panel.showPopover();draw();
+  (panel.querySelector('.gd-selected:not(:disabled)')||panel.querySelector('[aria-current=date]:not(:disabled)')||panel.querySelector('button')).focus({preventScroll:true});
+ }
+ document.addEventListener('pointerdown',e=>{
+  if(supported(e.target)&&e.button===0){e.preventDefault();if(input===e.target)close(true);else open(e.target);}
+  else if(panel&&!panel.contains(e.target))close();
+ });
+ document.addEventListener('keydown',e=>{
+  if(panel&&(panel.contains(e.target)||e.target===input)){
+   if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close(true);return;}
+   if(e.target.dataset?.date&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key)){
+    e.preventDefault();const dates=[...panel.querySelectorAll('[data-date]')],i=dates.indexOf(e.target),delta={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7,Home:-(i%7),End:6-i%7}[e.key];dates[Math.max(0,Math.min(41,i+delta))]?.focus();
+   }
+  }else if(supported(e.target)&&(['Enter',' '].includes(e.key)||(e.altKey&&e.key==='ArrowDown'))){e.preventDefault();open(e.target);}
+ });
+ document.addEventListener('focusin',e=>{if(panel&&e.target!==input&&!panel.contains(e.target))close();});
+ document.addEventListener('scroll',e=>{if(panel&&e.target!==panel&&!panel.contains(e.target))close();},true);
+ window.addEventListener('resize',close);window.addEventListener('beforeprint',()=>close());
+})();
+</script><script>/* Sugerencias con el estilo de la aplicación, sobre los datalist existentes. */
+(()=>{
+ const sources={feria:'feriasList',lugar:'lugaresList',stand:'standsList'};
+ let field=null,panel=null,values=[],index=-1;
+ const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+ function close(){if(field){field.setAttribute('aria-expanded','false');field.removeAttribute('aria-activedescendant');}panel?.remove();panel=null;field=null;}
+ function highlight(){panel?.querySelectorAll('[role=option]').forEach((row,i)=>{row.setAttribute('aria-selected',String(i===index));if(i===index){field.setAttribute('aria-activedescendant',row.id);row.scrollIntoView({block:'nearest'});}});}
+ function choose(i){
+  const input=field,value=values[i];if(value===undefined)return;
+  close();input.value=value;input.focus();
+  input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));close();
+ }
+ function show(input){
+  close();if(input.disabled||input.readOnly)return;
+  values=[...new Set(Array.from(document.getElementById(sources[input.id])?.options||[],o=>o.value))].filter(v=>v&&normalize(v).includes(normalize(input.value.trim())));
+  if(!values.length)return;
+  field=input;index=-1;panel=document.createElement('div');panel.id='standecor-suggestions';panel.setAttribute('role','listbox');panel.setAttribute('aria-label','Textos recordados');panel.setAttribute('popover','manual');
+  values.forEach((value,i)=>{const row=document.createElement('div');row.id='standecor-suggestion-'+i;row.setAttribute('role','option');row.setAttribute('aria-selected','false');row.textContent=value;row.onpointerdown=e=>e.preventDefault();row.onclick=()=>choose(i);panel.append(row);});
+  document.body.append(panel);if(panel.showPopover)panel.showPopover();
+  const rect=input.getBoundingClientRect(),width=Math.min(rect.width,innerWidth-16);
+  panel.style.width=width+'px';panel.style.left=Math.max(8,Math.min(rect.left,innerWidth-width-8))+'px';
+  const below=innerHeight-rect.bottom-12,above=rect.top-12,up=below<160&&above>below;
+  panel.style.maxHeight=Math.max(50,Math.min(250,up?above:below))+'px';
+  panel.style.top=(up?Math.max(8,rect.top-panel.getBoundingClientRect().height-5):rect.bottom+5)+'px';
+  input.setAttribute('aria-expanded','true');
+ }
+ for(const id of Object.keys(sources)){
+  const input=document.getElementById(id);if(!input)continue;
+  input.removeAttribute('list');input.setAttribute('role','combobox');input.setAttribute('aria-autocomplete','list');input.setAttribute('aria-controls','standecor-suggestions');input.setAttribute('aria-expanded','false');
+  input.addEventListener('input',e=>{if(!e.isComposing)show(input);});input.addEventListener('compositionend',()=>show(input));
+  input.addEventListener('click',()=>show(input));
+  input.addEventListener('keydown',e=>{
+   if(e.isComposing)return;
+   if(e.key==='Escape'&&panel){e.preventDefault();e.stopPropagation();close();}
+   else if(e.key==='Tab')close();
+   else if(['ArrowDown','ArrowUp'].includes(e.key)){
+    e.preventDefault();if(!panel||field!==input)show(input);if(!panel)return;
+    index=Math.max(0,Math.min(values.length-1,index+(e.key==='ArrowDown'?1:-1)));highlight();
+   }else if(e.key==='Enter'&&panel&&index>=0){e.preventDefault();choose(index);}
+  });
+ }
+ document.addEventListener('pointerdown',e=>{if(panel&&e.target!==field&&!panel.contains(e.target))close();});
+ document.addEventListener('focusin',e=>{if(panel&&e.target!==field&&!panel.contains(e.target))close();});
+ document.addEventListener('scroll',e=>{if(panel&&e.target!==panel&&!panel.contains(e.target))close();},true);
+ window.addEventListener('resize',close);window.addEventListener('beforeprint',close);
+})();
+</script></html>
