@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>STANDECOR Planner 3.2 Beta 8</title>
-<!-- STANDECOR Planner 3.2 Beta 8 | Base estable: 3.0.7 -->
+<title>STANDECOR Planner 3.2 Beta 11</title>
+<!-- STANDECOR Planner 3.2 Beta 11 | Base estable: 3.0.7 -->
 
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3640,6 +3640,13 @@ function eventosFiltrados(){
     });
 }
 
+function totalPersonasCollas(ev){
+  const grupos=[...(ev.collaId?[{collaId:ev.collaId,cantidad:ev.cantidadColla}]:[]),...(ev.collasExtra||[])];
+  return grupos.reduce((total,grupo)=>{
+    const cantidad=Number(grupo.cantidad);
+    return total+(colla(grupo.collaId)&&Number.isFinite(cantidad)&&cantidad>0?cantidad:0);
+  },0);
+}
 function textoCollas(ev){
   let lista=[];
   if(ev.collaId) lista.push({collaId:ev.collaId,cantidad:ev.cantidadColla||''});
@@ -4105,7 +4112,7 @@ function renderEventos(){
         <span class="folder-main"><span class="folder-title-line"><span class="folder-feria">${esc(ev.feria||'SIN FERIA')}</span><span class="folder-sub"><span class="folder-lugar">${esc(ev.lugar||'SIN LUGAR')}</span> · <span class="folder-stand">${esc(ev.stand||'SIN STAND')}</span></span></span></span>
         <span class="folder-pill ${tipo}">${tipoTxt}</span>
         <span class="folder-date">${esc(fecha||'SIN FECHA')}</span>
-        <span class="folder-count">${terminado?'✅ ':''}${ayudas.length} pers. · ${collas.length} colla${collas.length===1?'':'s'}${avisos.length?' · ⚠ '+avisos.length:''}</span>
+        <span class="folder-count">${terminado?'✅ ':''}Taller ${ayudas.length} · ${collas.length} colla${collas.length===1?'':'s'}${collas.length?' ('+totalPersonasCollas(ev)+')':''}${avisos.length?' · ⚠ '+avisos.length:''}</span>
       </button>
       <div class="plan-folder-body">
         <div class="folder-detail-grid compact">
@@ -4850,7 +4857,7 @@ function renderPrint(eventosPersonalizados){
             <span class="folder-main"><span class="folder-title-line"><span class="folder-feria">${esc(ev.feria||'SIN FERIA')}</span><span class="folder-sub"><span class="folder-lugar">${esc(ev.lugar||'SIN LUGAR')}</span> · <span class="folder-stand">${esc(ev.stand||'SIN STAND')}</span></span></span></span>
             <span class="folder-pill ${tipo}">${tipoTxt}</span>
             <span class="folder-date">${esc(fecha||'SIN FECHA')}</span>
-            <span class="folder-count">${terminado?'✅ ':''}${ayudas.length} pers. · ${collas.length} colla${collas.length===1?'':'s'}${avisos.length?' · ⚠ '+avisos.length:''}</span>
+            <span class="folder-count">${terminado?'✅ ':''}Taller ${ayudas.length} · ${collas.length} colla${collas.length===1?'':'s'}${collas.length?' ('+totalPersonasCollas(ev)+')':''}${avisos.length?' · ⚠ '+avisos.length:''}</span>
           </button>
           <div class="plan-folder-body">
             <div class="folder-detail-grid compact">
