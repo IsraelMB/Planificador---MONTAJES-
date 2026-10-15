@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>STANDECOR Planner 3.2 Beta 6</title>
-<!-- STANDECOR Planner 3.2 Beta 6 | Base estable: 3.0.7 -->
+<title>STANDECOR Planner 3.2 Beta 8</title>
+<!-- STANDECOR Planner 3.2 Beta 8 | Base estable: 3.0.7 -->
 
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3231,7 +3231,33 @@ document.documentElement.classList.add('standecor-auth-checking');
  body select[aria-expanded=true]{border-color:#14A4E3!important;box-shadow:0 0 0 3px rgba(20,164,227,.14)!important;outline:none;}
 }
 @media print{#standecor-suggestions{display:none!important;}}
-</style></head>
+</style><style id="standecor-single-date-picker">
+@media screen{
+ input[type="date"]::-webkit-calendar-picker-indicator,
+ input[type="month"]::-webkit-calendar-picker-indicator{display:none!important;pointer-events:none!important;}
+ body main input[type="date"],body main input[type="month"]{
+  padding-right:36px!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230B5F86' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='3'/%3E%3Cpath d='M7 3v4m10-4v4M3 11h18'/%3E%3C/svg%3E")!important;
+  background-repeat:no-repeat!important;background-position:right 11px center!important;
+ }
+}
+</style>
+<style id="standecor-mobile-user-label-fix">
+@media screen and (max-width:720px){
+ html body #betaUserBar{
+  width:max-content!important;max-width:46vw!important;
+  height:auto!important;min-height:26px!important;
+  padding:3px 5px!important;gap:3px!important;align-items:center!important;
+ }
+ html body #betaUserBar > span{
+  flex:1 1 auto!important;width:auto!important;max-width:none!important;min-width:0!important;
+  white-space:normal!important;overflow:visible!important;text-overflow:unset!important;
+  overflow-wrap:anywhere!important;line-height:1.25!important;padding-left:1px!important;
+ }
+ html body #betaUserBar > button{flex:0 0 auto!important;}
+}
+</style>
+</head>
 <body>
 
 <div id="standecorSplashScreen" aria-hidden="true">
@@ -11323,6 +11349,12 @@ window.addEventListener('afterprint',limpiarCalendarioA4);
  let input=null,panel=null,month=null,returnFocus=false;
  const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
  const supported=e=>e instanceof HTMLInputElement&&['date','month'].includes(e.type)&&!e.disabled&&!e.readOnly;
+ // El calendario nativo usa click además de pointerdown en algunos navegadores.
+ // El icono dibujado pertenece al campo; toda la superficie abre nuestro panel.
+ document.addEventListener('click',e=>{
+  if(supported(e.target))e.preventDefault();
+ },true);
+
  function close(focus=false){const old=input;panel?.remove();panel=null;input=null;if(focus)old?.focus();}
  function allowed(value){return (!input.min||value>=input.min)&&(!input.max||value<=input.max);}
  function choose(value){
