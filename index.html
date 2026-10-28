@@ -11466,4 +11466,177 @@ window.addEventListener('afterprint',limpiarCalendarioA4);
  document.addEventListener('scroll',e=>{if(panel&&e.target!==panel&&!panel.contains(e.target))close();},true);
  window.addEventListener('resize',close);window.addEventListener('beforeprint',close);
 })();
-</script></html>
+</script><style id="standecor-observaciones-autoaltura">
+#tab-planificacion #observaciones{overflow-y:hidden;max-height:none;}
+</style>
+<script>
+// Ajustar también al cargar observaciones guardadas o limpiar el formulario.
+(function(){
+  const campo=document.getElementById('observaciones');
+  if(!campo)return;
+  function ajustar(){
+    if(!campo.getClientRects().length)return;
+    campo.style.height='auto';
+    const estilo=getComputedStyle(campo);
+    const bordes=parseFloat(estilo.borderTopWidth)+parseFloat(estilo.borderBottomWidth);
+    campo.style.height=Math.ceil(campo.scrollHeight+bordes)+'px';
+  }
+  campo.addEventListener('input',ajustar);
+  for(const nombre of ['editarEvento','limpiarFormulario']){
+    const original=window[nombre];
+    if(typeof original==='function')window[nombre]=function(...args){
+      const resultado=original.apply(this,args);
+      ajustar();
+      return resultado;
+    };
+  }
+  let anchoAnterior=-1;
+  new ResizeObserver(()=>{
+    const ancho=campo.getBoundingClientRect().width;
+    if(ancho!==anchoAnterior){anchoAnterior=ancho;ajustar();}
+  }).observe(campo);
+  ajustar();
+})();
+</script>
+<style id="standecor-orden-collas-css">
+#tablaCollas td:last-child{white-space:nowrap;vertical-align:middle;}
+.colla-orden-controls{display:inline-flex;gap:2px;margin:0 4px 0 0;vertical-align:middle;}
+#tablaCollas td:last-child .action-btn{width:34px;height:34px;}
+.colla-orden-controls button{width:28px;height:28px;padding:0!important;justify-content:center;background:#fff!important;color:#111827!important;border:1px solid #e2eaf3!important;border-radius:8px!important;box-shadow:none!important;}
+.colla-orden-controls button svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.colla-orden-controls button:hover:not(:disabled){background:#f3f8fc!important;}
+.colla-orden-controls button:disabled{opacity:.3;cursor:default;transform:none;}
+</style>
+<script>
+(function(){
+  function puedeOrdenar(){
+    try{const s=JSON.parse(localStorage.getItem('standecor_beta_user_session')||'null');
+      return !!(s&&s.usuario==='IsraelM'&&s.rol==='admin');
+    }catch(e){return false;}
+  }
+  function ordenar(){
+    db.collas.sort((a,b)=>(Number.isFinite(a.ordenManual)?a.ordenManual:Infinity)-(Number.isFinite(b.ordenManual)?b.ordenManual:Infinity));
+  }
+  const original=window.renderCollas;
+  window.renderCollas=function(){
+    ordenar();
+    original.apply(this,arguments);
+    if(typeof renderSelects==='function')renderSelects();
+    if(!puedeOrdenar())return;
+    const filas=document.querySelectorAll('#tablaCollas tr');
+    db.collas.forEach((colla,i)=>{
+      const celda=filas[i]?.lastElementChild;if(!celda)return;
+      const controles=document.createElement('div');
+      controles.className='colla-orden-controls';
+      for(const [paso,texto,titulo] of [[-1,'↑','Subir'],[1,'↓','Bajar']]){
+        const boton=document.createElement('button');
+        boton.type='button';boton.className='small light';
+        boton.innerHTML='<svg viewBox='+String.fromCharCode(34)+'0 0 16 16'+String.fromCharCode(34)+' aria-hidden='+String.fromCharCode(34)+'true'+String.fromCharCode(34)+'><path d='+String.fromCharCode(34)+(paso<0?'M4 10 L8 6 L12 10':'M4 6 L8 10 L12 6')+String.fromCharCode(34)+'/></svg>';
+        boton.title=titulo+' colla';boton.setAttribute('aria-label',titulo+' '+colla.nombre);
+        boton.disabled=i+paso<0||i+paso>=db.collas.length;
+        boton.onclick=()=>{
+          if(!puedeOrdenar())return;
+          ordenar();
+          const desde=db.collas.findIndex(c=>c.id===colla.id),hasta=desde+paso;
+          if(desde<0||hasta<0||hasta>=db.collas.length)return;
+          [db.collas[desde],db.collas[hasta]]=[db.collas[hasta],db.collas[desde]];
+          db.collas.forEach((c,indice)=>{c.ordenManual=indice;});
+          save();renderAll();
+        };
+        controles.appendChild(boton);
+      }
+      celda.insertBefore(controles,celda.firstChild);
+    });
+  };
+  renderCollas();
+  let permisoAnterior=puedeOrdenar();
+  setInterval(()=>{const permiso=puedeOrdenar();if(permiso!==permisoAnterior){permisoAnterior=permiso;renderCollas();}},500);
+})();
+</script>
+<style id="standecor-job-print-style">
+#standecorJobPrint{display:none;}
+#standecorJobPrint,#standecorJobPrint *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
+#standecorJobPrint .sj-page{width:285mm;height:197mm;position:relative;break-inside:avoid;break-after:page;overflow:hidden;background:white;color:#172b3a;}
+#standecorJobPrint .sj-page:last-child{break-after:auto;}
+#standecorJobPrint .sj-sheet{width:285mm;min-height:196mm;padding:6mm;display:flex;flex-direction:column;gap:4mm;transform-origin:top left;font-size:11pt;line-height:1.25;}
+#standecorJobPrint .sj-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1.2mm solid #14a4e3;padding-bottom:3mm;color:#087ba8;gap:5mm;}
+#standecorJobPrint .sj-brand{font-size:22pt;font-weight:700;letter-spacing:-1px;}
+#standecorJobPrint .sj-type{font-size:25pt;font-weight:800;letter-spacing:2px;}
+#standecorJobPrint .sj-meta{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:4mm;align-items:center;}
+#standecorJobPrint .sj-fair{font-size:17pt;font-weight:700;overflow-wrap:anywhere;}
+#standecorJobPrint .sj-date{padding:2mm 3mm;border:1px solid #bbdff0;border-radius:5px;background:#e4f4fc;color:#075e82;font-size:12pt;font-weight:700;text-align:center;}
+#standecorJobPrint .sj-location{justify-self:end;display:flex;align-items:center;gap:2mm;color:#075e82;overflow-wrap:anywhere;min-width:0;font-size:13pt;font-weight:700;}
+#standecorJobPrint .sj-location svg{width:6mm;height:6mm;flex-shrink:0;}
+#standecorJobPrint .sj-stand{background:#edf7fc;border-left:1mm solid #14a4e3;padding:1.5mm 3mm;color:#075e82;font-size:12pt;font-weight:700;overflow-wrap:anywhere;}
+#standecorJobPrint .sj-body{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:7mm;flex:0 0 auto;align-content:start;align-items:start;}
+#standecorJobPrint .sj-heading{display:flex;justify-content:space-between;gap:3mm;color:#086a91;letter-spacing:.7px;font-size:10pt;font-weight:700;border-bottom:1px solid #a9c5d4;padding-bottom:2mm;margin-bottom:1mm;}
+#standecorJobPrint .sj-person{font-size:11pt;padding:2mm 0;border-bottom:1px solid #e5edf2;overflow-wrap:anywhere;break-inside:avoid;}
+#standecorJobPrint .sj-leader{font-weight:700;color:#075e82;}
+#standecorJobPrint .sj-list.sj-double{columns:2;column-gap:5mm;}
+#standecorJobPrint .sj-crew{padding:2.5mm 0;border-bottom:1px solid #e5edf2;overflow-wrap:anywhere;}
+#standecorJobPrint .sj-crew strong{display:block;font-size:11pt;}
+#standecorJobPrint .sj-crew span{display:block;font-size:10pt;color:#526775;margin-top:1mm;}
+#standecorJobPrint .sj-notes{background:#f4f8fb;padding:3mm;font-size:10pt;}
+#standecorJobPrint .sj-note-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.35;}
+@media print{
+ @page standecorJobPage{size:A4 landscape;margin:5mm;}
+ body.standecor-job-print{margin:0!important;padding:0!important;}
+ body.standecor-job-print > :not(#standecorJobPrint){display:none!important;}
+ body.standecor-job-print #standecorJobPrint{display:block!important;position:static!important;margin:0!important;padding:0!important;visibility:visible!important;}
+ body.standecor-job-print #standecorJobPrint *{visibility:visible!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+ #standecorJobPrint .sj-page{page:standecorJobPage;}
+}
+</style>
+<script id="standecor-job-print-script">
+(()=>{
+ const root=document.createElement('div');root.id='standecorJobPrint';document.body.appendChild(root);
+ const pin='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>';
+ function ficha(ev,tipo){
+  const jefe=cabezaDe(ev),personas=[...new Set(ev.ayudantes||[])].map(trabajador).filter(Boolean);
+  const lista=jefe?[jefe,...personas.filter(t=>t.id!==jefe.id)]:personas;
+  const grupos=[...(ev.collaId?[{collaId:ev.collaId,cantidad:ev.cantidadColla}]:[]),...(ev.collasExtra||[])].filter(g=>colla(g.collaId));
+  const total=grupos.reduce((s,g)=>s+Math.max(0,Number(g.cantidad)||0),0);
+  const fecha=tipo==='m'?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
+  return `<article class="sj-page"><div class="sj-sheet"><div class="sj-top"><div class="sj-brand">STANDECOR</div><div class="sj-type">${tipo==='m'?'MONTAJE':'DESMONTAJE'}</div></div><div class="sj-meta"><div class="sj-fair">${esc(ev.feria||'')}</div><div class="sj-date">${esc(fecha)}</div><div class="sj-location">${pin}<span>${esc(ev.lugar||'')}</span></div></div><div class="sj-stand">${esc(ev.stand||'STAND')}</div><div class="sj-body"><section><div class="sj-heading"><span>PERSONAL</span><span>${lista.length} personas</span></div><div class="sj-list${lista.length>=6?' sj-double':''}">${lista.map(t=>`<div class="sj-person${jefe&&t.id===jefe.id?' sj-leader':''}">${esc(t.nombre)}</div>`).join('')}</div></section><section><div class="sj-heading"><span>COLLAS EXTERNAS</span><span>${total}</span></div>${grupos.map(g=>`<div class="sj-crew"><strong>${esc(colla(g.collaId).nombre)}</strong><span>${esc(g.cantidad||'0')} personas</span></div>`).join('')}</section></div><section class="sj-notes"><div class="sj-heading">OBSERVACIONES</div><div class="sj-note-text">${esc(ev.observaciones||'')||'&nbsp;'}</div></section></div></article>`;
+ }
+ function ajustar(){
+  const previous=root.style.cssText;
+  root.style.cssText='display:block;position:absolute;left:-20000px;top:0;width:285mm;visibility:hidden;';
+  root.querySelectorAll('.sj-page').forEach(page=>{
+   const sheet=page.querySelector('.sj-sheet'),list=sheet.querySelector('.sj-list');
+   sheet.style.transform='';sheet.style.width='285mm';sheet.style.minHeight='196mm';
+   // Comparar las alturas con el personal en una columna antes de decidir.
+   list.classList.remove('sj-double');
+   const cantidad=list.querySelectorAll('.sj-person').length;
+   const secciones=sheet.querySelectorAll('.sj-body > section');
+   if(cantidad>=6 && secciones[0].getBoundingClientRect().height>secciones[1].getBoundingClientRect().height+1){
+    list.classList.add('sj-double');
+   }
+   // Si falta espacio en la hoja, aprovechar también las dos columnas.
+   if(cantidad>=6 && sheet.scrollHeight>page.clientHeight)list.classList.add('sj-double');
+   let scale=1;
+   for(let i=0;i<12;i++){
+    const next=Math.min(1,(page.clientHeight-3)/sheet.scrollHeight,(page.clientWidth-2)/sheet.scrollWidth);
+    if(next>=scale-.001)break;
+    scale=next;sheet.style.width=(page.clientWidth/scale)+'px';sheet.style.minHeight=((page.clientHeight-3)/scale)+'px';
+   }
+   scale=Math.min(scale,(page.clientHeight-3)/sheet.scrollHeight,(page.clientWidth-2)/sheet.scrollWidth);
+   sheet.style.transform='scale('+scale+')';
+  });
+  root.style.cssText=previous;
+ }
+ window.renderPrint=function(eventosPersonalizados){
+  const eventos=eventosPersonalizados||eventosFiltrados();
+  root.innerHTML=eventos.filter(e=>e.montajeInicio||e.montajeFin).map(e=>ficha(e,'m')).join('')+eventos.filter(e=>e.desmontajeInicio||e.desmontajeFin).map(e=>ficha(e,'d')).join('');
+  ajustar();
+ };
+ window.addEventListener('beforeprint',()=>{
+  if(document.body.classList.contains('print-calendar'))return;
+  if(!root.children.length)window.renderPrint();
+  if(root.children.length){document.body.classList.add('standecor-job-print');ajustar();}
+ });
+ window.addEventListener('afterprint',()=>document.body.classList.remove('standecor-job-print'));
+})();
+</script>
+
+</html>
