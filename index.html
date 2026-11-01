@@ -11556,11 +11556,11 @@ window.addEventListener('afterprint',limpiarCalendarioA4);
 <style id="standecor-job-print-style">
 #standecorJobPrint{display:none;}
 #standecorJobPrint,#standecorJobPrint *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
-#standecorJobPrint .sj-page{width:285mm;height:197mm;position:relative;break-inside:avoid;break-after:page;overflow:hidden;background:white;color:#172b3a;}
+#standecorJobPrint .sj-page{width:287mm;height:199mm;margin:0 auto;position:relative;break-inside:avoid;break-after:page;overflow:hidden;background:white;color:#172b3a;}
 #standecorJobPrint .sj-page:last-child{break-after:auto;}
-#standecorJobPrint .sj-sheet{width:285mm;min-height:196mm;padding:6mm;display:flex;flex-direction:column;gap:4mm;transform-origin:top left;font-size:11pt;line-height:1.25;}
+#standecorJobPrint .sj-sheet{width:287mm;min-height:198mm;padding:6mm;display:flex;flex-direction:column;gap:4mm;transform-origin:top left;font-size:11pt;line-height:1.25;}
 #standecorJobPrint .sj-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1.2mm solid #14a4e3;padding-bottom:3mm;color:#087ba8;gap:5mm;}
-#standecorJobPrint .sj-brand{font-size:22pt;font-weight:700;letter-spacing:-1px;}
+#standecorJobPrint .sj-brand{font-size:20pt;font-weight:700;letter-spacing:-1px;}
 #standecorJobPrint .sj-type{font-size:25pt;font-weight:800;letter-spacing:2px;}
 #standecorJobPrint .sj-meta{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:4mm;align-items:center;}
 #standecorJobPrint .sj-fair{font-size:17pt;font-weight:700;overflow-wrap:anywhere;}
@@ -11597,14 +11597,14 @@ window.addEventListener('afterprint',limpiarCalendarioA4);
   const grupos=[...(ev.collaId?[{collaId:ev.collaId,cantidad:ev.cantidadColla}]:[]),...(ev.collasExtra||[])].filter(g=>colla(g.collaId));
   const total=grupos.reduce((s,g)=>s+Math.max(0,Number(g.cantidad)||0),0);
   const fecha=tipo==='m'?rango(ev.montajeInicio,ev.montajeFin):rango(ev.desmontajeInicio,ev.desmontajeFin);
-  return `<article class="sj-page"><div class="sj-sheet"><div class="sj-top"><div class="sj-brand">STANDECOR</div><div class="sj-type">${tipo==='m'?'MONTAJE':'DESMONTAJE'}</div></div><div class="sj-meta"><div class="sj-fair">${esc(ev.feria||'')}</div><div class="sj-date">${esc(fecha)}</div><div class="sj-location">${pin}<span>${esc(ev.lugar||'')}</span></div></div><div class="sj-stand">${esc(ev.stand||'STAND')}</div><div class="sj-body"><section><div class="sj-heading"><span>PERSONAL</span><span>${lista.length} personas</span></div><div class="sj-list${lista.length>=6?' sj-double':''}">${lista.map(t=>`<div class="sj-person${jefe&&t.id===jefe.id?' sj-leader':''}">${esc(t.nombre)}</div>`).join('')}</div></section><section><div class="sj-heading"><span>COLLAS EXTERNAS</span><span>${total}</span></div>${grupos.map(g=>`<div class="sj-crew"><strong>${esc(colla(g.collaId).nombre)}</strong><span>${esc(g.cantidad||'0')} personas</span></div>`).join('')}</section></div><section class="sj-notes"><div class="sj-heading">OBSERVACIONES</div><div class="sj-note-text">${esc(ev.observaciones||'')||'&nbsp;'}</div></section></div></article>`;
+  return `<article class="sj-page"><div class="sj-sheet"><div class="sj-top"><div class="sj-type">${tipo==='m'?'MONTAJE':'DESMONTAJE'}</div><div class="sj-brand">STANDECOR</div></div><div class="sj-meta"><div class="sj-fair">${esc(ev.feria||'')}</div><div class="sj-date">${esc(fecha)}</div><div class="sj-location">${pin}<span>${esc(ev.lugar||'')}</span></div></div><div class="sj-stand">${esc(ev.stand||'STAND')}</div><div class="sj-body"><section><div class="sj-heading"><span>PERSONAL</span><span>${lista.length} personas</span></div><div class="sj-list${lista.length>=6?' sj-double':''}">${lista.map(t=>`<div class="sj-person${jefe&&t.id===jefe.id?' sj-leader':''}">${esc(t.nombre)}</div>`).join('')}</div></section><section><div class="sj-heading"><span>COLLAS EXTERNAS</span><span>${total}</span></div>${grupos.map(g=>`<div class="sj-crew"><strong>${esc(colla(g.collaId).nombre)}</strong><span>${esc(g.cantidad||'0')} personas</span></div>`).join('')}</section></div><section class="sj-notes"><div class="sj-heading">OBSERVACIONES</div><div class="sj-note-text">${esc(ev.observaciones||'')||'&nbsp;'}</div></section></div></article>`;
  }
  function ajustar(){
   const previous=root.style.cssText;
-  root.style.cssText='display:block;position:absolute;left:-20000px;top:0;width:285mm;visibility:hidden;';
+  root.style.cssText='display:block;position:absolute;left:-20000px;top:0;width:287mm;visibility:hidden;';
   root.querySelectorAll('.sj-page').forEach(page=>{
    const sheet=page.querySelector('.sj-sheet'),list=sheet.querySelector('.sj-list');
-   sheet.style.transform='';sheet.style.width='285mm';sheet.style.minHeight='196mm';
+   sheet.style.transform='';sheet.style.marginLeft='0';sheet.style.width='287mm';sheet.style.minHeight='198mm';
    // Comparar las alturas con el personal en una columna antes de decidir.
    list.classList.remove('sj-double');
    const cantidad=list.querySelectorAll('.sj-person').length;
@@ -11622,6 +11622,7 @@ window.addEventListener('afterprint',limpiarCalendarioA4);
    }
    scale=Math.min(scale,(page.clientHeight-3)/sheet.scrollHeight,(page.clientWidth-2)/sheet.scrollWidth);
    sheet.style.transform='scale('+scale+')';
+   sheet.style.marginLeft=Math.max(0,(page.clientWidth-sheet.offsetWidth*scale)/2)+'px';
   });
   root.style.cssText=previous;
  }
