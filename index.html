@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>STANDECOR Planner 3.2 Beta 11</title>
+<title>Montajes-Desmontajes SD</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%2314A4E3%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2222%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2Csans-serif%22%20font-size%3D%2217%22%20font-weight%3D%22bold%22%20fill%3D%22white%22%3ESD%3C%2Ftext%3E%3C%2Fsvg%3E">
 <!-- STANDECOR Planner 3.2 Beta 11 | Base estable: 3.0.7 -->
 
 
@@ -2771,10 +2772,9 @@ const firebaseConfigStandecor = {
 }
 
 .personal-reorder-item{
-  cursor:grab!important;
+  cursor:default!important;
   user-select:none!important;
   -webkit-user-select:none!important;
-  touch-action:none!important;
   position:relative!important;
   z-index:5!important;
   display:flex!important;
@@ -2792,7 +2792,7 @@ const firebaseConfigStandecor = {
   transform:translateX(2px)!important;
 }
 
-.personal-reorder-item:active{cursor:grabbing!important}
+.personal-reorder-handle:active,.personal-reorder-item.is-dragging .personal-reorder-handle{cursor:grabbing!important}
 
 .personal-reorder-name{
   flex:1 1 auto!important;
@@ -2803,7 +2803,13 @@ const firebaseConfigStandecor = {
   flex:0 0 auto!important;
   opacity:.45!important;
   font-size:13px!important;
-  pointer-events:none!important;
+  pointer-events:auto!important;
+  touch-action:none;
+  cursor:grab!important;
+  align-items:center;
+  justify-content:center;
+  min-width:28px;
+  min-height:24px;
 }
 
 .personal-reorder-item.is-dragging{
@@ -2895,7 +2901,7 @@ html.standecor-auth-checking body > *:not(#standecorSplashScreen){
   background:linear-gradient(135deg,#0B5F86,#14A4E3);
   opacity:1;
   visibility:visible;
-  transition:opacity .28s ease, visibility .28s ease;
+  transition:none;
 }
 
 #standecorSplashScreen.splash-hidden{
@@ -2908,27 +2914,28 @@ html.standecor-auth-checking body > *:not(#standecorSplashScreen){
   position:relative;
   display:inline-block;
   color:white;
-  font-family:'Plus Jakarta Sans',Arial,sans-serif;
+  font-family:Arial,sans-serif;
   text-shadow:0 8px 24px rgba(0,0,0,.18);
-  animation:standecorSplashIn .38s ease both;
+  animation:standecorSplashIn .85s ease-out both;
+  transform:scaleX(.97);
 }
 
 .splash-logo-main{
-  font-size:72px;
+  font-size:72px; transform:scaleY(1.12);transform-origin:center bottom;
   line-height:.95;
-  font-weight:900;
+  font-weight:700;
   letter-spacing:2px;
   white-space:nowrap;
 }
 
 .splash-logo-com{
-  position:absolute;
+  position:absolute; transform:scale(1.25);transform-origin:top right;
   right:2px;
   top:100%;
   margin-top:8px;
   font-size:24px;
   line-height:1;
-  font-weight:800;
+  font-weight:700;
   letter-spacing:.4px;
   opacity:.95;
 }
@@ -2942,16 +2949,7 @@ html.standecor-auth-locked #loginBetaOverlay{
   visibility:visible!important;
 }
 
-@keyframes standecorSplashIn{
-  from{
-    opacity:0;
-    transform:translateY(8px) scale(.96);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0) scale(1);
-  }
-}
+@keyframes standecorSplashIn{from{opacity:0}to{opacity:1}}
 
 @media(max-width:720px){
   .splash-logo-main{
@@ -3256,6 +3254,65 @@ document.documentElement.classList.add('standecor-auth-checking');
  }
  html body #betaUserBar > button{flex:0 0 auto!important;}
 }
+</style>
+<style id="standecor-fondo-acceso">
+html.standecor-auth-checking,
+html.standecor-auth-locked{overflow:hidden;}
+html.standecor-auth-locked #standecorSplashScreen{
+  opacity:1;
+  visibility:visible;
+  z-index:2147483599;
+  pointer-events:none;
+  transition:none;
+}
+html.standecor-auth-locked #loginBetaOverlay{background:transparent;}
+html:not(.standecor-login-visible) #loginBetaOverlay .loginBetaCard{display:none!important;} html.standecor-auth-locked.standecor-login-visible #standecorSplashScreen .splash-logo-standecor{visibility:hidden!important;}
+</style>
+<style id="standecor-terminados-resumen-visible">
+.plan-folder.finished .plan-folder-head .folder-count{
+  display:block!important;
+  min-width:0!important;
+  max-width:none!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere;
+  overflow:visible!important;
+}
+@media screen and (min-width:1101px){
+  .plan-folder.finished .plan-folder-head{
+    grid-template-columns:34px minmax(0,1fr) max-content max-content fit-content(175px)!important;
+  }
+  .plan-folder.finished .plan-folder-head .folder-count{
+    text-align:right!important;
+  }
+}
+</style>
+<style id="standecor-collas-compactas">
+#tab-collas .table-wrap{overflow-x:auto;}
+#tab-collas .table-wrap table{min-width:460px;}
+#tab-collas .table-wrap th,
+#tablaCollas td{padding:5px 8px;vertical-align:middle;}
+#tablaCollas td:first-child b{font-size:.96em;}
+#tab-collas .table-wrap th:last-child{width:146px;}
+#tab-collas .table-wrap th:last-child,
+#tablaCollas td:last-child{text-align:right;}
+#tablaCollas td:last-child .action-btn{width:28px;height:28px;vertical-align:middle;}
+#tablaCollas .colla-orden-controls button{width:26px;height:26px;}
+</style>
+<style id="standecor-trabajadores-compactos">
+#tab-trabajadores .span-8 .filters{align-items:flex-end;justify-content:space-between;margin-bottom:8px;}
+#tab-trabajadores .span-8 .filters > div:first-child{flex:1 1 200px;max-width:360px;}
+#tab-trabajadores .span-8 .filters > div:last-child{margin-left:auto;min-width:0;}
+#tab-trabajadores .table-wrap{overflow-x:auto;}
+#tab-trabajadores .table-wrap table{min-width:570px;}
+#tab-trabajadores .table-wrap th,
+#tablaTrabajadores td{padding:5px 8px;vertical-align:middle;}
+#tab-trabajadores .table-wrap th:first-child{width:26%;}
+#tablaTrabajadores td:first-child b{font-size:.96em;}
+#tab-trabajadores .table-wrap th:last-child{width:82px;}
+#tab-trabajadores .table-wrap th:last-child,
+#tablaTrabajadores td:last-child{text-align:right;white-space:nowrap;}
+#tablaTrabajadores td:last-child .action-btn{width:28px;height:28px;vertical-align:middle;}
+#tablaTrabajadores td:last-child .action-btn{padding:0!important;}#tablaTrabajadores td:last-child .action-btn .ico{width:12.8px!important;height:12.8px!important;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -4095,7 +4152,7 @@ function renderEventos(){
     if(personalMovible.length){
       personalHtml+=`<div class="personal-reorder-list ${puedeReordenarPersonalStandecor()?'can-reorder':'locked-reorder'}" data-event-id="${esc(ev.id)}">`;
       personalMovible.forEach(t=>{
-        personalHtml+=`<div class="badge gray personal-reorder-item" data-worker-id="${esc(t.id)}" title="Arrastrar para ordenar"><span class="personal-reorder-name">${esc(t.nombre)}</span><span class="personal-reorder-handle">☰</span></div>`;
+        personalHtml+=`<div class="badge gray personal-reorder-item" data-worker-id="${esc(t.id)}" ><span class="personal-reorder-name">${esc(t.nombre)}</span><span class="personal-reorder-handle" title="Arrastrar para ordenar">☰</span></div>`;
       });
       personalHtml+=`</div>`;
     }
@@ -4839,7 +4896,7 @@ function renderPrint(eventosPersonalizados){
         if(personalMovible.length){
           personalHtml+=`<div class="personal-reorder-list ${puedeReordenarPersonalStandecor()?'can-reorder':'locked-reorder'}" data-event-id="${esc(ev.id)}">`;
           personalMovible.forEach(t=>{
-            personalHtml+=`<div class="badge gray personal-reorder-item" data-worker-id="${esc(t.id)}" title="Arrastrar para ordenar"><span class="personal-reorder-name">${esc(t.nombre)}</span><span class="personal-reorder-handle">☰</span></div>`;
+            personalHtml+=`<div class="badge gray personal-reorder-item" data-worker-id="${esc(t.id)}" ><span class="personal-reorder-name">${esc(t.nombre)}</span><span class="personal-reorder-handle" title="Arrastrar para ordenar">☰</span></div>`;
           });
           personalHtml+=`</div>`;
         }
@@ -10367,6 +10424,7 @@ function actualizarPermisoReordenPersonalStandecor(){
   let dragging=null;
   let startContainer=null;
   let startOrder='';
+  let startItems=[];
   let startX=0;
   let startY=0;
   let moved=false;
@@ -10447,8 +10505,10 @@ function actualizarPermisoReordenPersonalStandecor(){
     ev.ayudantes=result;
     ev.actualizado=Date.now();
 
+    const abiertas=all("#planAccordion .plan-folder.open").map(fila=>fila.id);
     save();
     renderAll();
+    abiertas.forEach(id=>document.getElementById(id)?.classList.add("open"));
 
     if(typeof mostrarAvisoCentral==='function'){
       mostrarAvisoCentral('Orden del personal actualizado');
@@ -10459,13 +10519,16 @@ function actualizarPermisoReordenPersonalStandecor(){
     actualizarPermisoReordenPersonalStandecor();
     if(!puedeReordenarPersonalStandecor())return;
 
-    const item=e.target.closest && e.target.closest('.personal-reorder-item');
+    if(dragging || (e.type==='mousedown' && e.button!==0) || (e.touches && e.touches.length!==1))return;
+    const handle=e.target.closest?.('.personal-reorder-handle');
+    const item=handle?.closest('.personal-reorder-item');
     if(!item)return;
 
     dragging=item;
     startContainer=item.closest('.personal-reorder-list');
     if(!startContainer)return;
 
+    startItems=all(".personal-reorder-item",startContainer);
     startOrder=orderOf(startContainer);
 
     const p=(e.touches && e.touches[0]) ? e.touches[0] : e;
@@ -10498,6 +10561,8 @@ function actualizarPermisoReordenPersonalStandecor(){
   function end(e){
     if(!dragging || !startContainer)return;
 
+    const cancelado=e?.type==="touchcancel" || e?.type==="blur";
+    if(cancelado)startItems.forEach(item=>startContainer.appendChild(item));
     const finalOrder=orderOf(startContainer);
     const container=startContainer;
 
@@ -10505,8 +10570,9 @@ function actualizarPermisoReordenPersonalStandecor(){
 
     dragging=null;
     startContainer=null;
+    startItems=[];
 
-    if(finalOrder!==startOrder && puedeReordenarPersonalStandecor()){
+    if(!cancelado && finalOrder!==startOrder && puedeReordenarPersonalStandecor()){
       saveOrder(container);
     }
 
@@ -10523,6 +10589,8 @@ function actualizarPermisoReordenPersonalStandecor(){
   document.addEventListener('touchstart',start,{capture:true,passive:false});
   document.addEventListener('touchmove',move,{capture:true,passive:false});
   document.addEventListener('touchend',end,{capture:true,passive:false});
+  document.addEventListener('touchcancel',end,{capture:true,passive:false});
+  window.addEventListener('blur',end);
 
   window.addEventListener('load',()=>{
     actualizarPermisoReordenPersonalStandecor();
@@ -11039,7 +11107,7 @@ function actualizarPermisoReordenPersonalStandecor(){
       const splash=document.getElementById('standecorSplashScreen');
       if(splash){
         splash.classList.add('splash-hidden');
-        setTimeout(()=>{try{splash.remove()}catch(e){}},320);
+
       }
       document.documentElement.classList.add('standecor-auth-locked');
       return;
@@ -11067,31 +11135,45 @@ function actualizarPermisoReordenPersonalStandecor(){
     location.reload();
   }
 
+  const estadoAcceso=document.documentElement.classList;
+  let habiaSesion=Boolean(sesionActual());
+
   function reiniciarTemporizador(){
-    if(!sesionActual()){
-      clearTimeout(timerInactividad);
-      timerInactividad=null;
-      return;
-    }
     clearTimeout(timerInactividad);
-    timerInactividad=setTimeout(cerrarPorInactividad,INACTIVIDAD_MS);
+    timerInactividad=null;
+    if(sesionActual()){
+      timerInactividad=setTimeout(cerrarPorInactividad,INACTIVIDAD_MS);
+    }else if(estadoAcceso.contains('standecor-login-visible')){
+      timerInactividad=setTimeout(()=>{
+        estadoAcceso.remove('standecor-login-visible');
+        document.getElementById('loginBetaOverlay')?.querySelector('input:focus')?.blur();
+      },INACTIVIDAD_MS);
+    }
+  }
+
+  function detectarActividad(evento){
+    if(!evento.isTrusted)return;
+    if(!sesionActual() && !estadoAcceso.contains('standecor-login-visible')){
+      if(!['mousemove','touchstart','keydown'].includes(evento.type))return;
+      estadoAcceso.add('standecor-login-visible');
+      if(evento.type!=='touchstart')document.getElementById('loginBetaUser')?.focus();
+    }
+    reiniciarTemporizador();
   }
 
   const eventos=['mousedown','mousemove','keydown','click','touchstart','pointerdown','scroll'];
   eventos.forEach(nombre=>{
-    window.addEventListener(nombre,reiniciarTemporizador,{
-      capture:true,
-      passive:true
-    });
-  });
-
-  document.addEventListener('visibilitychange',()=>{
-    if(!document.hidden) reiniciarTemporizador();
+    window.addEventListener(nombre,detectarActividad,{capture:true,passive:true});
   });
 
   const observer=new MutationObserver(()=>{
     actualizarCortina();
-    reiniciarTemporizador();
+    const tieneSesion=Boolean(sesionActual());
+    if(tieneSesion!==habiaSesion){
+      habiaSesion=tieneSesion;
+      estadoAcceso.remove('standecor-login-visible');
+      reiniciarTemporizador();
+    }
   });
 
   function iniciar(){
@@ -11130,7 +11212,7 @@ function actualizarPermisoReordenPersonalStandecor(){
     const splash=document.getElementById('standecorSplashScreen');
     if(splash){
       splash.classList.add('splash-hidden');
-      setTimeout(()=>{try{splash.remove()}catch(e){}},320);
+
     }
   }
 
